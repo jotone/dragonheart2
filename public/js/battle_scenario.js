@@ -320,6 +320,9 @@ function userMakeAction(conn, turnDescript, allowToAction){
 	if(allowToAction){
 
 		$('.convert-battle-front .convert-stuff, .mezhdyblock .bor-beutifull-box').on('click', '.active', function(){
+			clearInterval(TimerInterval);
+			var time = parseInt($('.info-block-with-timer span[data-time=minute]').text()) * 60 + parseInt($('.info-block-with-timer span[data-time=seconds]').text());
+			console.log(time);
 
 			if($('.summonCardPopup').hasClass('show')){
 				var card = $('#summonWrap li').attr('data-cardid');
@@ -344,7 +347,8 @@ function userMakeAction(conn, turnDescript, allowToAction){
 						card: card,
 						magic: magic,
 						BFData: JSON.parse(BFData),
-						source: turnDescript['cardSource']
+						source: turnDescript['cardSource'],
+						timing: time
 					})
 				);
 				allowToAction = false;
@@ -805,40 +809,48 @@ function convertTimeToStr(seconds){
 		for(var i in time){
 			if(time[i] < 10) time[i] = '0'+time[i];
 		}
-		$('#selecthandCardsPopup .timer-in-popup span[data-time=minute]').text(time['m']);
-		$('#selecthandCardsPopup .timer-in-popup span[data-time=seconds]').text(time['s']);
+		console.log(time);
+		$('#selecthandCardsPopup .timer-in-popup, .info-block-with-timer').find('span[data-time=minute]').text(time['m']);
+		$('#selecthandCardsPopup .timer-in-popup, .info-block-with-timer').find('span[data-time=seconds]').text(time['s']);
 	}
 }
 
 var TimerInterval;
-function startTimer(){
-	var time = {'m':0, 's':0};
-	time['m'] = parseInt($('#selecthandCardsPopup .timer-in-popup span[data-time=minute]').text());
-	time['s'] = parseInt($('#selecthandCardsPopup .timer-in-popup span[data-time=seconds]').text());
+function startTimer(login){
+	TimerInterval = setInterval(function () {
+		var time = {'m':0, 's':0};
+		time['m'] = parseInt($('.info-block-with-timer span[data-time=minute]').text());
+		time['s'] = parseInt($('.info-block-with-timer span[data-time=seconds]').text());
 
-	if(time['s'] == 0){
-		time['m']--;
-		time['s'] = 59;
-	}else{
-		time['s']--;
-	}
+		if(time['s'] == 0){
+			time['m']--;
+			time['s'] = 59;
+		}else{
+			time['s']--;
+		}
 
-	TimerInterval = setTimeout(startTimer, 1000);
+		if( (time['m']<=0) && (time['s'] <= 0) ){
+			clearInterval(TimerInterval);
+			if($('#selecthandCardsPopup').hasClass('show')){
+				userChangeCards();
+			}else{
+				if(login == $('.user-describer').attr('id')){
+					conn.send(
+						JSON.stringify({
+							action: 'userPassed',
+							ident: ident
+						})
+					);
+				}
+			}
+		}
+		for(var i in time){
+			if(time[i] < 10) time[i] = '0'+time[i];
+		}
 
-	for(var i in time){
-		if(time[i] < 10) time[i] = '0'+time[i];
-	}
-
-    $('#selecthandCardsPopup .timer-in-popup, .info-block-with-timer').find('span[data-time=minutes]').text(time['m']);
-    $('#selecthandCardsPopup .timer-in-popup, .info-block-with-timer').find('span[data-time=seconds]').text(time['s']);
-
-    if( (time['m']<=0) && (time['s'] <= 0) ){
-		clearInterval(TimerInterval);
-
-        if($('#selecthandCardsPopup').hasClass('show')){
-            userChangeCards();
-        }
-    }
+		$('#selecthandCardsPopup .timer-in-popup, .info-block-with-timer').find('span[data-time=minute]').text(time['m']);
+		$('#selecthandCardsPopup .timer-in-popup, .info-block-with-timer').find('span[data-time=seconds]').text(time['s']);
+	}, 1000);
 }
 
 
@@ -891,7 +903,9 @@ function startBattle() {
 
 						var expireTime = result.turn_expire - phpTime();
 						convertTimeToStr(expireTime);
-						if(expireTime > 0) startTimer();
+						if(expireTime > 0){
+							startTimer();
+						}
 
 					},
 					error: function (jqXHR, exception) {
@@ -913,10 +927,6 @@ function startBattle() {
 			case 'allUsersAreReady':
 				changeTurnIndicator(result.login);//смена индикатора хода
 				recalculateBattleField();
-				var expireTime = result.timing - phpTime();
-				convertTimeToStr(expireTime);
-				clearInterval(TimerInterval);
-				if(expireTime > 0) startTimer();
 			break;
 
 			//Пользователь сделал действие
@@ -1060,6 +1070,12 @@ function startBattle() {
 		if( (result.message == 'allUsersAreReady') || (result.message == 'userMadeAction') ){
 			calculateRightMarginCardHands();
 			hidePreloader();
+			var expireTime = result.timing - phpTime();
+			convertTimeToStr(expireTime);
+			clearInterval(TimerInterval);
+			if(expireTime > 0){
+				startTimer(result.login);
+			}
 			//Произошло действие призыва или лекарь
 			if( (result.addition_data !== undefined) && (!$.isEmptyObject(result.addition_data)) ){
 				/*
@@ -1198,9 +1214,6 @@ function startBattle() {
 				return ;
 			}
 		});
-
-
-
 	}
 }
 function circleRoundIndicator(){

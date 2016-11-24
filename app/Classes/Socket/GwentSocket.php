@@ -68,8 +68,8 @@ class GwentSocket extends BaseSocket
 					'cards_to_play' => unserialize($value->card_to_play),   //Массив определенных условиями действия карт при отыгрыше из колоды или отбое
 					'round_passed'  => $value->round_passed,                //Маркер паса
 					'addition_data' => unserialize($value->addition_data),
-					'battle_member_id' => $value->id                        //ID текущей битвы
-
+					'battle_member_id' => $value->id,                       //ID текущей битвы
+                    'turn_expire'   => $value->turn_expire
 				];
 				$users_data[$user_identificator] = &$users_data['user'];
 			}else{
@@ -89,7 +89,8 @@ class GwentSocket extends BaseSocket
 					'cards_to_play' => unserialize($value->card_to_play),
 					'round_passed'  => $value->round_passed,
 					'addition_data' => unserialize($value->addition_data),
-					'battle_member_id' => $value->id
+					'battle_member_id' => $value->id,
+                    'turn_expire'   => $value->turn_expire
 				];
 				$users_data[$user_identificator] = &$users_data['opponent'];
 			}
@@ -184,7 +185,7 @@ class GwentSocket extends BaseSocket
 
 						$user = ($battle->user_id_turn == $users_data['user']['id']) ? $users_data['user']['login'] : $users_data['opponent']['login'];
 
-                        $user_timing = \DB::table('tbl_battle_members')->select('id','turn_expire')->where('id','=',$users_data['user']['battle_member_id'])->get();
+                        $user_timing = \DB::table('tbl_battle_members')->select('id','turn_expire')->where('id','=',$battle->user_id_turn)->get();
                         $battle->turn_expire = $user_timing[0]->turn_expire + time();
 
 						$result = [
@@ -287,7 +288,6 @@ class GwentSocket extends BaseSocket
 				break;
 
 			case 'userMadeCardAction':
-				echo date('Y-m-d H:i:s') . "\n";
 				if ($battle->fight_status == 2) {
 					//Данные о текущем пользователе
 					$battle_field = unserialize($battle->battle_field);//Данные о поле битвы
@@ -405,16 +405,18 @@ class GwentSocket extends BaseSocket
 					$users_data = self::sortDecksByStrength($users_data);
 					//Обработка действий
 					$battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
-					//Сохранение данных битвы
+
+                    //Сохранение данных битвы                    
 					$users_battle_data = \DB::table('tbl_battle_members')->where('id', '=', $users_data['user']['battle_member_id'])->update([
-						'user_deck' => serialize($users_data['user']['deck']),
-						'user_hand' => serialize($users_data['user']['hand']),
-						'user_discard' => serialize($users_data['user']['discard']),
-						'card_source' => $users_data['user']['card_source'],
+						'user_deck'     => serialize($users_data['user']['deck']),
+						'user_hand'     => serialize($users_data['user']['hand']),
+						'user_discard'  => serialize($users_data['user']['discard']),
+						'card_source'   => $users_data['user']['card_source'],
 						'player_source' => $users_data['user']['player_source'],
-						'card_to_play' => serialize($users_data['user']['cards_to_play']),
-						'round_passed' => '0',
-						'addition_data' => serialize($addition_data)
+						'card_to_play'  => serialize($users_data['user']['cards_to_play']),
+						'round_passed'  => '0',
+						'addition_data' => serialize($addition_data),
+                        'turn_expire'   => $msg->timing + $timing_settings['additional_time']
 					]);
 					$opponent_battle_data = \DB::table('tbl_battle_members')->where('id', '=', $users_data['opponent']['battle_member_id'])->update([
 						'user_deck' => serialize($users_data['opponent']['deck']),
@@ -2051,7 +2053,8 @@ class GwentSocket extends BaseSocket
 
 			'round'         => $round_count,
 			'deck_slug'     => $users_data['user']['current_deck'],
-			'users'         => [$users_data['user']['login'], $users_data['opponent']['login']]
+			'users'         => [$users_data['user']['login'], $users_data['opponent']['login']],
+            'timing'        => $users_data['opponent']['turn_expire']+time()
 		];
 		if( ($data_to_user == '') || ($data_to_user == $users_data['user']['player']) ){
 			$result['addition_data'] = $addition_data;
@@ -2079,7 +2082,8 @@ class GwentSocket extends BaseSocket
 			'magicUsage'    => $magic_usage[$users_data['opponent']['player']],
 			'round'         => $round_count,
 			'deck_slug'     => $users_data['opponent']['current_deck'],
-			'users'         => [$users_data['user']['login'], $users_data['opponent']['login']]
+			'users'         => [$users_data['user']['login'], $users_data['opponent']['login']],
+            'timing'        => $users_data['opponent']['turn_expire']+time()
 		];
 		if($data_to_user == $users_data['opponent']['player']){
 			$result['addition_data'] = $addition_data;
