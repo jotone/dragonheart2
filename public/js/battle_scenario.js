@@ -322,7 +322,6 @@ function userMakeAction(conn, turnDescript, allowToAction){
 		$('.convert-battle-front .convert-stuff, .mezhdyblock .bor-beutifull-box').on('click', '.active', function(){
 			clearInterval(TimerInterval);
 			var time = parseInt($('.info-block-with-timer span[data-time=minute]').text()) * 60 + parseInt($('.info-block-with-timer span[data-time=seconds]').text());
-			console.log(time);
 
 			if($('.summonCardPopup').hasClass('show')){
 				var card = $('#summonWrap li').attr('data-cardid');
@@ -810,8 +809,8 @@ function convertTimeToStr(seconds){
 			if(time[i] < 10) time[i] = '0'+time[i];
 		}
 		console.log(time);
-		$('#selecthandCardsPopup .timer-in-popup, .info-block-with-timer').find('span[data-time=minute]').text(time['m']);
-		$('#selecthandCardsPopup .timer-in-popup, .info-block-with-timer').find('span[data-time=seconds]').text(time['s']);
+		$('.troll-popup .timer-in-popup, .info-block-with-timer').find('span[data-time=minute]').text(time['m']);
+		$('.troll-popup .timer-in-popup, .info-block-with-timer').find('span[data-time=seconds]').text(time['s']);
 	}
 }
 
@@ -848,8 +847,8 @@ function startTimer(login){
 			if(time[i] < 10) time[i] = '0'+time[i];
 		}
 
-		$('#selecthandCardsPopup .timer-in-popup, .info-block-with-timer').find('span[data-time=minute]').text(time['m']);
-		$('#selecthandCardsPopup .timer-in-popup, .info-block-with-timer').find('span[data-time=seconds]').text(time['s']);
+		$('.troll-popup .timer-in-popup, .info-block-with-timer').find('span[data-time=minute]').text(time['m']);
+		$('.troll-popup .timer-in-popup, .info-block-with-timer').find('span[data-time=seconds]').text(time['s']);
 	}, 1000);
 }
 
@@ -1127,12 +1126,15 @@ function startBattle() {
 							openTrollPopup($('#selectCurrentTurn'));
 							$('#selectCurrentTurn button').unbind();
 							$('#selectCurrentTurn button').click(function(){
+								clearInterval(TimerInterval);
+								var time = parseInt($('.info-block-with-timer span[data-time=minute]').text()) * 60 + parseInt($('.info-block-with-timer span[data-time=seconds]').text());
 								var userTurn = $('#selectCurrentTurn input[name=usersTurn]:checked').val();
 								conn.send(
 									JSON.stringify({
 										action: 'cursedWantToChangeTurn',//Отправка сообщения о подключения пользователя к столу
 										ident: ident,
-										user: userTurn
+										user: userTurn,
+										time: time
 									})
 								);
 								closeAllTrollPopup();

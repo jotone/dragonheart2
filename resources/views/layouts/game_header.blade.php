@@ -82,6 +82,9 @@ $user = Auth::user();
     <!-- Окно выбора карт -->
     <div class="troll-popup" id="selectNewCardsPopup">
         <div class="popup-content-wrap">
+            <div class="timer-in-popup">
+                <span data-time="minute">00</span>:<span data-time="seconds">00</span>
+            </div>
 
             <h5 class="cards-select-message-wrap">Карты</h5>
             <div class="pop-row" >
@@ -138,6 +141,9 @@ $user = Auth::user();
     <div class="troll-popup" id="successEvent">
         <div class="close-this"></div>
         <div class="popup-content-wrap">
+            <div class="timer-in-popup">
+                <span data-time="minute">00</span>:<span data-time="seconds">00</span>
+            </div>
             <h5>Результат:</h5>
             <div class="pop-row">
                 <span class="result">
@@ -149,6 +155,9 @@ $user = Auth::user();
     <div class="troll-popup" id="confirm-popup">
         <div class="close-this"></div>
         <div class="popup-content-wrap">
+            <div class="timer-in-popup">
+                <span data-time="minute">00</span>:<span data-time="seconds">00</span>
+            </div>
             <h5>Подтвердите действие:</h5>
             <div class="pop-row">
                 <div class="confirm-txt"></div>
@@ -165,6 +174,9 @@ $user = Auth::user();
 
     <div class="troll-popup" id="card-info">
         <div class="close-this"></div>
+        <div class="timer-in-popup">
+            <span data-time="minute">00</span>:<span data-time="seconds">00</span>
+        </div>
         <div class="content-card-info"></div>
     </div>
     <!-- Окно ошибки -->
@@ -181,6 +193,9 @@ $user = Auth::user();
     <!-- Окно выбора хода-->
     <div class="troll-popup" id="selectCurrentTurn" style="width: 350px; height: auto;">
         <div class="popup-content-wrap">
+            <div class="timer-in-popup">
+                <span data-time="minute">00</span>:<span data-time="seconds">00</span>
+            </div>
             <div class="cards-select-message-wrap">Выберите игрока для хода в текущем раунде</div>
 
             <div id="chooseUser">
