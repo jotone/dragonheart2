@@ -1092,6 +1092,7 @@ function startBattle() {
 								openTrollPopup($('#selectNewCardsPopup'));//Открытие popup-окна пользователю
 
 								$('#selectNewCardsPopup #handNewCards li, #selectNewCardsPopup .button-troll.acceptNewCards').unbind();
+								$('#selectNewCardsPopup #handNewCards li:first').addClass('glow');
 								$('#selectNewCardsPopup #handNewCards li').click(function(event){
 									if((!$(event.target).hasClass('ignore')) && event.which==1){
 										$('#selectNewCardsPopup #handNewCards li').removeClass('glow');
