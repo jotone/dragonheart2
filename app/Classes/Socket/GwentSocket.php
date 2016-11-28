@@ -801,9 +801,11 @@ class GwentSocket extends BaseSocket
                         //timing
                         foreach($users_data as $type => $user_data){
                             if( ($battle->round_count == 2) || ($battle->round_count == 3) ){
-                                //$user_timing = \DB::table('tbl_battle_members')->select('id','turn_expire')->where('id','=',$user_data['battle_member_id'])->get();
-                                //$timing = $user_timing[0]->turn_expire - $timing_settings['additional_time'] + $timing_settings['first_step_r'.$battle->round_count];
                                 $timing = $users_data[$type]['turn_expire']- $timing_settings['additional_time'] + $timing_settings['first_step_r'.$battle->round_count];
+
+                                if($timing > $timing_settings['max_step_time']){
+                                    $timing = $timing_settings['max_step_time'];
+                                }
                                 \DB::table('tbl_battle_members')->select('id','turn_expire')->where('id','=',$user_data['battle_member_id'])->update([
                                     'turn_expire' => $timing
                                 ]);
@@ -864,6 +866,9 @@ class GwentSocket extends BaseSocket
 				$user_turn_id = $users_data[$player]['id'];
 
                 $turn_expire = $msg->time;
+                if($turn_expire > $timing_settings['max_step_time']){
+                    $turn_expire = $timing_settings['max_step_time'];
+                }
 
 				$battle->user_id_turn = $user_turn_id;
                 $battle->turn_expire = $turn_expire+time();
