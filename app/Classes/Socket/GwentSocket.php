@@ -617,7 +617,10 @@ class GwentSocket extends BaseSocket
 							'opon_discard' => count($users_data['opponent']['discard']),
 							'opon_deck'    => count($users_data['opponent']['deck']),
 							'opon_hand'    => count($users_data['opponent']['hand'])
-						]
+						],
+                        'magicUsage'    => $magic_usage,
+                        'round'         => $battle->round_count,
+                        'deck_slug'     => $users_data['user']['current_deck']
 					];
 					self::sendMessageToSelf($from, $result);
 					$result = [
@@ -635,7 +638,10 @@ class GwentSocket extends BaseSocket
 							'opon_discard' => count($users_data['user']['discard']),
 							'opon_deck'    => count($users_data['user']['deck']),
 							'opon_hand'    => count($users_data['user']['hand'])
-						]
+						],
+                        'magicUsage'    => $magic_usage,
+                        'round'         => $battle->round_count,
+                        'deck_slug'     => $users_data['user']['current_deck']
 					];
 					self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
 
@@ -1096,14 +1102,9 @@ class GwentSocket extends BaseSocket
 			//END OF ПЕРЕГРУППИРОВКА
 			//ПЕЧАЛЬ
 			case '11':
-				var_dump($magic_usage);
 				$players = ($input_action->sorrow_actionTeamate == 0)? [$users_data['opponent']['player']]: ['p1', 'p2'];
 				$row = self::strRowToInt($msg->BFData->row);
-				if ($msg->card != '') {
-					foreach($players as $player_iter => $player){
-						$battle_field[$player][$row]['special'] = '';
-					}
-				}else{
+				if ($msg->magic != '') {
 					foreach($players as $player_iter => $player){
 						foreach($magic_usage[$player] as $activated_in_round => $magic_id){
 							if($magic_id != '0'){
@@ -1117,7 +1118,10 @@ class GwentSocket extends BaseSocket
 						}
 					}
 				}
-				var_dump($magic_usage);
+
+                foreach($players as $player_iter => $player){
+                    $battle_field[$player][$row]['special'] = '';
+                }
 			break;
 			//END OF ПЕЧАЛЬ
 			//ПОВЕЛИТЕЛЬ
@@ -1315,7 +1319,6 @@ class GwentSocket extends BaseSocket
 							  break; //Самую Случайную
 				}
 
-				var_dump($card_strength_to_kill);
 				$card_to_kill = [];
 
 				foreach($cards_to_destroy as $player => $rows){
@@ -2045,8 +2048,11 @@ class GwentSocket extends BaseSocket
 		$user_discard_count = count($users_data['user']['discard']);
 		$user_deck_count = count($users_data['user']['deck']);
 
-        $timing = ($cursedChangedToSelf)? $users_data['user']['turn_expire']: $timing = $users_data['opponent']['turn_expire'];
-        var_dump($timing);
+        if($cursedChangedToSelf){
+            $timing = $users_data['user']['turn_expire'];
+        }else{
+            $timing = $users_data['opponent']['turn_expire'];
+        }
 
 		$oponent_discard_count = count($users_data['opponent']['discard']);
 		$oponent_deck_count = count($users_data['opponent']['deck']);
@@ -2072,7 +2078,7 @@ class GwentSocket extends BaseSocket
 				'playerSource'  => $users_data['user']['player_source'],
 				'cardToPlay'    => $users_data['user']['cards_to_play'],
 			],
-			'magicUsage'    => $magic_usage[$users_data['user']['player']],
+			'magicUsage'    => $magic_usage,
 
 			'round'         => $round_count,
 			'deck_slug'     => $users_data['user']['current_deck'],
@@ -2102,7 +2108,7 @@ class GwentSocket extends BaseSocket
 			'battleInfo'    => $msg->ident->battleId,
 			'login'         => $user_turn,
 			'turnDescript'  => ['cardSource' => $users_data['opponent']['card_source']],
-			'magicUsage'    => $magic_usage[$users_data['opponent']['player']],
+			'magicUsage'    => $magic_usage,
 			'round'         => $round_count,
 			'deck_slug'     => $users_data['opponent']['current_deck'],
 			'users'         => [$users_data['user']['login'], $users_data['opponent']['login']],

@@ -755,13 +755,6 @@ function createDeckCardPreview(count, is_user, deck){
 	return cardList;
 }
 
-
-
-//Отображение магии пользователя
-/*function showMagic(id){
-	console.log('tut toge pusto')
-}*/
-
 function buildBattleField(fieldData){
 	//Очищение полей
 	$('.mezhdyblock #sortable-cards-field-more, .convert-battle-front #p1 .cards-row-wrap, .convert-battle-front #p1 .image-inside-line, .convert-battle-front #p2 .cards-row-wrap, .convert-battle-front #p2 .image-inside-line').empty();
@@ -808,7 +801,6 @@ function convertTimeToStr(seconds){
 		for(var i in time){
 			if(time[i] < 10) time[i] = '0'+time[i];
 		}
-		console.log(time);
 		$('.troll-popup .timer-in-popup, .info-block-with-timer').find('span[data-time=minute]').text(time['m']);
 		$('.troll-popup .timer-in-popup, .info-block-with-timer').find('span[data-time=seconds]').text(time['s']);
 	}
@@ -855,6 +847,27 @@ function startTimer(login){
 
 function phpTime(){
 	return Math.floor(Date.now()/ 1000);
+}
+
+function count(arr){
+	var i = 0;
+	for(var key in arr) i++;
+	return i;
+}
+
+function magicReview(result){
+	$('.convert-right-info .magic-effects-wrap li').removeClass('disactive');
+	for(var player in result.magicUsage){
+		var magicUsingTimes = (result.deck_slug == 'forest')? 2: 1;
+		for(var activatedInRound in result.magicUsage[player]){
+			if( (activatedInRound == result.round) || (count(result.magicUsage[player]) >= magicUsingTimes) ){
+				$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li').removeClass('active').addClass('disactive');
+			}
+			if(activatedInRound <= result.round){
+				$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li[data-cardid="'+result.magicUsage[player][activatedInRound]['id']+'"]').removeClass('active').addClass('disactive');
+			}
+		}
+	}
 }
 
 function startBattle() {
@@ -940,35 +953,7 @@ function startBattle() {
 				calculateRightMarginCardHands();
 				//Обработка Маг. Эффектов (МЭ)
 				if(result.magicUsage !== undefined){
-					var disableByOver = false;//Маркер "МЭ был использован"
-					/*@result[
-					 *      magicUsage[     //Массив ислользованых МЭ
-					 *          activated_in_round => id        //МЭ активирован в раунде => id МЭ
-					 *      ]
-					 * ]
-					 */
-					//Магия была активирована на данном ходе
-					for(var activated_in_round in result.magicUsage){
-						//Если магия активирована в данном раунде, делаем всю магию неактивной
-						$('.user-describer .magic-effects-wrap li[data-cardid="'+result.magicUsage[activated_in_round]['id']+'"]').removeClass('active').addClass('disactive');
-						if(result.round == activated_in_round) disableByOver = true; //Маркер "МЭ был использован" преводим в true
-					}
-
-					var magicUsingTimes = (result.deck_slug == 'forest')? 2: 1;//Разрешено использовать магию N раз (magicUsingTimes). Обработка фракционного умения эльфов - использование 2х МЭ за битву
-
-					var counter = 0;//Счетчик использований МЭ
-					for (var key in result.magicUsage) counter++;
-					if(counter >= magicUsingTimes) disableByOver = true;//Если магия была использована больше N раз, преводим маркер "МЭ был использован" в true
-
-					if(disableByOver){
-						$('.user-describer .magic-effects-wrap li').addClass('disactive');
-					}else{
-						$('.user-describer .magic-effects-wrap li').removeClass('disactive');
-						for(var activated_in_round in result.magicUsage){
-							//Вывод использованого МЭ
-							$('.user-describer .magic-effects-wrap li[data-cardid="'+result.magicUsage[activated_in_round]['id']+'"]').removeClass('active').addClass('disactive');
-						}
-					}
+					magicReview(result)
 				}
 			break;
 
@@ -1013,6 +998,11 @@ function startBattle() {
 
 				recalculateDecks(result);
 				circleRoundIndicator();
+
+				if(result.magicUsage !== undefined){
+					magicReview(result)
+				}
+
 				if(result.field_data !== undefined) buildBattleField(result.field_data);
 				resultPopupShow(result.roundResult+'! Подождите, идет подготовка нового раунда.');
 				allowToAction = false;

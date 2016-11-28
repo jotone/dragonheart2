@@ -550,7 +550,7 @@ foreach($battle_members as $key => $value){
 
 			<div class="useless-card">
 				<div class="inside-for-some-block" style="">
-					<ul class="magic-effects-wrap">
+					<ul class="magic-effects-wrap" data-player="{{ $opponent_field_identificator }}">
 					<!-- Активная магия -->
 					@if(isset($players['enemy']['user_magic']) && !empty($players['enemy']['user_magic']))
 						<?php
@@ -712,7 +712,7 @@ foreach($battle_members as $key => $value){
 			</div>
 			<div class="useless-card">
 				<div class="inside-for-some-block">
-					<ul class="magic-effects-wrap">
+					<ul class="magic-effects-wrap" data-player="{{ $user_field_identificator }}">
 					<!-- Активная магия -->
 					@if(isset($players['allied']['user_magic']) && !empty($players['allied']['user_magic']))
 						<?php
