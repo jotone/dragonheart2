@@ -45,6 +45,12 @@ class GwentSocket extends BaseSocket
 
 		$battle_members = BattleMembers::where('battle_id', '=', $msg->ident->battleId)->get(); //Данные о участвующих в битве
 		$users_data = [];
+
+        \DB::table('users')->where('id', '=', $msg->ident->userId)->update([
+            'updated_at' => date('Y-m-d H:i:s'),
+            'user_online' => '1'
+        ]);
+
 		//Создание массивов пользовательских данных
 		foreach($battle_members as $key => $value){
 			$user = User::find($value->user_id);
@@ -450,6 +456,8 @@ class GwentSocket extends BaseSocket
 
 			case 'dropCard':
 				$allow_drop_card = true;
+                var_dump($msg->player);
+                var_dump($users_data['user']['login']);
 				if( ($msg->deck != 'discard') && ($msg->deck != 'deck') ){
 					foreach($users_data[$msg->player][$msg->deck] as $card_iter => $card_data){
 						if( ($msg->card == $card_data['id']) && ($allow_drop_card) ){
@@ -777,9 +785,9 @@ class GwentSocket extends BaseSocket
 								$to_enemy = self::saveGameResults($users_data['opponent']['id'], $battle, 'draw');
 							}
 						}
-						foreach($users_data as $user_type => $user){
-							\DB::table('users')->where('login', '=', $users_data[$user_type]['login'])->update(['user_busy' => 0]);
-						}
+
+                        \DB::table('users')->where('login', '=', $users_data['user']['login'])->update(['user_busy' => 0]);
+                        \DB::table('users')->where('login', '=', $users_data['opponent']['login'])->update(['user_busy' => 0]);
 
 						$result = ['message' => 'gameEnds', 'gameResult' => $game_result, 'battleInfo' => $msg->ident->battleId];
 
