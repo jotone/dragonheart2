@@ -40,12 +40,6 @@ class checkOfflineUsers extends Command
         /*Every 4 minutes*/
         /*Online counters*/
         $date = date('Y-m-d H:i:s', time()-240);
-        \DB::table('users')->select('id','user_online','updated_at')
-            ->where('user_online','>',0)
-            ->where('updated_at','<',$date)
-            ->update(['user_online' => 0]);
-
-        $date = date('Y-m-d H:i:s', time()-240);
         $users = \DB::table('users')->select('id','user_online','user_busy')
             ->where('user_online','=',1)
             ->where('user_busy','=',1)
@@ -56,5 +50,11 @@ class checkOfflineUsers extends Command
                 \DB::table('users')->where('id','=',$user->id)->update(['user_busy'=>0]);
             }
         }
+
+        $date = date('Y-m-d H:i:s', time()-240);
+        \DB::table('users')->select('id','user_online','updated_at')
+            ->where('user_online','>',0)
+            ->where('updated_at','<',$date)
+            ->update(['user_online' => 0]);
     }
 }
