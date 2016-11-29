@@ -15,6 +15,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         // Commands\Inspire::class,
         \App\Console\Commands\gwentServer::class,
+        \App\Console\Commands\checkOfflineUsers::class,
+        \App\Console\Commands\battleCleanUp::class
     ];
 
     /**

@@ -18,7 +18,7 @@ class battleCleanUp extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Drop finished battles.';
 
     /**
      * Create a new command instance.

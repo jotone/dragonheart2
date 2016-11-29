@@ -11,7 +11,7 @@ class checkOfflineUsers extends Command
      *
      * @var string
      */
-    protected $signature = 'command:name';
+    protected $signature = 'checkOfflineUsers:init';
 
     /**
      * The console command description.
@@ -40,9 +40,21 @@ class checkOfflineUsers extends Command
         /*Every 4 minutes*/
         /*Online counters*/
         $date = date('Y-m-d H:i:s', time()-240);
-        $users_offline = \DB::table('users')->select('id','user_online','updated_at')
+        \DB::table('users')->select('id','user_online','updated_at')
             ->where('user_online','>',0)
             ->where('updated_at','<',$date)
             ->update(['user_online' => 0]);
+
+        $date = date('Y-m-d H:i:s', time()-240);
+        $users = \DB::table('users')->select('id','user_online','user_busy')
+            ->where('user_online','=',1)
+            ->where('user_busy','=',1)
+            ->get();
+        foreach($users as $user){
+            $battle = \DB::table('tbl_battle_members')->select('user_id','updated_at')->where('user_id','=',$user->id)->get();
+            if($battle[0]->updated_at < $date){
+                \DB::table('users')->where('id','=',$user->id)->update(['user_busy'=>0]);
+            }
+        }
     }
 }

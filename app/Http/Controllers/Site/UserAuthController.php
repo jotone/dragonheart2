@@ -65,14 +65,20 @@ class UserAuthController extends BaseController
                 }
 
                 $user_magic = unserialize($auth->user_magic);
-                foreach($user_magic as $deck => $cards){
-
+                foreach($user_magic as $magic_id => $magic_data){
+                    $magic_isset = \DB::table('tbl_magic_effect')->where('id','=',$magic_id)->count();
+                    if(!$magic_isset){
+                        unset($user_magic[$magic_id]);
+                    }
                 }
 
                 User::where('id','=',$auth->id)->update([
                     'user_rating'        =>serialize($user_rating),
-                    'user_cards_in_deck'=>serialize($user_cards_in_deck),
-                    'user_available_deck'=>serialize($user_available_deck)
+                    'user_cards_in_deck' =>serialize($user_cards_in_deck),
+                    'user_available_deck'=>serialize($user_available_deck),
+                    'user_magic'         =>serialize($user_magic),
+                    'user_online'        => 1,
+                    'user_busy'          => 0
                 ]);
                 
                 return redirect(route('user-home'));
