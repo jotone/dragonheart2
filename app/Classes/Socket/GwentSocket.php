@@ -20,6 +20,17 @@ class GwentSocket extends BaseSocket
 	}
 
 	//Socket actions
+    public function onClose(ConnectionInterface $conn){
+        $this->clients->detach($conn);
+        echo 'Connection '.$conn->resourceId.' has disconnected'."\n";
+    }
+
+
+    public function onError(ConnectionInterface $conn, \Exception $e){
+        echo 'An error has occured: '.$e->getMessage()."\n";
+        $conn -> close();
+    }
+
 	public function onOpen(ConnectionInterface $conn){
 		//Пользователь присоединяется к сессии
 		$this->clients->attach($conn); //Добавление клиента
@@ -898,18 +909,6 @@ class GwentSocket extends BaseSocket
 				}
 			break;
 		}
-	}
-
-
-	public function onClose(ConnectionInterface $conn){
-		$this->clients->detach($conn);
-		echo 'Connection '.$conn->resourceId.' has disconnected'."\n";
-	}
-
-
-	public function onError(ConnectionInterface $conn, \Exception $e){
-		echo 'An error has occured: '.$e->getMessage()."\n";
-		$conn -> close();
 	}
 
 
