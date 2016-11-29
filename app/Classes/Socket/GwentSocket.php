@@ -455,54 +455,22 @@ class GwentSocket extends BaseSocket
 			break;
 
 			case 'dropCard':
-				$allow_drop_card = true;
-                var_dump($msg->player);
-                var_dump($users_data['user']['login']);
-				if( ($msg->deck != 'discard') && ($msg->deck != 'deck') ){
-					foreach($users_data[$msg->player][$msg->deck] as $card_iter => $card_data){
-						if( ($msg->card == $card_data['id']) && ($allow_drop_card) ){
-							$allow_drop_card = false;
-							unset($users_data[$msg->player][$msg->deck][$card_iter]);
-							$users_data[$msg->player][$msg->deck] = array_values($users_data[$msg->player][$msg->deck]);
-							break;
-						}
-					}
+				if( $msg->player != $users_data['user']['player'] ){
+                    $position = -1;
+                    foreach($users_data[$msg->player][$msg->deck] as $card_iter => $card_data){
+                        if(Crypt::decrypt($card_data['id']) == Crypt::decrypt($msg->card)){
+                            $position = $card_iter;
+                            break;
+                        }
+                    }
+                    if($position >= 0){
+                        unset($users_data[$msg->player][$msg->deck][$position]);
+                        $users_data[$msg->player][$msg->deck] = array_values($users_data[$msg->player][$msg->deck]);
 
-					$users_data = self::sortDecksByStrength($users_data);
-					self::saveUsersDecks($users_data);
-
-					$user_turn = ($battle->user_id_turn == $users_data['user']['id'])? $users_data['user']['login']: $users_data['opponent']['login'];
-
-					$result = [
-						'message' => 'dropCard',
-						'user_deck'     => $users_data['user']['deck'],
-						'user_discard'  => $users_data['user']['discard'],
-						'counts'        => [
-							'user_deck'    => count($users_data['user']['deck']),
-							'user_discard' => count($users_data['user']['discard']),
-							'opon_discard' => count($users_data['opponent']['deck']),
-							'opon_deck'    => count($users_data['opponent']['discard']),
-							'opon_hand'    => count($users_data['opponent']['hand'])
-						],
-						'turnDescript'  => ['cardSource' => 'hand'],
-						'login'         => $user_turn
-					];
-					self::sendMessageToSelf($from, $result); //Отправляем результат отправителю
-					$result = [
-						'message' => 'dropCard',
-						'user_deck'     => $users_data['opponent']['deck'],
-						'user_discard'  => $users_data['opponent']['discard'],
-						'counts'        => [
-							'user_deck'    => count($users_data['opponent']['deck']),
-							'user_discard' => count($users_data['opponent']['discard']),
-							'opon_discard' => count($users_data['user']['deck']),
-							'opon_deck'    => count($users_data['user']['discard']),
-							'opon_hand'    => count($users_data['user']['hand'])
-						],
-						'turnDescript'  => ['cardSource' => $users_data['opponent']['card_source']],
-						'login'         => $user_turn
-					];
-					self::sendMessageToOthers($from, $result, $SplBattleObj[$msg->ident->battleId]);
+                        \DB::table('tbl_battle_members')->where('id','=',$users_data[$msg->player]['battle_member_id'])->update([
+                            'user_'.$msg->deck => serialize($users_data[$msg->player][$msg->deck])
+                        ]);
+                    }
 				}
 			break;
 
