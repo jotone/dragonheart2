@@ -2954,6 +2954,19 @@ input.book-style{
   z-index: 2000;
   position: relative;
 }
+.card-description-hidden h1 {
+    font-size: 2em;
+    margin: 0.67em 0;
+}
+.card-description-hidden h2{}
+.card-description-hidden h3{}
+.card-description-hidden h4{}
+.card-description-hidden h5{}
+.card-description-hidden h6{}
+
+
+
+
 .popup-content-wrap h5{
   font-size: 20px;
   font-weight: 700;
@@ -3588,3 +3601,116 @@ div.troll-popup#card-info{  padding: 20px; width: 590px; height: 890px;z-index: 
 .rounds-counts-count{}
 .rounds-counts-title{ font-size: 18px; line-height: 18px; text-transform: uppercase; font-weight: 100; display: inline-block; position: absolute; bottom: -21px;left(50%); -webkit-transform: translateX(-50%); -moz-transform: translateX(-50%); -ms-transform: translateX(-50%); -o-transform: translateX(-50%); transform: translateX(-50%); white-space: nowrap;}
 .opponent-description{ margin-bottom: 35px;}
+
+
+.card-description-hidden {    color: #714026; font-size:16px;}
+.card-description-hidden p {
+    padding: 0 0  0.8125em 0;
+    color: #714026;
+    font-weight: 300; }
+.card-description-hidden p + p {
+    text-indent: 1.625em; }
+.card-description-hidden p.first:first-letter {
+    float: left;
+
+    font-size: 3em;
+    font-weight: 700;
+    line-height: 1em;
+    margin-bottom: -0.2em;
+    padding: 0.2em 0.1em 0 0; }
+.card-description-hidden p img {
+    float: left;
+    margin: 0.5em 0.8125em 0.8125em 0;
+    padding: 0; }
+.card-description-hidden p img.right {
+    float: right;
+    margin: 0.5em  0 0.8125em 0.8125em; }
+.card-description-hidden h1, .card-description-hidden h2 {
+    font-weight: normal;
+    color: #714026;
+     }
+.card-description-hidden h3, .card-description-hidden h4, .card-description-hidden h5, .card-description-hidden h6 {
+    font-weight: normal;
+    color: #714026;}
+.card-description-hidden h1 {
+    font-size: 2.125em;
+    margin-bottom: 0.765em; }
+.card-description-hidden h2 {
+    font-size: 1.9em;
+    margin-bottom: 0.855em; }
+.card-description-hidden h3 {
+    font-size: 1.7em;
+    margin-bottom: 0.956em; }
+.card-description-hidden h4 {
+    font-size: 1.4em;
+    margin-bottom: 1.161em; }
+.card-description-hidden h5, .card-description-hidden h6 {
+    font-size: 1.313em;
+    margin-bottom: 1.238em; }
+.card-description-hidden ul {
+    list-style-position: outside; }
+.card-description-hidden li ul,
+.card-description-hidden li ol {
+    margin: 0 1.625em; }
+.card-description-hidden ul, .card-description-hidden ol {
+    margin: 0 0 1.625em 0; }
+.card-description-hidden dl {
+    margin: 0 0 1.625em 0; }
+.card-description-hidden dl dt {
+    font-weight: bold; }
+.card-description-hidden dl dd {
+    margin-left: 1.625em; }
+.card-description-hidden a {
+    color: #714026;
+    text-decoration: none; }
+.card-description-hidden a:hover {
+    text-decoration: underline; }
+.card-description-hidden table {
+    margin-bottom: 1.625em;
+    border-collapse: collapse; }
+.card-description-hidden th {
+    font-weight: bold; }
+.card-description-hidden tr, .card-description-hidden th, .card-description-hidden td {
+    margin: 0;
+    padding: 0 1.625em 0 1em;
+    height: 26px; }
+.card-description-hidden tfoot {
+    font-style: italic; }
+.card-description-hidden caption {
+    text-align: center;}
+.card-description-hidden abbr, .card-description-hidden acronym {
+    border-bottom: 1px dotted #000; }
+.card-description-hidden address {
+    margin-top: 1.625em;
+    font-style: italic; }
+.card-description-hidden del {
+    color: #714026; }
+.card-description-hidden blockquote {
+    padding: 1em 1em 1.625em 1em;
+    font-style: italic; }
+.card-description-hidden blockquote:before {
+    content: "\201C";
+    font-size: 3em;
+    margin-left: -.625em;
+    color: #aaa;
+    line-height: 0; }
+.card-description-hidden blockquote > p {
+    padding: 0;
+    margin: 0; }
+.card-description-hidden strong {
+    font-weight: bold; }
+.card-description-hidden em, .card-description-hidden dfn {
+    font-style: italic; }
+.card-description-hidden dfn {
+    font-weight: bold; }
+.card-description-hidden pre, .card-description-hidden code {
+    margin: 1.625em 0;
+    white-space: pre; }
+.card-description-hidden pre, .card-description-hidden code, .card-description-hidden tt {
+    font: 1em monospace;
+    line-height: 1.5; }
+.card-description-hidden tt {
+    display: block;
+    margin: 1.625em 0; }
+.card-description-hidden hr {
+    margin-bottom: 1.625em; }
