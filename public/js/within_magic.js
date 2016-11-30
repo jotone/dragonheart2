@@ -591,12 +591,14 @@ $(document).ready(function(){
             magic_actions.push( $(this).children('td:eq(2)').text() );
         });
 
+        var magic_descr = tinyMCE.get('magic_descr').getContent();
+
         //Имитация отправки данных через форму
         var formData = new FormData();
         //Наполнение формы
         formData.append( 'token', token );
         formData.append( 'title', $('input[name=magic_title]').val().trim());
-        formData.append( 'description', $('textarea[name=magic_descr]').val().trim());
+        formData.append( 'description', magic_descr );
         formData.append( 'img_url', $('input[name=magicAddImg]').prop('files')[0] );
         formData.append( 'race', $('#racesToUse input[name=magic_race_to_use]:checked').val());
         formData.append( 'magic_actions', '[' + magic_actions + ']');                     // Json-массив "Действий карты"

@@ -624,12 +624,16 @@ $(document).ready(function(){
             card_action_row.push($(this).val());
         });
         
+        var card_short_descr = tinyMCE.get('card_short_descr').getContent();
+        var card_full_descr = tinyMCE.get('card_full_descr').getContent();
+
+
         //Создание иммитации формы
         var formData = new FormData();
         formData.append( 'token', token );
         formData.append( 'title', $('input[name=card_title]').val().trim() );               // Название карты
-        formData.append( 'short_descr', $('textarea[name=card_short_descr]').val().trim() );// Короткое описание
-        formData.append( 'full_descr', $('textarea[name=card_full_descr]').val().trim() );  // Полное описание
+        formData.append( 'short_descr', card_short_descr );// Короткое описание
+        formData.append( 'full_descr', card_full_descr );  // Полное описание
         formData.append( 'img_url', $('input[name=cardAddImg]').prop('files')[0] );         //Фон карты
         formData.append( 'card_refer_to_group', '[' + card_refer_to_group + ']');           // Json-массив "Карта относится к группам"
         formData.append( 'card_actions', '[' + card_actions + ']');                         // Json-массив "Действий карты"
@@ -694,14 +698,17 @@ $(document).ready(function(){
             card_action_row.push($(this).val());
         });
 
+        var card_short_descr = tinyMCE.get('card_short_descr').getContent();
+        var card_full_descr = tinyMCE.get('card_full_descr').getContent();
+
         //Создание иммитации формы
         var formData = new FormData();
         formData.append( 'token', token );
         formData.append( 'id', $('input[name=card_id]').val() );
         formData.append( '_method', 'PUT');
         formData.append( 'title', $('input[name=card_title]').val().trim() );               // Название карты
-        formData.append( 'short_descr', $('textarea[name=card_short_descr]').val().trim() );// Короткое описание
-        formData.append( 'full_descr', $('textarea[name=card_full_descr]').val().trim() );  // Полное описание
+        formData.append( 'short_descr', card_short_descr );// Короткое описание
+        formData.append( 'full_descr', card_full_descr );  // Полное описание
         formData.append( 'img_url', $('input[name=cardAddImg]').prop('files')[0] );         //Фон карты
         formData.append( 'card_refer_to_group', '[' + card_refer_to_group + ']');           // Json-массив "Карта относится к группам"
         formData.append( 'card_actions', '[' + card_actions + ']');                         // Json-массив "Действий карты"
