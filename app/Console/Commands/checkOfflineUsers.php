@@ -57,6 +57,6 @@ class checkOfflineUsers extends Command
         \DB::table('users')->select('id','user_online','updated_at')
             ->where('user_online','>',0)
             ->where('updated_at','<',$date)
-            ->update(['user_online' => 0]);
+            ->update(['user_online' => 0, 'user_busy'=>0]);
     }
 }
