@@ -729,8 +729,9 @@ border-radius: 50%;
             -moz-box-shadow: 0px 0px 2px 2px rgba(255, 255, 255, 0.1), inset 0px 0px 6px 3px rgba(0, 0, 0, 0.6);
             box-shadow: 0px 0px 2px 2px rgba(255, 255, 255, 0.1), inset 0px 0px 6px 3px rgba(0, 0, 0, 0.6); }
         .convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards .inputer-field-meele .bg-img-meele {
-          background-image: url(../images/slash-bg.png);
-          background-position: -27px -27px; }
+          background-image: url(../images/axe1.png);
+            background-position: 50%;
+            background-repeat: no-repeat;}
         .convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards .inputer-field-range .bg-img-range {
           background-image: url(../images/look-bg.png);
           background-position: center center; }

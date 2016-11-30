@@ -106,7 +106,7 @@ $errors = $errors->all();
                                         <div class="form-wrap-key">Дата рождения</div>
                                         <div class="form-wrap-value">
                                             <div class="form-wrap-input form_input">
-                                                <input type="date" name="settings_birth_date" value="{{ $user['birth_date'] }}" />
+                                                <input type="text" id="datepicker" name="settings_birth_date" value="{{ $user['birth_date'] }}" />
                                             </div>
                                         </div>
                                     </div>

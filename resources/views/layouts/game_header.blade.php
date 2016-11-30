@@ -82,13 +82,14 @@ $user = Auth::user();
     <!-- Окно выбора карт -->
     <div class="troll-popup" id="selectNewCardsPopup">
         <div class="popup-content-wrap">
-            <div class="timer-in-popup">
-                <span data-time="minute">00</span>:<span data-time="seconds">00</span>
-            </div>
-
             <h5 class="cards-select-message-wrap">Карты</h5>
             <div class="pop-row" >
                 <ul class="cards-select-wrap" id="handNewCards"></ul>
+            </div>
+            <div class="pop-row">
+                <div class="timer-in-popup">
+                    <span data-time="minute">00</span>:<span data-time="seconds">00</span>
+                </div>
             </div>
             <div class="pop-row button-wrap">
                 <a class="button-troll acceptNewCards" href="#"><b>Готово</b></a>
@@ -118,9 +119,6 @@ $user = Auth::user();
     <div class="troll-popup hand-select-popup" id="selecthandCardsPopup">
 
         <div class="popup-content-wrap">
-            <div class="timer-in-popup">
-                <span data-time="minute">00</span>:<span data-time="seconds">00</span>
-            </div>
 
             <div class="pop-row opponent-fraction"><strong>Ваш противник: <span></span></strong></div>
             <div class="pop-row opponent-description">Особенности фракции: <span></span></div>
@@ -131,7 +129,11 @@ $user = Auth::user();
             <div class="pop-row" >
                 <ul class="cards-select-wrap cfix" id="handCards"></ul>
             </div>
-
+            <div class="pop-row">
+                <div class="timer-in-popup">
+                    <span data-time="minute">00</span>:<span data-time="seconds">00</span>
+                </div>
+            </div>
             <div class="pop-row">
                 <a class="button-troll acceptHandDeck" href="#"><b>Готово</b></a>
             </div>
@@ -141,28 +143,33 @@ $user = Auth::user();
     <div class="troll-popup" id="successEvent">
         <div class="close-this"></div>
         <div class="popup-content-wrap">
-            <div class="timer-in-popup">
-                <span data-time="minute">00</span>:<span data-time="seconds">00</span>
-            </div>
+
             <h5>Результат:</h5>
             <div class="pop-row">
                 <span class="result">
 
                 </span>
             </div>
+            <div class="pop-row">
+                <div class="timer-in-popup">
+                    <span data-time="minute">00</span>:<span data-time="seconds">00</span>
+                </div>
+            </div>
         </div>
     </div>
     <div class="troll-popup" id="confirm-popup">
         <div class="close-this"></div>
         <div class="popup-content-wrap">
-            <div class="timer-in-popup">
-                <span data-time="minute">00</span>:<span data-time="seconds">00</span>
-            </div>
+
             <h5>Подтвердите действие:</h5>
             <div class="pop-row">
                 <div class="confirm-txt"></div>
             </div>
-
+            <div class="pop-row">
+                <div class="timer-in-popup">
+                    <span data-time="minute">00</span>:<span data-time="seconds">00</span>
+                </div>
+            </div>
             <div class="pop-row">
                 <a class="button-troll" data-value="true" href="#"><b>Подтвердить</b></a>
                 <a class="button-troll" data-value="false" href="#"><b>Отменить</b></a>
@@ -174,9 +181,8 @@ $user = Auth::user();
 
     <div class="troll-popup" id="card-info">
         <div class="close-this"></div>
-        <div class="timer-in-popup">
-            <span data-time="minute">00</span>:<span data-time="seconds">00</span>
-        </div>
+
+
         <div class="content-card-info"></div>
     </div>
     <!-- Окно ошибки -->
@@ -193,15 +199,17 @@ $user = Auth::user();
     <!-- Окно выбора хода-->
     <div class="troll-popup" id="selectCurrentTurn" style="width: 350px; height: auto;">
         <div class="popup-content-wrap">
-            <div class="timer-in-popup">
-                <span data-time="minute">00</span>:<span data-time="seconds">00</span>
-            </div>
+
             <div class="cards-select-message-wrap">Выберите игрока для хода в текущем раунде</div>
 
             <div id="chooseUser">
                 
             </div>
-
+            <div class="pop-row">
+                <div class="timer-in-popup">
+                    <span data-time="minute">00</span>:<span data-time="seconds">00</span>
+                </div>
+            </div>
             <div class="pop-row">
                 <button class="button-troll" name="acceptUsersTurn" type="submit" value="Готово"><b>Готово</b></button>
             </div>

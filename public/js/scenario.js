@@ -1208,6 +1208,9 @@ function openTrollPopup(popup){
 function resultPopupShow(message){
     $('#successEvent').find('.result').html(message);
     openTrollPopup($('#successEvent'));
+    setTimeout(function () {
+        closeAllTrollPopup();
+    }, 3000);
 }
 function showErrorMessage(message){
     hidePreloader();
@@ -1626,6 +1629,12 @@ var start = false;
 
 
 //ranking page------------------------END----------------------------------------
+
+
+function birdthDatePicker() {
+    if($( "#datepicker" ).length>0){$( "#datepicker" ).datepicker();}
+
+}
 $(document).ready(function(){
     if( (!$('.login-page').length>0) && (!$('.registration-main-page').length > 0) ) getUserData();  //Получить данные пользователя (по идее должна не работать только после логинизации)
     showFormOnMain();                       //Украшение формы логина на главной
@@ -1652,6 +1661,7 @@ $(document).ready(function(){
     initSelectDec();
     infoCardStart();
     radioPseudo2();
+    birdthDatePicker();
     dblDraggCards();
     changeChekInputInFilterDeck();
     if($('a.log_out_menu').length > 0){logoutUser();}

@@ -1970,8 +1970,7 @@ ul.user-hand-cards-wrap li{
 .user-turn-wrap .active{background-color: #0e0 !important;}
 
 .timer-in-popup{
-  position: absolute;
+
   font-size: 22px;
-  top: 36px;
-  right: 41px;
+
 }
