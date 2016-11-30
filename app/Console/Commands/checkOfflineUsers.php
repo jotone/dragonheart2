@@ -46,7 +46,9 @@ class checkOfflineUsers extends Command
             ->get();
         foreach($users as $user){
             $battle = \DB::table('tbl_battle_members')->select('user_id','updated_at')->where('user_id','=',$user->id)->get();
-            if($battle[0]->updated_at < $date){
+            if(!isset($battle[0])){
+                \DB::table('users')->where('id','=',$user->id)->update(['user_busy'=>0]);
+            }else if($battle[0]->updated_at < $date){
                 \DB::table('users')->where('id','=',$user->id)->update(['user_busy'=>0]);
             }
         }
