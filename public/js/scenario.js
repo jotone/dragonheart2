@@ -264,7 +264,8 @@ function buildCardDeckView(cardData, wraper){
                     '<div class="card-name-property"><p>'+cardData['title']+'</p></div>' +
                     '<div class="card-description-hidden"><div class="jsp-cont-descr">';
         if(curentRaceURL.length>0){result +='<img src="img/fractions_images/'+curentRaceURL+'" alt="">';}
-        result +='<p class="txt">'+cardData['descr']+'</p></div></div> '+
+
+    result += cardData['descr'] +'</div></div>'+
                 '</div>' +
             '</div>' +
         '</div>';
@@ -293,8 +294,6 @@ function buildCardDeckView(cardData, wraper){
         result += '' +
                 '</div>';
     }
-  
-
     return result;
 }
 function infoCardStart() {
@@ -334,7 +333,6 @@ function getUserDeck(deck, user_login){
             for(var i in res['in_deck']){
                 $('.content-card-field ul#sortableOne').append(buildCardDeckView(res['in_deck'][i], 'ul'));
             }
-
             $('.content-card-center-img-wrap img').attr('src',$('.content-card-center-img-wrap img').data('src')+'/'+res['race_img']);
             //Пересчет данных колоды
             recalculateDeck();
@@ -422,6 +420,7 @@ function sortSomeDeck(side){
     var tempArrWarior = [];
 
     $(side+' li').each(function(){
+        console.log($(this));
         if($(this).find('.content-card-item-main').attr('data-type') == 'special'){
             tempArrSpecial.push($(this));
         }else{
