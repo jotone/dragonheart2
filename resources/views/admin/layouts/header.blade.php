@@ -5,6 +5,8 @@
     <link rel="stylesheet" type="text/css" href="{{ URL::asset('css/reset.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ URL::asset('css/within_style.css') }}">
     <script src="{{ URL::asset('js/jquery-2.min.js') }}"></script>
+    <script src="{{ URL::asset('js/jquery.tinymce.min.js') }}"></script>
+
     <script src="{{ URL::asset('js/within.js') }}"></script>
     <title>Gwent Admin Main Page</title>
 </head>

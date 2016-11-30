@@ -535,4 +535,12 @@ $(window).load(function() {
             }
         });
     });
+    function tinyMCE(selector){
+        if($(selector).length>0){
+            tinymce.init({ selector:selector });
+        }
+    }
+    tinyMCE('textarea[name=card_short_descr]');
+    tinyMCE('textarea[name=card_full_descr]');
+    tinyMCE('textarea[name=magic_descr]');
 });
