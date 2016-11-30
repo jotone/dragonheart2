@@ -11,7 +11,7 @@ class battleCleanUp extends Command
      *
      * @var string
      */
-    protected $signature = 'battleCleanUp:init';
+    protected $signature = 'battleCleanUp';
 
     /**
      * The console command description.

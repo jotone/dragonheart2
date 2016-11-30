@@ -11,7 +11,7 @@ class checkOfflineUsers extends Command
      *
      * @var string
      */
-    protected $signature = 'checkOfflineUsers:init';
+    protected $signature = 'checkOfflineUsers';
 
     /**
      * The console command description.
