@@ -29,7 +29,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
-        $schedule->command('checkOfflineUsers')->cron('*/4 * * * *');
-        $schedule->command('battleCleanUp')->everyThirtyMinutes();
+        //$schedule->command('checkOfflineUsers')->cron('*/4 * * * *');
+        //$schedule->command('battleCleanUp')->everyThirtyMinutes();
     }
 }
