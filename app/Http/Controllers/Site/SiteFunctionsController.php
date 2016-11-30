@@ -518,7 +518,7 @@ class SiteFunctionsController extends BaseController
                         'weight'    => $card[0]->card_value,
                         'is_leader' => $card[0]->is_leader,
                         'img_url'   => $card[0]->img_url,
-                        'descr'     => $card[0]->short_description,
+                        'descr'     => $card[0]->full_description,
                         'max_quant' => $card[0]->max_quant_in_deck,
                         'quantity'  => $value,
                         'allowed_rows' => $action_rows,
