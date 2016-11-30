@@ -623,7 +623,7 @@ $(document).ready(function(){
         $('.actions .container-wrap input[name=C_ActionRow]:checked').each(function(){
             card_action_row.push($(this).val());
         });
-
+        
         //Создание иммитации формы
         var formData = new FormData();
         formData.append( 'token', token );

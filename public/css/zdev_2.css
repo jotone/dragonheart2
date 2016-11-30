@@ -1111,16 +1111,15 @@ border-radius: 50%;
           font-size: 23px;
           padding-top: 15px; }
     .stash-about .oponent-stats .stats-shit, .stash-about .user-stats .stats-shit {
-      background-image: url(../images/fert.png);
-      height: 57px;
-      width: 100%;
+      background-image: url(../images/energy_icon.png);
+      width: 68px; height: 83px; margin: 0 auto;
       background-position: center center;
       -webkit-background-size: 47px 57px;
       -moz-background-size: 47px 57px;
       -o-background-size: 47px 57px;
       background-size: 47px 57px;
       background-repeat: no-repeat; }
-
+.stats-energy{ font-size: 16px;color:#0094df; margin-top: -20px;}
 .mezhdyblock {
   width: 100%;
   border: 2px solid transparent;
@@ -2948,7 +2947,7 @@ input.book-style{
 .popup-content-wrap{
   padding: 20px 40px;
   color: #714026;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 400;
   font-family: 'indisplay', sans-serif;
   line-height: 1;
@@ -2956,7 +2955,7 @@ input.book-style{
   position: relative;
 }
 .popup-content-wrap h5{
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
   border-bottom:1px solid #714026;
 }

@@ -643,7 +643,8 @@ foreach($battle_members as $key => $value){
 							<div class="greencard-num">@if(isset($players['enemy']['user_hand_count'])){{$players['enemy']['user_hand_count']}}@endif</div>
 						</div>
 					</div>
-					<div class="stats-shit">
+					<div class="stats-shit"></div>
+					<div class="stats-energy">
 					@if(isset($players['enemy']['user_energy']))
 						{{$players['enemy']['user_energy']}}
 					@endif
@@ -706,7 +707,8 @@ foreach($battle_members as $key => $value){
 							<div class="greencard-num">@if(isset($players['allied']['user_hand_count'])){{$players['allied']['user_hand_count']}}@endif</div>
 						</div>
 					</div>
-					<div class="stats-shit">{{ (isset($players['allied']['user_energy'])?$players['allied']['user_energy']:'') }}<!-- Количество Энергии игрока --></div>
+					<div class="stats-shit"></div>
+					<div class="stats-energy">{{ (isset($players['allied']['user_energy'])?$players['allied']['user_energy']:'') }}<!-- Количество Энергии игрока --></div>
 				</div>
 
 			</div>
