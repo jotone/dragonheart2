@@ -1268,11 +1268,16 @@ function showUserDecks(){
             data:   {fraction:fraction},
             success:function(data){
                 var res = JSON.parse(data);
-                if(res['message'] == 'success'){
-                    $('#choose-rase-block #gameForm').submit();
-                }else{
-                    resultPopupShow(res['message']);
-                    hidePreloader();
+                switch(res['message']){
+                    case 'success':
+                        $('#choose-rase-block #gameForm').submit();
+                    break;
+                    case 'in_battle':
+                        location = '/play/'+res['room'];
+                    break;
+                    default:
+                        resultPopupShow(res['message']);
+                        hidePreloader();
                 }
             },
             error: function (jqXHR, exception) {

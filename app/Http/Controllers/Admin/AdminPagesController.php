@@ -53,7 +53,12 @@ class AdminPagesController extends BaseController
 
     //Базовые Карты
     public function baseDecksPage(){
-        $fractions = \DB::table('tbl_fraction')->select('title','slug','type','cards','position')->where('type', '=', 'race')->orderBy('position','asc')->get();
+        $fractions = \DB::table('tbl_fraction')
+            ->select('title','slug','type','cards','position')
+            ->where('type', '=', 'race')
+            ->orderBy('position','asc')
+            ->get();
+
         $output = [];
 
         foreach($fractions as $key => $fraction){
@@ -134,7 +139,11 @@ class AdminPagesController extends BaseController
             $field = 'card_race';
         }
         $fractions = Fraction::orderBy('position', 'asc')->get();
-        $cards = Card::where($field, '=', $fraction_slug)->orderBy('title', 'asc')->orderBy('price_gold','asc')->orderBy('price_silver','asc')->get();
+        $cards = Card::where($field, '=', $fraction_slug)
+            ->orderBy('title', 'asc')
+            ->orderBy('price_gold','asc')
+            ->orderBy('price_silver','asc')
+            ->get();
 
         $output = [];
         foreach($cards as $key => $card){
@@ -166,7 +175,12 @@ class AdminPagesController extends BaseController
     }
 
     public function cardAddPage(){
-        $fractions = \DB::table('tbl_fraction')->select('title','slug', 'type', 'position')->where('type', '=', 'race')->orderBy('position','asc')->get();
+        $fractions = \DB::table('tbl_fraction')
+            ->select('title','slug', 'type', 'position')
+            ->where('type', '=', 'race')
+            ->orderBy('position','asc')
+            ->get();
+
         $card_actions = Action::orderBy('title','asc')->get();
         $card_groups = AdminViews::cardsViewGroupsSelector();
         return view('admin.layouts.add.cards', [
@@ -178,7 +192,11 @@ class AdminPagesController extends BaseController
 
     public function cardEditPage($id){
         $card = Card::find($id);
-        $fractions = \DB::table('tbl_fraction')->select('title','slug', 'type', 'position')->where('type', '=', 'race')->orderBy('position','asc')->get();
+        $fractions = \DB::table('tbl_fraction')
+            ->select('title','slug', 'type', 'position')
+            ->where('type', '=', 'race')
+            ->orderBy('position','asc')
+            ->get();
 
         $card_current_actions = AdminViews::cardsViewGetCardActions($card->card_actions);
         $card_actions = Action::orderBy('title', 'asc')->get();
@@ -256,7 +274,12 @@ class AdminPagesController extends BaseController
     }
 
     public function magicAddPage(){
-        $fractions = \DB::table('tbl_fraction')->select('title','slug', 'type', 'position')->where('type', '=', 'race')->orderBy('position','asc')->get();
+        $fractions = \DB::table('tbl_fraction')
+            ->select('title','slug','type','position')
+            ->where('type','=','race')
+            ->orderBy('position','asc')
+            ->get();
+
         $actions = Action::orderBy('title','asc')->get();
         $leagues = \DB::table('tbl_league')->select('id','title','min_lvl','max_lvl')->orderBy('min_lvl')->get();
         return view('admin.layouts.add.magic', [
@@ -268,7 +291,12 @@ class AdminPagesController extends BaseController
 
     public function magicEditPage($id){
         $magic = MagicEffect::find($id);
-        $fractions = \DB::table('tbl_fraction')->select('title','slug', 'type', 'position')->where('type', '=', 'race')->orderBy('position','asc')->get();
+        $fractions = \DB::table('tbl_fraction')
+            ->select('title','slug','type','position')
+            ->where('type','=','race')
+            ->orderBy('position','asc')
+            ->get();
+
         $actions = Action::orderBy('title','asc')->get();
         $current_actions = AdminViews::cardsViewGetCardActions($magic->effect_actions, 'magic');
         $leagues = \DB::table('tbl_league')->select('id','title','min_lvl','max_lvl')->orderBy('min_lvl')->get();
@@ -319,9 +347,15 @@ class AdminPagesController extends BaseController
         $users = User::orderBy('login','asc')->get();
         $output = [];
         foreach($users as $key => $user){
-            $img = ($user -> img_url == '')? 'Изображение отсутствует': '<img src="/img/user_images/'.$user -> img_url.'" alt="" style="max-width: 50px; max-height: 50px;">';
-            $ban = ($user -> is_banned == 0)? '<a data-type="banUser" id="'.$user->id.'" href="#">Забанить</a>': '<a data-type="unbanUser" id="'.$user->id.'" href="#">Снять бан</a>';
-            $admin_status = ($user->user_role == 0)? 'Простой смертный': 'Администратор';
+            $img = ($user -> img_url == '')
+                ? 'Изображение отсутствует'
+                : '<img src="/img/user_images/'.$user -> img_url.'" alt="" style="max-width: 50px; max-height: 50px;">';
+            $ban = ($user -> is_banned == 0)
+                ? '<a data-type="banUser" id="'.$user->id.'" href="#">Забанить</a>'
+                : '<a data-type="unbanUser" id="'.$user->id.'" href="#">Снять бан</a>';
+            $admin_status = ($user->user_role == 0)
+                ? 'Простой смертный'
+                : 'Администратор';
 
             $output[$key]['id']     = $user -> id;
             $output[$key]['login']  = $user -> login;

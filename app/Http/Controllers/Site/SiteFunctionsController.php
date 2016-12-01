@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Controllers\Site;
 
+use App\Battle;
+use App\BattleMembers;
 use App\Card;
 use App\EtcData;
 use App\MagicEffect;
@@ -39,7 +41,10 @@ class SiteFunctionsController extends BaseController
 
         $result['leagues'] = [];
         foreach ($leagues as $key => $value) {
-            $result['leagues'][] = ['title' => $value->title, 'min_lvl' => $value->min_lvl];
+            $result['leagues'][] = [
+                'title' => $value->title,
+                'min_lvl' => $value->min_lvl
+            ];
         }
 
         $result['exchanges'] = [];
@@ -130,12 +135,19 @@ class SiteFunctionsController extends BaseController
 
         $user = Auth::user();
 
-        $gold_to_silver = \DB::table('tbl_etc_data')->select('meta_key','meta_value')->where('meta_key','=','gold_to_silver')->get();
+        $gold_to_silver = \DB::table('tbl_etc_data')
+            ->select('meta_key','meta_value')
+            ->where('meta_key','=','gold_to_silver')
+            ->get();
+
         if( $user->user_gold >= $request -> input('gold') ){
             $user->user_gold -= $request -> input('gold');
             $user->user_silver = $user->user_silver + $request -> input('gold')*$gold_to_silver[0]->meta_value;
 
-            $result = User::where('login', '=', $user->login)->update(['user_gold' => $user->user_gold, 'user_silver' => $user->user_silver]);
+            $result = User::where('login', '=', $user->login)->update([
+                'user_gold' => $user->user_gold,
+                'user_silver' => $user->user_silver
+            ]);
 
             if($result != false){
                 return json_encode(['message' => 'success', 'gold' => $user->user_gold, 'silver' => $user->user_silver]);
@@ -227,7 +239,9 @@ class SiteFunctionsController extends BaseController
     public function getUserRating(Request $request){
         $data = $request -> all();
         $current_user = Auth::user();
-        $user = (isset($data['user_login']))? User::where('login', '=', $data['user_login'])->get(): User::where('login', '=', $current_user['login'])->get();
+        $user = (isset($data['user_login']))
+            ? User::where('login', '=', $data['user_login'])->get()
+            : User::where('login', '=', $current_user['login'])->get();
 
         if(!empty($user[0])){
             $users_rates = [];
@@ -297,7 +311,10 @@ class SiteFunctionsController extends BaseController
     public static function updateConnention(){
         $user = Auth::user();
         //Если пользователь не в бою
-        User::where('login', '=', $user['login'])->update(['updated_at' => date('Y-m-d H:i:s'), 'user_online' => '1']);
+        User::where('login', '=', $user['login'])->update([
+            'updated_at' => date('Y-m-d H:i:s'),
+            'user_online' => '1'
+        ]);
     }
 
     //Получить статус занятости игрока
@@ -392,7 +409,11 @@ class SiteFunctionsController extends BaseController
             $special_card_quantity = 0;
 
             foreach($current_deck[$request->input('fraction')] as $key => $value){
-                $card = \DB::table('tbl_cards')->select('id','title','forbidden_races','max_quant_in_deck','is_leader','card_type')->where('id','=',$key)->get();
+                $card = \DB::table('tbl_cards')
+                    ->select('id','title','forbidden_races','max_quant_in_deck','is_leader','card_type')
+                    ->where('id','=',$key)
+                    ->get();
+
                 if(isset($card[0])){
                     //Проверяем достапна ли карта для данной колоды
                     $card_forbidden_race = unserialize($card[0]->forbidden_races);
@@ -437,6 +458,31 @@ class SiteFunctionsController extends BaseController
             if($error != ''){
                 return json_encode(['message' => $error]);
             }else{
+
+                $user_member = \DB::table('tbl_battle_members')
+                    ->select('user_id','battle_id')
+                    ->where('user_id','=', $user->id)
+                    ->get();
+
+                if($user_member != false){
+                    $battle = \DB::table('tbl_battles')
+                        ->select('id','opponent_id','fight_status')
+                        ->where('fight_status','<',3)
+                        ->where('opponent_id','!=',0)
+                        ->get();
+
+                    if($battle != false){
+                        $battle_members = \DB::table('tbl_battle_members')
+                            ->select('battle_id')
+                            ->where('battle_id','=',$battle[0]->id)
+                            ->count();
+
+                        if($battle_members == 2){
+                            return json_encode(['message' => 'in_battle', 'room'=>$battle[0]->id]);
+                        }
+                    }
+                }
+
                 return json_encode(['message' => 'success']);
             }
 
@@ -670,9 +716,14 @@ class SiteFunctionsController extends BaseController
         self::updateConnention();
         $user = Auth::user();
         //Если колода относится к определенной расе
-        $field = ( ($request->input('fraction') == 'special') || ($request->input('fraction') == 'neutrall') )? 'card_type': 'card_race';
+        $field = ( ($request->input('fraction') == 'special') || ($request->input('fraction') == 'neutrall') )
+            ? 'card_type'
+            : 'card_race';
 
-        $fraction = \DB::table('tbl_fraction')->select('slug','img_url')->where('slug', '=', $request->input('fraction'))->get();
+        $fraction = \DB::table('tbl_fraction')
+            ->select('slug','img_url')
+            ->where('slug', '=', $request->input('fraction'))
+            ->get();
 
         $result['race_img'] = $fraction[0]->img_url;
 
@@ -712,7 +763,9 @@ class SiteFunctionsController extends BaseController
         }
         $cards = Card::where($field, '=', $request->input('fraction'))->orderBy('card_strong','desc') -> get();
         foreach($cards as $key => $value){
-            $quantity = ( isset($user_all_cards_array[$request->input('fraction')][$value['id']]) )? $user_all_cards_array[$request->input('fraction')][$value['id']]: 0;
+            $quantity = ( isset($user_all_cards_array[$request->input('fraction')][$value['id']]) )
+                ? $user_all_cards_array[$request->input('fraction')][$value['id']]
+                : 0;
 
             $card_actions = unserialize($value->card_actions);
             $actions = self::createActionsArray($card_actions);
@@ -826,7 +879,11 @@ class SiteFunctionsController extends BaseController
         $magic_effects = MagicEffect::orderBy('price_gold','asc')->orderBy('price_silver','asc')->get();
 
         //Изображение текущей расы
-        $fraction = \DB::table('tbl_fraction')->select('slug','img_url')->where('slug', '=', $request -> input('fraction'))->get();
+        $fraction = \DB::table('tbl_fraction')
+            ->select('slug','img_url')
+            ->where('slug', '=', $request -> input('fraction'))
+            ->get();
+
         $result['race_img'] = $fraction[0]->img_url;
 
         //Текущие магические эффекты пользоввтеля
@@ -876,7 +933,11 @@ class SiteFunctionsController extends BaseController
     public function getUserRequestToBuyMagic(Request $request){
         self::updateConnention();
         $user = Auth::user();
-        $magic = \DB::table('tbl_magic_effect')->select('id', 'title', 'price_gold', 'price_silver')->where('id', '=', $request->input('magic_id'))->get();
+        $magic = \DB::table('tbl_magic_effect')
+            ->select('id', 'title', 'price_gold', 'price_silver')
+            ->where('id', '=', $request->input('magic_id'))
+            ->get();
+
         $user_money = \DB::table('users')->select('login','user_gold','user_silver')->where('login', '=', $user->login)->get();
 
         return json_encode([
@@ -893,7 +954,10 @@ class SiteFunctionsController extends BaseController
         self::updateConnention();
 
         $user = Auth::user();
-        $magic = \DB::table('tbl_magic_effect')->select('id','title','price_gold','price_silver','usage_count')->where('id','=',$request->input('magic_id'))->get();
+        $magic = \DB::table('tbl_magic_effect')
+            ->select('id','title','price_gold','price_silver','usage_count')
+            ->where('id','=',$request->input('magic_id'))
+            ->get();
 
         if(($user->user_gold >= $magic[0]->price_gold) && ($user->user_silver >= $magic[0]->price_silver)){
             $user_magic = unserialize($user->user_magic);//Текущие магиские эффекты пользователя
@@ -941,8 +1005,15 @@ class SiteFunctionsController extends BaseController
             $active_effects = [];
 
             $user_magic_effects_ids = array_keys($user_magic);
-            $magic = \DB::table('tbl_magic_effect')->select('id','fraction','min_league')->where('id', '=', $data['status_id'])->get();
-            $magic_effect_by_current_race = \DB::table('tbl_magic_effect')->select('id', 'fraction')->where('fraction', '=', $magic[0]->fraction)->get();
+            $magic = \DB::table('tbl_magic_effect')
+                ->select('id','fraction','min_league')
+                ->where('id', '=', $data['status_id'])
+                ->get();
+
+            $magic_effect_by_current_race = \DB::table('tbl_magic_effect')
+                ->select('id', 'fraction')
+                ->where('fraction', '=', $magic[0]->fraction)
+                ->get();
 
             foreach($magic_effect_by_current_race as $key => $value){
                 if(in_array($value->id, $user_magic_effects_ids)){
@@ -973,7 +1044,11 @@ class SiteFunctionsController extends BaseController
             }
             //END OF проверка на вхождение магии в лигу
 
-            $maximum_active_magic = \DB::table('tbl_etc_data')->select('meta_key', 'meta_value')->where('meta_key', '=', 'base_max_magic')->get();
+            $maximum_active_magic = \DB::table('tbl_etc_data')
+                ->select('meta_key', 'meta_value')
+                ->where('meta_key', '=', 'base_max_magic')
+                ->get();
+
             if ($maximum_active_magic[0]->meta_value > count($active_effects)) {
                 $user_magic[$data['status_id']]['active'] = 1;
             }else{

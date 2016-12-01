@@ -20,7 +20,11 @@ class SitePagesController extends BaseController
     //Главная страница
     public function homePage(){
         SiteFunctionsController::updateConnention();
-        $exchange_options = \DB::table('tbl_etc_data')->select('label_data','meta_key','meta_value', 'meta_key_title')->where('label_data', '=', 'premium_buing')->orderBy('meta_value','asc')->get();
+        $exchange_options = \DB::table('tbl_etc_data')
+            ->select('label_data','meta_key','meta_value', 'meta_key_title')
+            ->where('label_data', '=', 'premium_buing')
+            ->orderBy('meta_value','asc')
+            ->get();
 
         $fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
         $output = [];
@@ -94,43 +98,39 @@ class SitePagesController extends BaseController
             }
         }
         //Расы
-        $fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
+        $fractions = Fraction::where('type','=','race')->orderBy('position','asc')->get();
         //Активные для данной лиги столы
-        $battles = Battle::where('league','=',$current_user_league)->where('fight_status', '<', 2)->get();
+        $battles = Battle::where('league','=',$current_user_league)->where('fight_status', '<', 3)->get();
 
         $tmp_battles = ['allow' => [], 'back' => []];
         foreach($battles as $battle_iter => $battle_data){
+
             $user_creator = User::find($battle_data['creator_id']);
-            $current_battle_members = BattleMembers::where('battle_id', '=', $battle_data['id'])->get()->all();
-            if($user['id'] == $battle_data['creator_id']){
+            $current_battle_members = BattleMembers::where('battle_id', '=', $battle_data['id'])->count();
+
+            if( ($user['id'] == $battle_data['creator_id']) || ($user['id'] == $battle_data['opponent_id']) ){
                 $tmp_battles['back'][$battle_data['id']] = [
-                    'data' => $battle_data,
-                    'users_count' => count($current_battle_members),
-                    'creator' => $user_creator['login']
+                    'data'      => $battle_data,
+                    'creator'   => $user_creator['login'],
+                    'users_count'=>$current_battle_members
                 ];
-            }
-            if( (count($current_battle_members) != 2) && (!empty($current_battle_members)) && ($user['id'] != $battle_data['creator_id'])){
+            }else if( ($current_battle_members != 2) && ($current_battle_members != 0) ){
                 $tmp_battles['allow'][$battle_data['id']] = [
-                    'data' => $battle_data,
-                    'users_count' => count($current_battle_members),
-                    'creator' => $user_creator['login']
+                    'data'      => $battle_data,
+                    'creator'   => $user_creator['login'],
+                    'users_count'=>$current_battle_members
                 ];
-            }
-            foreach($current_battle_members as $battle_member_iter => $current_battle_member_data){
-                if($user['id'] == $current_battle_member_data['user_id']){
-                    $tmp_battles['back'][$battle_data['id']] = [
-                        'data' => $battle_data,
-                        'users_count' => count($current_battle_members),
-                        'creator' => $user_creator['login']
-                    ];
-                    if(isset($tmp_battles['allow'][$battle_data['id']])) unset($tmp_battles['allow'][$battle_data['id']]);
-                }
             }
         }
 
         \DB::table('users')->where('login','=',$user->login)->update(['user_current_deck' => $request->input('currentRace')]);
 
-        $exchange_options = \DB::table('tbl_etc_data')->select('label_data','meta_key','meta_value', 'meta_key_title')->where('label_data', '=', 'premium_buing')->orderBy('meta_value','asc')->get();
+        $exchange_options = \DB::table('tbl_etc_data')
+            ->select('label_data','meta_key','meta_value', 'meta_key_title')
+            ->where('label_data', '=', 'premium_buing')
+            ->orderBy('meta_value','asc')
+            ->get();
+
         return view('game', [
             'exchange_options' => $exchange_options,
             'fractions'     => $fractions,
@@ -146,7 +146,11 @@ class SitePagesController extends BaseController
         $user = Auth::user();
         $leagues = League::orderBy('min_lvl', 'desc')->get();
         $fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
-        $exchange_options = \DB::table('tbl_etc_data')->select('label_data','meta_key','meta_value', 'meta_key_title')->where('label_data', '=', 'premium_buing')->orderBy('meta_value','asc')->get();
+        $exchange_options = \DB::table('tbl_etc_data')
+            ->select('label_data','meta_key','meta_value', 'meta_key_title')
+            ->where('label_data', '=', 'premium_buing')
+            ->orderBy('meta_value','asc')
+            ->get();
 
         $users = User::get();
         foreach($users as $user_iter => $user_to_rate_data){
@@ -196,7 +200,12 @@ class SitePagesController extends BaseController
 
     //Страница регистрации
     public function registration(){
-        $exchange_options = \DB::table('tbl_etc_data')->select('label_data','meta_key','meta_value', 'meta_key_title')->where('label_data', '=', 'premium_buing')->orderBy('meta_value','asc')->get();
+        $exchange_options = \DB::table('tbl_etc_data')
+            ->select('label_data','meta_key','meta_value', 'meta_key_title')
+            ->where('label_data', '=', 'premium_buing')
+            ->orderBy('meta_value','asc')
+            ->get();
+
         $fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
         return view('registration', ['fractions' => $fractions, 'exchange_options' => $exchange_options]);
     }
@@ -204,7 +213,12 @@ class SitePagesController extends BaseController
     //Мои карты
     public function deckPage(){
         SiteFunctionsController::updateConnention();
-        $exchange_options = \DB::table('tbl_etc_data')->select('label_data','meta_key','meta_value', 'meta_key_title')->where('label_data', '=', 'premium_buing')->orderBy('meta_value','asc')->get();
+        $exchange_options = \DB::table('tbl_etc_data')
+            ->select('label_data','meta_key','meta_value', 'meta_key_title')
+            ->where('label_data', '=', 'premium_buing')
+            ->orderBy('meta_value','asc')
+            ->get();
+
         $fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
 
         $deck_options = EtcData::where('label_data', '=', 'deck_options')->get();
@@ -223,7 +237,12 @@ class SitePagesController extends BaseController
     public function marketPage(){
         SiteFunctionsController::updateConnention();
         $user = Auth::user();
-        $exchange_options = \DB::table('tbl_etc_data')->select('label_data','meta_key','meta_value', 'meta_key_title')->where('label_data', '=', 'premium_buing')->orderBy('meta_value','asc')->get();
+        $exchange_options = \DB::table('tbl_etc_data')
+            ->select('label_data','meta_key','meta_value','meta_key_title')
+            ->where('label_data', '=', 'premium_buing')
+            ->orderBy('meta_value','asc')
+            ->get();
+
         $fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
         $fractions_to_view = Fraction::orderBy('position','asc')->get();
         $current_fraction = \DB::table('tbl_fraction')->select('slug','img_url')->where('slug', '=', $user->last_user_deck)->get();
@@ -239,7 +258,12 @@ class SitePagesController extends BaseController
     public function magicPage(){
         SiteFunctionsController::updateConnention();
         $user = Auth::user();
-        $exchange_options = \DB::table('tbl_etc_data')->select('label_data','meta_key','meta_value', 'meta_key_title')->where('label_data', '=', 'premium_buing')->orderBy('meta_value','asc')->get();
+        $exchange_options = \DB::table('tbl_etc_data')
+            ->select('label_data','meta_key','meta_value', 'meta_key_title')
+            ->where('label_data', '=', 'premium_buing')
+            ->orderBy('meta_value','asc')
+            ->get();
+
         $fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
         $current_fraction = \DB::table('tbl_fraction')->select('slug','img_url')->where('slug', '=', $user->last_user_deck)->get();
         return view('magic', [
@@ -252,7 +276,12 @@ class SitePagesController extends BaseController
     //Настройки
     public function settingsPage(){
         SiteFunctionsController::updateConnention();
-        $exchange_options = \DB::table('tbl_etc_data')->select('label_data','meta_key','meta_value', 'meta_key_title')->where('label_data', '=', 'premium_buing')->orderBy('meta_value','asc')->get();
+        $exchange_options = \DB::table('tbl_etc_data')
+            ->select('label_data','meta_key','meta_value', 'meta_key_title')
+            ->where('label_data', '=', 'premium_buing')
+            ->orderBy('meta_value','asc')
+            ->get();
+
         $fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
         return view('settings', ['fractions' => $fractions, 'exchange_options' => $exchange_options]);
     }
@@ -260,7 +289,12 @@ class SitePagesController extends BaseController
     //Обучение
     public function trainingPage(){
         SiteFunctionsController::updateConnention();
-        $exchange_options = \DB::table('tbl_etc_data')->select('label_data','meta_key','meta_value', 'meta_key_title')->where('label_data', '=', 'premium_buing')->orderBy('meta_value','asc')->get();
+        $exchange_options = \DB::table('tbl_etc_data')
+            ->select('label_data','meta_key','meta_value', 'meta_key_title')
+            ->where('label_data', '=', 'premium_buing')
+            ->orderBy('meta_value','asc')
+            ->get();
+
         $fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
         return view('training', ['fractions' => $fractions, 'exchange_options' => $exchange_options]);
     }

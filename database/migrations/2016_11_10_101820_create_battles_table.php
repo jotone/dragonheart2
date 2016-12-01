@@ -29,6 +29,7 @@ class CreateBattlesTable extends Migration
             $table->text('magic_usage');//массив отыгравших магических эффектов
             $table->string('turn_expire');
             $table->tinyInteger('disconected_count')->unsigned();
+            $table->tinyInteger('pass_count')->unsigned();
             $table->timestamps();
         });
     }

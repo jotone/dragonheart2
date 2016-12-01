@@ -150,7 +150,11 @@ class UserAuthController extends BaseController
                 $user_card_deck[$fraction->slug] = [];
             }
 
-            $fractions = \DB::table('tbl_fraction')->select('slug','cards')->where('type', '=', 'race')->where('slug', '=', $user_fraction)->get();
+            $fractions = \DB::table('tbl_fraction')
+                ->select('slug','cards')
+                ->where('type','=','race')
+                ->where('slug','=',$user_fraction)
+                ->get();
             //Массив начальных доступных карт
             $race_deck = unserialize($fractions[0]->cards);
 
@@ -253,7 +257,7 @@ class UserAuthController extends BaseController
                 $path_info = pathinfo($img_file);
 
                 switch($path_info['extension']){
-                    case 'jpeg': $error = 0; break;
+                    case 'jpeg':$error = 0; break;
                     case 'jpg': $error = 0; break;
                     case 'bmp': $error = 0; break;
                     case 'gif': $error = 0; break;
@@ -291,7 +295,11 @@ class UserAuthController extends BaseController
 
     protected function confirmAccessToken($token){
         $token = strip_tags(htmlspecialchars(trim($token)));
-        $user = \DB::table('users')->select('id','is_activated','activation_code')->where('is_activated', '=', 0)->where('activation_code', '=', $token)->get();
+        $user = \DB::table('users')
+            ->select('id','is_activated','activation_code')
+            ->where('is_activated', '=', 0)
+            ->where('activation_code', '=', $token)
+            ->get();
 
         if($user){
 

@@ -58,8 +58,12 @@ class AdminFractionController extends BaseController
 
         $fraction_to_edit = Fraction::find($data['id']);
 
-        $img_file = ($data['img_url'] != 'undefined')? AdminFunctions::createImg($data['img_url'], 'fractions_images'): $fraction_to_edit -> img_url;
-        $bg_file = ($data['bg_img'] != 'undefined')? AdminFunctions::createImg($data['bg_img'], 'fractions_images'): $fraction_to_edit -> bg_img;
+        $img_file = ($data['img_url'] != 'undefined')
+            ? AdminFunctions::createImg($data['img_url'], 'fractions_images')
+            : $fraction_to_edit -> img_url;
+        $bg_file = ($data['bg_img'] != 'undefined')
+            ? AdminFunctions::createImg($data['bg_img'], 'fractions_images')
+            : $fraction_to_edit -> bg_img;
 
         $fraction_to_edit -> title = $data['title'];
         $fraction_to_edit -> slug = $data['slug'];

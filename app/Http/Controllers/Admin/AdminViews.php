@@ -129,10 +129,18 @@ class AdminViews extends BaseController
 
                     $cards_race = Card::where('card_type', '=', 'race')->groupBy('card_race')->get();
                     foreach($cards_race as $card_race){
-                        $fraction = \DB::table('tbl_fraction')->select('slug', 'title')->where('slug', '=', $card_race->card_race)->get();
+                        $fraction = \DB::table('tbl_fraction')
+                            ->select('slug', 'title')
+                            ->where('slug', '=', $card_race->card_race)
+                            ->get();
 
                         $result .= '<optgroup label="'.$fraction[0]->title.'">';
-                        $cards_by_races = \DB::table('tbl_cards')->select('id','title','card_type','card_race','card_strong','card_value')->where('card_type', '=', 'race')->where('card_race', '=', $card_race->card_race)->orderBy('title','asc')->get();
+                        $cards_by_races = \DB::table('tbl_cards')
+                            ->select('id','title','card_type','card_race','card_strong','card_value')
+                            ->where('card_type', '=', 'race')
+                            ->where('card_race', '=', $card_race->card_race)
+                            ->orderBy('title','asc')
+                            ->get();
 
                         $result .= self::createCardSelectOptions($cards_by_races, $id);
                     }
@@ -142,7 +150,11 @@ class AdminViews extends BaseController
                     $current_card_type = 'Нейтральные';
                     $result = '';
 
-                    $cards_to_view = \DB::table('tbl_cards')->select('id','title','card_type','card_race','card_strong','card_value')->where('card_type', '=', $type->card_type)->orderBy('title', 'asc')->get();
+                    $cards_to_view = \DB::table('tbl_cards')
+                        ->select('id','title','card_type','card_race','card_strong','card_value')
+                        ->where('card_type','=',$type->card_type)
+                        ->orderBy('title','asc')
+                        ->get();
 
                     $result .= self::createCardSelectOptions($cards_to_view, $id);
                     break;
@@ -151,7 +163,11 @@ class AdminViews extends BaseController
                     $current_card_type = 'Специальные';
                     $result = '';
 
-                    $cards_to_view = \DB::table('tbl_cards')->select('id','title','card_type','card_race','card_strong','card_value')->where('card_type', '=', $type->card_type)->orderBy('title', 'asc')->get();
+                    $cards_to_view = \DB::table('tbl_cards')
+                        ->select('id','title','card_type','card_race','card_strong','card_value')
+                        ->where('card_type','=',$type->card_type)
+                        ->orderBy('title','asc')
+                        ->get();
 
                     $result .= self::createCardSelectOptions($cards_to_view, $id);
                     break;

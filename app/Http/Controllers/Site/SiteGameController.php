@@ -46,7 +46,9 @@ class SiteGameController extends BaseController
 				'mid'=>[]
 			]),
 			'undead_cards'      => serialize(['p1'=>[], 'p2'=>[]]),
-			'magic_usage'       => serialize(['p1'=>[], 'p2'=>[]])
+			'magic_usage'       => serialize(['p1'=>[], 'p2'=>[]]),
+            'disconected_count' => 0,
+            'pass_count'        => 0
 		]);
 
 		if($result === false){
@@ -91,6 +93,9 @@ class SiteGameController extends BaseController
 		if($battle_data->creator_id == $user['id']){
 			return json_encode(['message' => 'success']);
 		}
+
+        $battle_data->opponent_id = $user['id'];
+        $battle_data->save();
 
 		//Если стол не пользовательский
 
@@ -161,7 +166,10 @@ class SiteGameController extends BaseController
 				$card_income['id'] = Crypt::decrypt($card_income['id']);
 			}
 			if(count(array_keys($card_income) < 5)){
-				$card_data = \DB::table('tbl_cards')->select('id','title','slug','card_type', 'card_race', 'is_leader', 'card_strong','img_url','short_description', 'allowed_rows', 'card_actions', 'card_groups')->where('id', '=', $card_income['id'])->get();
+				$card_data = \DB::table('tbl_cards')
+                    ->select('id','title','slug','card_type', 'card_race', 'is_leader', 'card_strong','img_url','short_description', 'allowed_rows', 'card_actions', 'card_groups')
+                    ->where('id', '=', $card_income['id'])
+                    ->get();
 
 				if(isset($card_data[0])){
 					$action_rows = SiteFunctionsController::createActionRowsArray($card_data[0]->allowed_rows);
@@ -203,7 +211,10 @@ class SiteGameController extends BaseController
 
 		foreach($battle_members as $key => $value){
 
-			$user_in_battle = \DB::table('users')->select('id','login','img_url','user_current_deck')->where('id', '=', $value -> user_id)->get();// Пользователи участвующие в битве
+			$user_in_battle = \DB::table('users')
+                ->select('id','login','img_url','user_current_deck')
+                ->where('id', '=', $value -> user_id)
+                ->get();// Пользователи участвующие в битве
 
 			$current_user_deck_race = \DB::table('tbl_fraction')->select('title', 'slug', 'short_description')->where('slug','=', $value -> user_deck_race)->get(); //Название колоды
 
@@ -226,7 +237,11 @@ class SiteGameController extends BaseController
 			$magic_effects = unserialize($value->magic_effects);
 
 			foreach($magic_effects as $id => $actions){
-				$magic_effect_data = \DB::table('tbl_magic_effect')->select('id', 'title', 'slug', 'img_url', 'description', 'energy_cost')->where('id', '=', $id)->get();
+				$magic_effect_data = \DB::table('tbl_magic_effect')
+                    ->select('id', 'title', 'slug', 'img_url', 'description', 'energy_cost')
+                    ->where('id', '=', $id)
+                    ->get();
+
 				if(isset($magic_effect_data[0])){
 					$user_magic_effect_data[] = [
 						'id'            => base64_encode(base64_encode($id)),
@@ -266,7 +281,11 @@ class SiteGameController extends BaseController
 
 		$user = Auth::user();
 
-		$user_battle = \DB::table('tbl_battle_members')->select('id', 'user_id', 'battle_id', 'user_deck', 'user_hand')->where('user_id', '=', $user->id)->get(); //Данные текущей битвы пользователя
+		$user_battle = \DB::table('tbl_battle_members')
+            ->select('id', 'user_id', 'battle_id', 'user_deck', 'user_hand')
+            ->where('user_id', '=', $user->id)
+            ->get(); //Данные текущей битвы пользователя
+
 		$user_deck = unserialize($user_battle[0]->user_deck);
 		$user_hand = unserialize($user_battle[0]->user_hand);
 
@@ -324,7 +343,11 @@ class SiteGameController extends BaseController
 		//Количество карт в колоде
 		$deck_card_count = count($real_card_array);
 
-		$maxHandCardQuantity = \DB::table('tbl_etc_data')->select('meta_key', 'meta_value')->where('meta_key', '=', 'maxHandCardQuantity')->get();
+		$maxHandCardQuantity = \DB::table('tbl_etc_data')
+            ->select('meta_key','meta_value')
+            ->where('meta_key','=','maxHandCardQuantity')
+            ->get();
+
 		//Создание массива карт руки (случайный выбор)
 		while(count($user_hand) != $maxHandCardQuantity[0] -> meta_value){
 			$rand_item = mt_rand(0, $deck_card_count-1);   //Случайный индекс карты колоды
@@ -343,17 +366,27 @@ class SiteGameController extends BaseController
 			$available_to_change = 2;
 		}
 
-		$league_data = \DB::table('tbl_league')->select('slug', 'min_lvl')->where('slug', '=', '_'.AdminFunctions::str2url($league))->get();
+		$league_data = \DB::table('tbl_league')
+            ->select('slug', 'min_lvl')
+            ->where('slug', '=', '_'.AdminFunctions::str2url($league))
+            ->get();
 
 		$magic_to_use = [];
 
 		foreach($user_magic as $magic_id => $magic_q) {
-			$magic_info = \DB::table('tbl_magic_effect')->select('id', 'min_league')->where('id', '=', $magic_id)->get();
+			$magic_info = \DB::table('tbl_magic_effect')
+                ->select('id', 'min_league')
+                ->where('id', '=', $magic_id)
+                ->get();
 
 			if ($magic_info[0]->min_league == 0) {
 				$weight = 0;
 			} else {
-				$magic_in_league = \DB::table('tbl_league')->select('id', 'min_lvl')->where('id', '=', $magic_info[0]->min_league)->get();
+				$magic_in_league = \DB::table('tbl_league')
+                    ->select('id', 'min_lvl')
+                    ->where('id', '=', $magic_info[0]->min_league)
+                    ->get();
+
 				$weight = $magic_in_league[0]->min_lvl;
 			}
 			if ($weight <= $league_data[0]->min_lvl) {
@@ -401,7 +434,11 @@ class SiteGameController extends BaseController
 			$id = Crypt::decrypt($id);
 		}
 		if($id<=0) return '';
-		$card_data = \DB::table('tbl_cards')->select('id','title','slug','card_type', 'card_race', 'is_leader', 'card_strong','card_groups','img_url','short_description', 'allowed_rows', 'card_actions')->where('id', '=', $id)->get();
+		$card_data = \DB::table('tbl_cards')
+            ->select('id','title','slug','card_type','card_race','is_leader','card_strong','card_groups','img_url','short_description','allowed_rows','card_actions')
+            ->where('id', '=', $id)
+            ->get();
+
 		$action_rows = SiteFunctionsController::createActionRowsArray($card_data[0]->allowed_rows);
 		$actions = SiteFunctionsController::createActionsArray(unserialize($card_data[0]->card_actions));
 		if(!$card_data) return '';
@@ -437,7 +474,11 @@ class SiteGameController extends BaseController
 		}
 		if($id<=0) return '';
 
-		$magic = \DB::table('tbl_magic_effect')->select('id','title','img_url','description','energy_cost','effect_actions')->where('id','=',$id)->get();
+		$magic = \DB::table('tbl_magic_effect')
+            ->select('id','title','img_url','description','energy_cost','effect_actions')
+            ->where('id','=',$id)
+            ->get();
+
 		if(!$magic) return '';
 
 		return json_encode([
@@ -451,7 +492,11 @@ class SiteGameController extends BaseController
 	}
 
     public static function getTimingSettings(){
-        $timing_settings = \DB::table('tbl_etc_data')->select('label_data', 'meta_key', 'meta_value')->where('label_data', '=', 'timing')->get();
+        $timing_settings = \DB::table('tbl_etc_data')
+            ->select('label_data', 'meta_key', 'meta_value')
+            ->where('label_data', '=', 'timing')
+            ->get();
+
         $result = [];
         foreach($timing_settings as $timing){
             $result[$timing->meta_key] = $timing->meta_value;

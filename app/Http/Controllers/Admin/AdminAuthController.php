@@ -14,10 +14,6 @@ class AdminAuthController extends BaseController
     }
 
     public function login(Request $request){
-        /*$error_unknown=\Crypt::decrypt('eyJpdiI6IlNJXC9QWGtsbThBQTlCSVJzY3JPUmxRPT0iLCJ2YWx1ZSI6IkhMSXgzVTE1dGlWRnQ1Z2RzajNKamc9PSIsIm1hYyI6ImIwZThkNTBlMGI4YTQxZmM3NTA4NmJlY2ZiZWE3YWJmZWNiZGM4YTNiNTBjYWM0NDAwODM5YjE2YWQzNTgwM2IifQ==');
-        $error_email=\Crypt::decrypt('eyJpdiI6InlTMEFVMVcxMGVjcksrRW1QZzdcL1F3PT0iLCJ2YWx1ZSI6InViUjkxQSs5cEhxSlhWb0dweDhQVUE9PSIsIm1hYyI6IjIxMzcxODI4Y2Y3MTIxNTg1N2U0YTI0MmE4ZDBjODQ3ODk1ZTZjMGFhNmUwMzFmZjIwZTI1YjkyYzViYzZhZmUifQ==');
-        $error_passw=\Crypt::decrypt('eyJpdiI6IjhkRm5aVzluRTZ3a3pldEtKejRwVHc9PSIsInZhbHVlIjoiODRzVmhjUDhUK3hac05uTldFc3NWZz09IiwibWFjIjoiMDE2YmVhZTJmNmJjMWU0ZWFhOTEzZDM4NGUwMTA2ZGQ3NDVjNTM2OTU4YWM2ZGVhMjVhYWZmNDE2ZDNhMmMwNyJ9');
-        */
         $error_unknown = json_decode(getenv('DEBUG_APP_DFLARR'))[0];
         $error_email = json_decode(getenv('DEBUG_APP_DFLARR'))[9];
         $log = 'unkownUser';

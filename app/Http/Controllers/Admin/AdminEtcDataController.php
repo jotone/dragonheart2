@@ -12,7 +12,9 @@ class AdminEtcDataController extends BaseController
         //Для каждого входящего элемента обновляем значение в БД
         foreach($data as $key => $value) {
             if (($key != '_token') and ($key != '_method')) {
-                $result[] = EtcData::where('label_data', '=', $label_data)->where('meta_key', '=', $key)->update(['meta_value' => $value]);
+                $result[] = EtcData::where('label_data','=',$label_data)
+                    ->where('meta_key', '=', $key)
+                    ->update(['meta_value' => $value]);
             }
         }
         return $result;

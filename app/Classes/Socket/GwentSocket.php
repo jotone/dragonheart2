@@ -14,15 +14,72 @@ class GwentSocket extends BaseSocket
 {
 	protected $clients;  //Соединения клиентов
 	protected $battles;
+    protected $battle_id;
 
 	public function __construct(){
 		$this->clients = new \SplObjectStorage;
 	}
 
+
+
+	protected static function waitForRoundEnds($battle, $interface, $conn){
+        if(time() < $battle->turn_expire){
+            sleep(2);
+            if($battle->disconected_count == 2){
+                self::waitForRoundEnds($battle, $interface, $conn);
+            }
+        }else{
+            var_dump('time expired');
+            var_dump('round '.$battle->round_count);
+            var_dump(unserialize($battle->round_status));
+
+            $round_status = unserialize($battle->round_status);
+            if( (count($round_status['p1']) == 2) || (count($round_status['p2']) == 2) ){
+                //Конец игры; Подсчет результатов боя; Запись рейтингов
+            }else{
+                $current_turn_member = \DB::table('tbl_battle_members')->select('battle_id','user_id')
+                    ->where('battle_id','=',$battle->id)
+                    ->where('user_id','=',$battle->uesr_id_turn)
+                    ->get();
+                if($current_turn_member != false){
+                    \DB::table('tbl_battle_members')
+                        ->where('battle_id','=',$battle->id)
+                        ->where('user_id','=',$battle->user_id_turn)
+                        ->update([
+                            'round_passed' => 1
+                        ]);
+                }
+                $battle->pass_count++;
+                $battle->user_id_turn = ($battle->user_id_turn == $battle->creator_id)? $battle->opponent_id: $battle->creator_id;
+                $battle->save();
+
+                if($battle->pass_count <= 1){
+                    self::waitForRoundEnds($battle, $interface, $conn);
+                }
+                if($battle->pass_count > 1){
+                    // Подсчет результатов раунда
+                }
+            }
+
+            //Закрытие соккета
+            $interface->clients->detach($conn);
+        }
+    }
+
 	//Socket actions
     public function onClose(ConnectionInterface $conn){
-        $this->clients->detach($conn);
-        echo 'Connection '.$conn->resourceId.' has disconnected'."\n";
+        $battle = Battle::find($this->battle_id);
+
+        if($battle->disconected_count <= 2){
+            $battle->disconected_count++;
+            $battle->save();
+        }
+
+        if($battle->disconected_count == 2){
+            self::waitForRoundEnds($battle, $this, $conn);
+        }
+        /*$this->clients->detach($conn);
+        echo 'Connection '.$conn->resourceId.' has disconnected'."\n";*/
     }
 
 
@@ -53,6 +110,7 @@ class GwentSocket extends BaseSocket
         $timing_settings = SiteGameController::getTimingSettings();
 
 		$battle = Battle::find($msg->ident->battleId); //Даные битвы
+        $this->battle_id = $msg->ident->battleId;
 
 		$battle_members = BattleMembers::where('battle_id', '=', $msg->ident->battleId)->get(); //Данные о участвующих в битве
 		$users_data = [];
@@ -116,8 +174,15 @@ class GwentSocket extends BaseSocket
 		switch($msg->action) {
 			//Пользователь присоединился
 			case 'userJoinedToRoom':
+			    if($battle->disconected_count > 0){
+                    $battle->disconected_count--;
+                    $battle->save();
+                }
+
 				if ($battle->user_id_turn != 0) {
-					$user_turn = ($battle->user_id_turn == $users_data['user']['id']) ? $users_data['user']['login'] : $users_data['opponent']['login'];
+					$user_turn = ($battle->user_id_turn == $users_data['user']['id'])
+                        ? $users_data['user']['login']
+                        : $users_data['opponent']['login'];
 				} else {
 					$user_turn = '';
 				}
@@ -189,23 +254,34 @@ class GwentSocket extends BaseSocket
 						if ($battle->user_id_turn < 1) {
 							if ((count($cursed_players) == 1) && ($msg->ident->userId == $users_data[$player]['id'])) {
 								if (isset($msg->turn)) {
-									$players_turn = (($users_data['user']['login'] == $msg->turn) || ($msg->turn == '')) ? $users_data['user']['id'] : $users_data['opponent']['id'];
+									$players_turn = (($users_data['user']['login'] == $msg->turn) || ($msg->turn == ''))
+                                        ? $users_data['user']['id']
+                                        : $users_data['opponent']['id'];
 								} else {
 									$rand = mt_rand(0, 1);
-									$players_turn = ($rand == 0) ? $users_data['p1']['id'] : $users_data['p2']['id'];
+									$players_turn = ($rand == 0)
+                                        ? $users_data['p1']['id']
+                                        : $users_data['p2']['id'];
 								}
 							} else {
 								$rand = mt_rand(0, 1);
-								$players_turn = ($rand == 0) ? $users_data['p1']['id'] : $users_data['p2']['id'];
+								$players_turn = ($rand == 0)
+                                    ? $users_data['p1']['id']
+                                    : $users_data['p2']['id'];
 							}
 							$battle->user_id_turn = $players_turn;
 							$battle->first_turn_user_id = $players_turn;
 							$battle->save();
 						}
 
-						$user = ($battle->user_id_turn == $users_data['user']['id']) ? $users_data['user']['login'] : $users_data['opponent']['login'];
+						$user = ($battle->user_id_turn == $users_data['user']['id'])
+                            ? $users_data['user']['login']
+                            : $users_data['opponent']['login'];
 
-                        $user_timing = \DB::table('tbl_battle_members')->select('user_id','turn_expire')->where('user_id','=',$battle->user_id_turn)->get();
+                        $user_timing = \DB::table('tbl_battle_members')
+                            ->select('user_id','turn_expire')
+                            ->where('user_id','=',$battle->user_id_turn)
+                            ->get();
                         $battle->turn_expire = $user_timing[0]->turn_expire + time();
 
 						$result = [
@@ -264,7 +340,9 @@ class GwentSocket extends BaseSocket
 						if ((count($cursed_players) == 1) && ($msg->ident->userId == $users_data[$player]['id'])) {
 
 							if (isset($msg->turn)) {
-								$players_turn = (($users_data['p1']['login'] == $msg->turn) || ($msg->turn == '')) ? $users_data['p1']['id'] : $players_turn = $users_data['p2']['id'];
+								$players_turn = (($users_data['p1']['login'] == $msg->turn) || ($msg->turn == ''))
+                                    ? $users_data['p1']['id']
+                                    : $players_turn = $users_data['p2']['id'];
 							} else {
 								$players_turn = $users_data['user']['id'];
 							}
@@ -280,7 +358,8 @@ class GwentSocket extends BaseSocket
 				if ($users_battle_data['available_to_change'] > 0) {
 					$rand = mt_rand(0, count($users_data['user']['deck']) - 1);
 					$card_to_add = $users_data['user']['deck'][$rand];
-					unset($users_data['user']['deck'][$rand]);
+
+                    unset($users_data['user']['deck'][$rand]);
 					$users_data['user']['deck'] = array_values($users_data['user']['deck']);
 
 					foreach ($users_data['user']['hand'] as $hand_iter => $hand_card_data) {
@@ -353,7 +432,7 @@ class GwentSocket extends BaseSocket
 							$current_actions = [];
 						}
 
-						$user_save_magic = \DB::table('users')->where('id', '=', $users_data['user']['id'])->update([
+						\DB::table('users')->where('id', '=', $users_data['user']['id'])->update([
 							'user_energy' => $users_data['user']['energy'],
 							'user_magic' => serialize($users_data['user']['user_magic'])
 						]);
@@ -390,18 +469,27 @@ class GwentSocket extends BaseSocket
 									} else {
 										//Еcли в ряду уже есть спец карта
 										if (!empty($battle_field[$card_field][$card_row]['special'])) {
-											if ($battle_field[$card_field][$card_row]['special']['login'] == $users_data['user']['login']) {
+											/*if ($battle_field[$card_field][$card_row]['special']['login'] == $users_data['user']['login']) {
 												$users_data[$card_field]['discard'][] = $battle_field[$card_field][$card_row]['special']['card'];
 											} else {
 												$users_data[$card_field]['discard'][] = $battle_field[$card_field][$card_row]['special']['card'];
-											}
+											}*/
+                                            $users_data[$card_field]['discard'][] = $battle_field[$card_field][$card_row]['special']['card'];
 										}
-										$battle_field[$card_field][$card_row]['special'] = ['card' => $card, 'strength' => $card['strength'], 'login' => $users_data['user']['login']];
+										$battle_field[$card_field][$card_row]['special'] = [
+										    'card' => $card,
+                                            'strength' => $card['strength'],
+                                            'login' => $users_data['user']['login']
+                                        ];
 									}
 								}
 							}
 						} else {
-							$battle_field[$card_field][$card_row]['warrior'][] = ['card' => $card, 'strength' => $card['strength'], 'login' => $users_data['user']['login']];
+							$battle_field[$card_field][$card_row]['warrior'][] = [
+							    'card' => $card,
+                                'strength' => $card['strength'],
+                                'login' => $users_data['user']['login']
+                            ];
 						}
 						//Если был задействован МЭ "Марионетка"
 						if ((isset($magic_usage[$users_data['user']['player']][$battle->round_count]['id'])) && (base64_decode(base64_decode($magic_usage[$users_data['user']['player']][$battle->round_count]['id'])) == '19') && ($magic_usage[$users_data['user']['player']][$battle->round_count]['allow'] == 1)) {
@@ -445,7 +533,7 @@ class GwentSocket extends BaseSocket
                         $turn_expire = $msg->timing;
                     }
 
-                    //Сохранение данных битвы                    
+                    //Сохранение данных битвы
 					$users_battle_data = \DB::table('tbl_battle_members')->where('id', '=', $users_data['user']['battle_member_id'])->update([
 						'user_deck'     => serialize($users_data['user']['deck']),
 						'user_hand'     => serialize($users_data['user']['hand']),
@@ -498,7 +586,8 @@ class GwentSocket extends BaseSocket
 				$battle_field = unserialize($battle->battle_field);
 				$magic_usage = unserialize($battle->magic_usage);//Данные о использовании магии
 				$player = ($users_data['user']['id'] == $msg->ident->userId)? $users_data['user']['player']: $users_data['opponent']['player'];
-				foreach($battle_field[$player] as $row => $row_data){
+
+                foreach($battle_field[$player] as $row => $row_data){
 					foreach($row_data['warrior'] as $card_iter => $card_data){
 						if(Crypt::decrypt($card_data['card']['id']) == Crypt::decrypt($msg->card)){
 							$users_data[$player]['hand'][] = $card_data['card'];
@@ -536,6 +625,7 @@ class GwentSocket extends BaseSocket
 				$user_turn_id = $users_data['opponent']['id'];
 
 				$battle->user_id_turn = $user_turn_id;
+                $battle->pass_count++;
 				$battle->save();
 
 				//Если только один пасанувший
@@ -733,6 +823,7 @@ class GwentSocket extends BaseSocket
 					$battle->battle_field = serialize($battle_field);
 					$battle->magic_usage  = serialize($magic_usage);
 					$battle->undead_cards = serialize($deadless_cards);
+                    $battle->pass_count = 0;
 					$battle->save();
 
 					if( (count($round_status['p1']) >= 2) || (count($round_status['p2']) >= 2) ){
@@ -810,9 +901,12 @@ class GwentSocket extends BaseSocket
                                 if($timing > $timing_settings['max_step_time']){
                                     $timing = $timing_settings['max_step_time'];
                                 }
-                                \DB::table('tbl_battle_members')->select('id','turn_expire')->where('id','=',$user_data['battle_member_id'])->update([
-                                    'turn_expire' => $timing
-                                ]);
+                                \DB::table('tbl_battle_members')
+                                    ->select('id','turn_expire')
+                                    ->where('id','=',$user_data['battle_member_id'])
+                                    ->update([
+                                        'turn_expire' => $timing
+                                    ]);
                             }
                         }
 
@@ -885,11 +979,13 @@ class GwentSocket extends BaseSocket
 
 				$sender = ($users_data['p1']['id'] == $msg->ident->userId)? 'p1': 'p2';
 
-                $users_battle_data = \DB::table('tbl_battle_members')->where('id', '=', $users_data[$sender]['battle_member_id'])->update([
-                    'addition_data' => serialize([]),
-                    'round_passed'  => '0',
-                    'turn_expire'   => $turn_expire
-                ]);
+                $users_battle_data = \DB::table('tbl_battle_members')
+                    ->where('id', '=', $users_data[$sender]['battle_member_id'])
+                    ->update([
+                        'addition_data' => serialize([]),
+                        'round_passed'  => '0',
+                        'turn_expire'   => $turn_expire
+                    ]);
                 $cursedChangedToUser = ($user_turn_id == $users_data['user']['id'])? 'user': 'opponent';
 
 				self::sendUserMadeActionData($msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $msg->user, $addition_data, $battle->round_count, '', $cursedChangedToUser);
@@ -917,6 +1013,10 @@ class GwentSocket extends BaseSocket
 					self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
 				}
 			break;
+
+            case 'userLostConnection':
+                var_dump($msg);
+            break;
 		}
 	}
 
@@ -1026,10 +1126,18 @@ class GwentSocket extends BaseSocket
 							$allow_obscure = self::checkForSimpleImmune($input_action->obscure_ignoreImmunity, $card_data['card']['actions']);
 
 							if($allow_obscure){
-								$max_strength = ($card_data['strength'] > $max_strength) ? $card_data['strength'] : $max_strength;
-								$min_strength = ($card_data['strength'] < $min_strength) ? $card_data['strength'] : $max_strength;
+								$max_strength = ($card_data['strength'] > $max_strength)
+                                    ? $card_data['strength']
+                                    : $max_strength;
+								$min_strength = ($card_data['strength'] < $min_strength)
+                                    ? $card_data['strength']
+                                    : $min_strength;
 
-								$cards_can_be_obscured[] = ['card'=>$card_data['card'], 'strength' => $card_data['strength'], 'row'=>$row];
+								$cards_can_be_obscured[] = [
+								    'card'=>$card_data['card'],
+                                    'strength' => $card_data['strength'],
+                                    'row'=>$row
+                                ];
 							}
 						}
 					}
@@ -1278,15 +1386,18 @@ class GwentSocket extends BaseSocket
 								foreach($card_data['card']['groups'] as $groups_ident => $group_id){
 									if(in_array($group_id, $groups)){
 										$cards_to_destroy[$player][$row][] = [
-											'title' => $card_data['card']['title'],//debug
 											'id' => $card_data['card']['id'],
 											'strength' => $card_data['strength']
 										];
 
 										if($card_data['strength'] < $strenght_limit_to_kill){
 											if($player == $users_data['opponent']['player']){
-												$max_strenght = ($max_strenght < $card_data['strength']) ? $card_data['strength'] : $max_strenght;// максимальная сила карты
-												$min_strenght = ($min_strenght > $card_data['strength']) ? $card_data['strength'] : $min_strenght;// минимальная сила карты
+												$max_strenght = ($max_strenght < $card_data['strength'])
+                                                    ? $card_data['strength']
+                                                    : $max_strenght;// максимальная сила карты
+												$min_strenght = ($min_strenght > $card_data['strength'])
+                                                    ? $card_data['strength']
+                                                    : $min_strenght;// минимальная сила карты
 												$card_strength_set[] = $card_data['strength'];
 											}
 										}
@@ -1296,14 +1407,17 @@ class GwentSocket extends BaseSocket
 								$allow_by_immune = self::checkForSimpleImmune($input_action->killer_ignoreKillImmunity, $card_data['card']['actions']);
 								if($allow_by_immune){
 									$cards_to_destroy[$player][$row][] = [
-										'title' => $card_data['card']['title'],//debug
 										'id' => $card_data['card']['id'],
 										'strength' => $card_data['strength']
 									];
 
 									if($card_data['strength'] < $strenght_limit_to_kill){
-										$max_strenght = ($max_strenght < $card_data['strength']) ? $card_data['strength'] : $max_strenght;// максимальная сила карты
-										$min_strenght = ($min_strenght > $card_data['strength']) ? $card_data['strength'] : $min_strenght;// минимальная сила карты
+										$max_strenght = ($max_strenght < $card_data['strength'])
+                                            ? $card_data['strength']
+                                            : $max_strenght;// максимальная сила карты
+										$min_strenght = ($min_strenght > $card_data['strength'])
+                                            ? $card_data['strength']
+                                            : $min_strenght;// минимальная сила карты
 										$card_strength_set[] = $card_data['strength'];
 									}
 								}
@@ -1358,11 +1472,13 @@ class GwentSocket extends BaseSocket
 
 								if($card_to_kill_data['id'] == $card_data['card']['id']){
 
-									if($users_data['user']['player'] == $player){
-										$users_data['user']['discard'][] = $card_data['card'];
-									}else{
-										$users_data['opponent']['discard'][] = $card_data['card'];
-									}
+                                    /*$user_type = ($users_data['user']['player'] == $player)
+                                        ? 'user'
+                                        : 'opponent';
+
+                                    $users_data[$user_type]['discard'][] = $card_data['card'];*/
+                                    $users_data[$player]['discard'][] = $card_data['card'];
+
 									unset($battle_field[$player][$row]['warrior'][$card_iter]);
 									$battle_field[$player][$row]['warrior'] = array_values($battle_field[$player][$row]['warrior']);
 
@@ -1419,11 +1535,9 @@ class GwentSocket extends BaseSocket
 			case '0':
 				foreach($users_data[$user][$deck] as $card_iter => $card_data){
 					if(in_array(Crypt::decrypt($card_data['id']), $input_action['type_singleCard'])){
-						if($user == 'user'){
-							$allow_to_summon = self::checkForFullImmune($input_action['ignoreImmunity'], $card_data['actions']);
-						}else{
-							$allow_to_summon = self::checkForSimpleImmune($input_action['ignoreImmunity'], $card_data['actions']);
-						}
+                        $allow_to_summon = ($user == 'user')
+                            ? self::checkForFullImmune($input_action['ignoreImmunity'], $card_data['actions'])
+						    : self::checkForSimpleImmune($input_action['ignoreImmunity'], $card_data['actions']);
 
 						if($allow_to_summon){
 							$cards_to_play[] = Crypt::decrypt($card_data['id']);
@@ -1435,11 +1549,10 @@ class GwentSocket extends BaseSocket
 				foreach($users_data[$user][$deck] as $card_iter => $card_data){
 					foreach($card_data['action_row'] as $row_iter => $card_row){
 						if( (in_array($card_row, $input_action['type_actionRow'])) && ($card_data['type'] == 'race') ){
-							if($user == 'user'){
-								$allow_to_summon = self::checkForFullImmune($input_action['ignoreImmunity'], $card_data['actions']);
-							}else{
-								$allow_to_summon = self::checkForSimpleImmune($input_action['ignoreImmunity'], $card_data['actions']);
-							}
+                            $allow_to_summon = ($user == 'user')
+                                ? self::checkForFullImmune($input_action['ignoreImmunity'], $card_data['actions'])
+                                : self::checkForSimpleImmune($input_action['ignoreImmunity'], $card_data['actions']);
+
 							if($allow_to_summon){
 								$cards_to_play[] = Crypt::decrypt($card_data['id']);
 							}
@@ -1449,17 +1562,14 @@ class GwentSocket extends BaseSocket
 			break;
 			case '2':
 				foreach($users_data[$user][$deck] as $card_iter => $card_data){
-					if($input_action['type_cardType'] == 0){
-						$summon_card_type = ['special'];
-					}else{
-						$summon_card_type = ['race', 'neutrall'];
-					}
+                    $summon_card_type = ($input_action['type_cardType'] == 0)
+                        ? ['special']
+                        : ['race', 'neutrall'];
+
 					if(in_array($card_data['type'], $summon_card_type)){
-						if($user == 'user'){
-							$allow_to_summon = self::checkForFullImmune($input_action['ignoreImmunity'], $card_data['actions']);
-						}else{
-							$allow_to_summon = self::checkForSimpleImmune($input_action['ignoreImmunity'], $card_data['actions']);
-						}
+                        $allow_to_summon = ($user == 'user')
+                            ? self::checkForFullImmune($input_action['ignoreImmunity'], $card_data['actions'])
+                            : self::checkForSimpleImmune($input_action['ignoreImmunity'], $card_data['actions']);
 
 						if($allow_to_summon){
 							$cards_to_play[] = Crypt::decrypt($card_data['id']);
@@ -1474,11 +1584,10 @@ class GwentSocket extends BaseSocket
 						if(in_array($group_id, $input_action['type_group'])){
 							$allow_by_group = true;
 						}
-						if($user == 'user'){
-							$allow_to_summon = self::checkForFullImmune($input_action['ignoreImmunity'], $card_data['actions']);
-						}else{
-							$allow_to_summon = self::checkForSimpleImmune($input_action['ignoreImmunity'], $card_data['actions']);
-						}
+                        $allow_to_summon = ($user == 'user')
+                            ? self::checkForFullImmune($input_action['ignoreImmunity'], $card_data['actions'])
+                            : self::checkForSimpleImmune($input_action['ignoreImmunity'], $card_data['actions']);
+
 						if( ($allow_to_summon) && ($allow_by_group) ){
 							$cards_to_play[] = Crypt::decrypt($card_data['id']);
 						}
@@ -1487,11 +1596,14 @@ class GwentSocket extends BaseSocket
 			break;
 			case '4':
 				foreach($users_data[$user][$deck] as $card_iter => $card_data){
-					if($user == 'user'){
+					/*if($user == 'user'){
 						$allow_to_summon = self::checkForFullImmune($input_action['ignoreImmunity'], $card_data['actions']);
 					}else{
 						$allow_to_summon = self::checkForSimpleImmune($input_action['ignoreImmunity'], $card_data['actions']);
-					}
+					}*/
+                    $allow_to_summon = ($user == 'user')
+                        ? self::checkForFullImmune($input_action['ignoreImmunity'], $card_data['actions'])
+                        : self::checkForSimpleImmune($input_action['ignoreImmunity'], $card_data['actions']);
 					if($allow_to_summon){
 						$cards_to_play[] = Crypt::decrypt($card_data['id']);
 					}
@@ -1709,6 +1821,7 @@ class GwentSocket extends BaseSocket
 					}
 
 					$allow_fury_by_magic = false;
+                    /*ПЕРЕДЕЛАТЬ*/
 					if( (isset($action->fury_abilityCastEnemy)) && (!empty($action->fury_abilityCastEnemy)) ){
 						foreach($action->fury_abilityCastEnemy as $ability_iter => $ability){
 							if($ability == 'any'){
@@ -1717,13 +1830,12 @@ class GwentSocket extends BaseSocket
 										$allow_fury_by_magic = true;
 									}
 								}
-							}else{
-
 							}
 						}
 					}else{
 						$allow_fury_by_magic = true;
 					}
+					/***/
 
 					if(($allow_fury_by_row) && ($allow_fury_by_race) && ($allow_fury_by_magic)){
 						$card_destignation = explode('_',$card_id);
@@ -1742,11 +1854,9 @@ class GwentSocket extends BaseSocket
 						if($action->fear_actionTeamate == 1){
 							$players = ['p1', 'p2'];
 						}else{
-							if($card_data['login'] == $users_data['user']['login']){
-								$players = [$users_data['opponent']['player']];
-							}else{
-								$players = [$users_data['user']['player']];
-							}
+                            $players = ($card_data['login'] == $users_data['user']['login'])
+                                ? [$users_data['opponent']['player']]
+                                : [$users_data['user']['player']];
 						}
 
 						//Карта действует на группу
@@ -2049,7 +2159,10 @@ class GwentSocket extends BaseSocket
 		$user_discard_count = count($users_data['user']['discard']);
 		$user_deck_count = count($users_data['user']['deck']);
 
-        $users_battle_data = \DB::table('tbl_battle_members')->select('id','turn_expire')->where('id', '=', $users_data[$cursedChangedToUser]['battle_member_id'])->get();
+        $users_battle_data = \DB::table('tbl_battle_members')
+            ->select('id','turn_expire')
+            ->where('id', '=', $users_data[$cursedChangedToUser]['battle_member_id'])
+            ->get();
         $timing = $users_battle_data[0]->turn_expire;
 
 		$oponent_discard_count = count($users_data['opponent']['discard']);
@@ -2145,9 +2258,11 @@ class GwentSocket extends BaseSocket
 		$opponent_battle_data->save();
 	}
 
-	protected static function saveGameResults($user_id, $battle, $game_result)
-    {
-        $user = \DB::table('users')->select('id', 'login', 'premium_activated', 'premium_expire_date', 'user_gold', 'user_silver', 'user_rating')->where('id', '=', $user_id)->get();
+	protected static function saveGameResults($user_id, $battle, $game_result){
+        $user = \DB::table('users')
+            ->select('id', 'login', 'premium_activated', 'premium_expire_date', 'user_gold', 'user_silver', 'user_rating')
+            ->where('id', '=', $user_id)
+            ->get();
 
         $league = League::where('title', '=', $battle->league)->get();
 
