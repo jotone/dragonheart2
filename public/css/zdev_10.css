@@ -1632,10 +1632,18 @@
   font-family: 'indisplay', sans-serif;
   line-height: 1;
 }
+.popup-content-wrap .switch-user-turn-wrap label{ font-size:20px; font-weight: 900;padding: 10px 0; margin-right: 50px; display: inline-block; position: relative; cursor:pointer;}
+.popup-content-wrap .switch-user-turn-wrap label:after{ content: ''; display: block; position: absolute; bottom: 0; background-image: url(../images/hov-ch.png); height: 7px; width: 100%; background-position: 50%; background-repeat: no-repeat; opacity: 0;}
+.popup-content-wrap .switch-user-turn-wrap label:hover:after{ opacity: 1;}
+.popup-content-wrap .switch-user-turn-wrap label:last-child{ margin-right: 0;}
 .popup-content-wrap .switch-user-turn-wrap{
-text-align: center;
-    font-size: 20px;
+  text-align: center;
+  font-size: 18px;
+  position: relative;
+    padding: 38px 0;
 }
+.popup-content-wrap .switch-user-turn-wrap:before{content: ''; display: block; width: 100%; position: absolute; background-image: url(../images/top-ch.png); top: 0; height: 38px; background-position: 50%; background-repeat: no-repeat;  }
+.popup-content-wrap .switch-user-turn-wrap:after{content: ''; display: block; width: 100%; position: absolute; background-image: url(../images/bot-ch.png); bottom: 0; height: 38px; background-position: 50%; background-repeat: no-repeat;  }
 #buyingPremium input{ display: none;}
 #buyingPremium .pseudo-radio{ margin-top: -1px;margin-left: 7px; margin-right: 4px;}
 #buyingPremium label{
@@ -1657,13 +1665,13 @@ text-align: center;
   font-weight: 700;
 }
 .popup-content-wrap .switch-user-turn-wrap input{ display: none;}
-.popup-content-wrap .switch-user-turn-wrap label{ vertical-align: top; margin-right: 15px;}
+.popup-content-wrap .switch-user-turn-wrap label{ vertical-align: top; }
 .pseudo-radio{ width: 12px; height: 12px; display: inline-block; background-color: transparent; border:1px solid #714026; border-radius:50%; position: relative; margin-top: 2px; margin-right: 7px;}
 .pseudo-radio:before{ content: ''; width: 6px; height: 6px;  background-color: #714026; border-radius:50%; display: block; position: absolute; top: 2px; left: 2px; opacity:0}
 .pseudo-radio.active:before{opacity: 1;}
 
 #chooseUser input{ display: none;}
-#chooseUser label{ display: block; margin-right: 15px;}
+
 
 
 .market-buy-popup .popup-content-wrap p{

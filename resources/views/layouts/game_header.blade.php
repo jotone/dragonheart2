@@ -197,13 +197,12 @@ $user = Auth::user();
 
 
     <!-- Окно выбора хода-->
-    <div class="troll-popup" id="selectCurrentTurn" style="width: 350px; height: auto;">
+    <div class="troll-popup" id="selectCurrentTurn" style="width: 550px; height: auto;">
         <div class="popup-content-wrap">
 
-            <div class="cards-select-message-wrap">Выберите игрока для хода в текущем раунде</div>
+            <div class="switch-user-turn-wrap">Выберите игрока для хода в текущем раунде
 
-            <div id="chooseUser">
-                
+                     <div id="chooseUser"></div>
             </div>
             <div class="pop-row">
                 <div class="timer-in-popup">
