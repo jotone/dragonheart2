@@ -951,6 +951,7 @@ function startBattle() {
 
 				recalculateDecks(result);//Пересчет колод пользователя и противника
 				calculateRightMarginCardHands();
+
 				//Обработка Маг. Эффектов (МЭ)
 				if(result.magicUsage !== undefined){
 					magicReview(result)
@@ -1059,6 +1060,13 @@ function startBattle() {
 		if( (result.message == 'allUsersAreReady') || (result.message == 'userMadeAction') ){
 			calculateRightMarginCardHands();
 			hidePreloader();
+
+            if(result.users != undefined){
+                 for(var login in result.users){
+                    $('.convert-right-info #'+login+' .stats-energy').text(result.users[login]);
+                }
+            }
+
 			var expireTime = result.timing - phpTime();
 			convertTimeToStr(expireTime);
 			clearInterval(TimerInterval);
@@ -1110,8 +1118,12 @@ function startBattle() {
 						//Задействовать popup выбора хода игрока
 						case 'activate_turn_choise':
 							$('#selectCurrentTurn #chooseUser').empty();
-							for(var i in result.users){
-								$('#selectCurrentTurn #chooseUser').append('<label><input type="radio" name="usersTurn" value="'+result.users[i]+'"><div class="pseudo-radio"></div> - '+result.users[i]+'</label>');
+							for(var login in result.users){
+								$('#selectCurrentTurn #chooseUser').append('' +
+                                    '<label>' +
+                                    '<input type="radio" name="usersTurn" value="'+login+'">' +
+                                    '<div class="pseudo-radio"></div> - '+login+
+                                    '</label>');
 							}
 							$('#selectCurrentTurn #chooseUser input[name=usersTurn]:first').prop('checked', true).next().addClass('active');
 							openTrollPopup($('#selectCurrentTurn'));

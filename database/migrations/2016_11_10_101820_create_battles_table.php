@@ -15,6 +15,7 @@ class CreateBattlesTable extends Migration
         Schema::create('tbl_battles', function (Blueprint $table) {
             $table->increments('id')->unsigned();
             $table->integer('creator_id')->unsigned();
+            $table->integer('opponent_id')->unsigned();
             $table->tinyInteger('players_quantity')->unsigned(); //Колличество игроков
             $table->integer('deck_weight')->unsigned();
             $table->string('league');
@@ -27,6 +28,7 @@ class CreateBattlesTable extends Migration
             $table->text('undead_cards');//массив отыгравших карт с действием "Бессмертный"
             $table->text('magic_usage');//массив отыгравших магических эффектов
             $table->string('turn_expire');
+            $table->tinyInteger('disconected_count')->unsigned();
             $table->timestamps();
         });
     }

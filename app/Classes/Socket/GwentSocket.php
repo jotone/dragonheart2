@@ -153,7 +153,10 @@ class GwentSocket extends BaseSocket
 						'addition_data' => $users_data['user']['addition_data'],
 						'battleInfo' => $msg->ident->battleId,
 						'login' => $user_turn,
-						'users' => [$users_data['user']['login'], $users_data['opponent']['login']],
+						'users' => [
+						    $users_data['user']['login'] => $users_data['user']['energy'],
+                            $users_data['opponent']['login'] => $users_data['opponent']['energy']
+                        ],
                         'timing' => $battle->turn_expire
 					];
 					self::sendMessageToSelf($from, $result);
@@ -215,7 +218,10 @@ class GwentSocket extends BaseSocket
 							'addition_data' => $users_data['user']['addition_data'],
 							'battleInfo' => $msg->ident->battleId,
 							'login' => $user,
-							'users' => [$users_data['user']['login'], $users_data['opponent']['login']],
+							'users' => [
+                                $users_data['user']['login'] => $users_data['user']['energy'],
+                                $users_data['opponent']['login'] => $users_data['opponent']['energy']
+                            ],
                             'timing' => $battle->turn_expire
 						];
 
@@ -235,7 +241,10 @@ class GwentSocket extends BaseSocket
 							'addition_data' => $users_data['user']['addition_data'],
 							'battleInfo' => $msg->ident->battleId,
 							'login' => $user,
-							'users' => [$users_data['user']['login'], $users_data['opponent']['login']],
+							'users' => [
+                                $users_data['user']['login'] => $users_data['user']['energy'],
+                                $users_data['opponent']['login'] => $users_data['opponent']['energy']
+                            ],
                             'timing' => $battle->turn_expire
 						];
 						self::sendMessageToSelf($from, $result);
@@ -348,7 +357,7 @@ class GwentSocket extends BaseSocket
 							'user_energy' => $users_data['user']['energy'],
 							'user_magic' => serialize($users_data['user']['user_magic'])
 						]);
-					}
+ 					}
 
 					if ($msg->card != '') {
 						$card = json_decode(SiteGameController::getCardData($msg->card));//Получаем данные о карте
@@ -1097,20 +1106,19 @@ class GwentSocket extends BaseSocket
 			case '11':
 				$players = ($input_action->sorrow_actionTeamate == 0)? [$users_data['opponent']['player']]: ['p1', 'p2'];
 				$row = self::strRowToInt($msg->BFData->row);
-				if ($msg->magic != '') {
-					foreach($players as $player_iter => $player){
-						foreach($magic_usage[$player] as $activated_in_round => $magic_id){
-							if($magic_id != '0'){
-								$magic = json_decode(SiteGameController::getMagicData($magic_id['id']));//Данные о МЭ
-								foreach($magic->actions as $action_iter => $action_data){
-									if($action_data->action == '4'){
-										$magic_usage[$player][$activated_in_round]['allow'] = 0;
-									}
-								}
-							}
-						}
-					}
-				}
+
+                foreach($players as $player_iter => $player){
+                    foreach($magic_usage[$player] as $activated_in_round => $magic_id){
+                        if($magic_id != '0'){
+                            $magic = json_decode(SiteGameController::getMagicData($magic_id['id']));//Данные о МЭ
+                            foreach($magic->actions as $action_iter => $action_data){
+                                if($action_data->action == '4'){
+                                    $magic_usage[$player][$activated_in_round]['allow'] = 0;
+                                }
+                            }
+                        }
+                    }
+                }
 
                 foreach($players as $player_iter => $player){
                     $battle_field[$player][$row]['special'] = '';
@@ -2072,7 +2080,10 @@ class GwentSocket extends BaseSocket
 
 			'round'         => $round_count,
 			'deck_slug'     => $users_data['user']['current_deck'],
-			'users'         => [$users_data['user']['login'], $users_data['opponent']['login']],
+			'users'         => [
+			    $users_data['user']['login'] => $users_data['user']['energy'],
+                $users_data['opponent']['login'] => $users_data['opponent']['energy']
+            ],
             'timing'        => $timing+time()
 		];
 		if( ($data_to_user == '') || ($data_to_user == $users_data['user']['player']) ){
@@ -2101,7 +2112,10 @@ class GwentSocket extends BaseSocket
 			'magicUsage'    => $magic_usage,
 			'round'         => $round_count,
 			'deck_slug'     => $users_data['opponent']['current_deck'],
-			'users'         => [$users_data['user']['login'], $users_data['opponent']['login']],
+			'users'         => [
+                $users_data['user']['login'] => $users_data['user']['energy'],
+                $users_data['opponent']['login'] => $users_data['opponent']['energy']
+            ],
             'timing'        => $users_data['opponent']['turn_expire']+time()
 		];
 		if($data_to_user == $users_data['opponent']['player']){
