@@ -137,6 +137,14 @@ foreach($battle_members as $key => $value){
 
 	$user_hand = unserialize($value -> user_hand);
 	if($user['id'] == $value->user_id){
+		$temp = \DB::table('tbl_battles')->select('id','disconected_count')->where('id','=',$battle_data->id)->get();
+		if($temp[0]->disconected_count > 0){
+			$temp[0]->disconected_count = $temp[0]->disconected_count -1;
+			\DB::table('tbl_battles')->where('id','=',$battle_data->id)->update([
+				'disconected_count' => $temp[0]->disconected_count
+			]);
+		}
+
 		$players['allied'] = [
 			'user_deck'     => unserialize($value -> user_deck),
 			'user_discard'  => unserialize($value -> user_discard),

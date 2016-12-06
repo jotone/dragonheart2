@@ -872,6 +872,7 @@ function magicReview(result){
 
 function startBattle() {
 	conn = new WebSocket('ws://' + socketResult['dom'] + ':8080');//Создание сокет-соединения
+	console.log(conn);
 	//Создание сокет-соединения
 	conn.onopen = function (data) {
 		console.log('Соединение установлено');

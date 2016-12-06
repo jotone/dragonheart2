@@ -15,73 +15,12 @@ class GwentSocket extends BaseSocket
 	protected $clients;  //Соединения клиентов
 	protected $battles;
     protected $battle_id;
+    protected $users_data;
+    protected $magic_usage;
 
 	public function __construct(){
 		$this->clients = new \SplObjectStorage;
 	}
-
-
-
-	protected static function waitForRoundEnds($battle, $interface, $conn){
-        if(time() < $battle->turn_expire){
-            sleep(2);
-            if($battle->disconected_count == 2){
-                self::waitForRoundEnds($battle, $interface, $conn);
-            }
-        }else{
-            var_dump('time expired');
-            var_dump('round '.$battle->round_count);
-            var_dump(unserialize($battle->round_status));
-
-            $round_status = unserialize($battle->round_status);
-            if( (count($round_status['p1']) == 2) || (count($round_status['p2']) == 2) ){
-                //Конец игры; Подсчет результатов боя; Запись рейтингов
-            }else{
-                $current_turn_member = \DB::table('tbl_battle_members')->select('battle_id','user_id')
-                    ->where('battle_id','=',$battle->id)
-                    ->where('user_id','=',$battle->uesr_id_turn)
-                    ->get();
-                if($current_turn_member != false){
-                    \DB::table('tbl_battle_members')
-                        ->where('battle_id','=',$battle->id)
-                        ->where('user_id','=',$battle->user_id_turn)
-                        ->update([
-                            'round_passed' => 1
-                        ]);
-                }
-                $battle->pass_count++;
-                $battle->user_id_turn = ($battle->user_id_turn == $battle->creator_id)? $battle->opponent_id: $battle->creator_id;
-                $battle->save();
-
-                if($battle->pass_count <= 1){
-                    self::waitForRoundEnds($battle, $interface, $conn);
-                }
-                if($battle->pass_count > 1){
-                    // Подсчет результатов раунда
-                }
-            }
-
-            //Закрытие соккета
-            $interface->clients->detach($conn);
-        }
-    }
-
-	//Socket actions
-    public function onClose(ConnectionInterface $conn){
-        $battle = Battle::find($this->battle_id);
-
-        if($battle->disconected_count <= 2){
-            $battle->disconected_count++;
-            $battle->save();
-        }
-
-        if($battle->disconected_count == 2){
-            self::waitForRoundEnds($battle, $this, $conn);
-        }
-        /*$this->clients->detach($conn);
-        echo 'Connection '.$conn->resourceId.' has disconnected'."\n";*/
-    }
-
 
     public function onError(ConnectionInterface $conn, \Exception $e){
         echo 'An error has occured: '.$e->getMessage()."\n";
@@ -174,12 +113,7 @@ class GwentSocket extends BaseSocket
 		switch($msg->action) {
 			//Пользователь присоединился
 			case 'userJoinedToRoom':
-			    if($battle->disconected_count > 0){
-                    $battle->disconected_count--;
-                    $battle->save();
-                }
-
-				if ($battle->user_id_turn != 0) {
+			    if ($battle->user_id_turn != 0) {
 					$user_turn = ($battle->user_id_turn == $users_data['user']['id'])
                         ? $users_data['user']['login']
                         : $users_data['opponent']['login'];
@@ -469,11 +403,6 @@ class GwentSocket extends BaseSocket
 									} else {
 										//Еcли в ряду уже есть спец карта
 										if (!empty($battle_field[$card_field][$card_row]['special'])) {
-											/*if ($battle_field[$card_field][$card_row]['special']['login'] == $users_data['user']['login']) {
-												$users_data[$card_field]['discard'][] = $battle_field[$card_field][$card_row]['special']['card'];
-											} else {
-												$users_data[$card_field]['discard'][] = $battle_field[$card_field][$card_row]['special']['card'];
-											}*/
                                             $users_data[$card_field]['discard'][] = $battle_field[$card_field][$card_row]['special']['card'];
 										}
 										$battle_field[$card_field][$card_row]['special'] = [
@@ -532,6 +461,9 @@ class GwentSocket extends BaseSocket
                     }else{
                         $turn_expire = $msg->timing;
                     }
+
+                    $this->users_data = &$users_data;
+                    $this->magic_usage = &$magic_usage;
 
                     //Сохранение данных битвы
 					$users_battle_data = \DB::table('tbl_battle_members')->where('id', '=', $users_data['user']['battle_member_id'])->update([
@@ -640,17 +572,8 @@ class GwentSocket extends BaseSocket
 					$battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
 
 					//Подсчет результатп раунда по очкам
-					$total_str = ['p1'=> 0, 'p2'=> 0];
+                    $total_str = self::calcStrByPlayers($battle_field);
 
-					foreach($battle_field as $player => $rows){
-						if($player != 'mid'){
-							foreach($rows as $row => $cards){
-								foreach($cards['warrior'] as $card_iter => $card_data){
-									$total_str[$player] += $card_data['strength'];
-								}
-							}
-						}
-					}
 					//Статус битвы (очки раундов)
 					$round_status = unserialize($battle->round_status);
 					//Результаты раунда отдельно по игрокам
@@ -740,89 +663,16 @@ class GwentSocket extends BaseSocket
 					];
 					self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
 
-					//Подготовка нового раунда
-					$deadless_cards = unserialize($battle->undead_cards);
-
-					//Добавление по карте из колоды каждому игроку
-					$users_data['user'] = self::userGainCards($users_data['user'], $gain_cards_count['user']);
-					$users_data['opponent'] = self::userGainCards($users_data['opponent'], $gain_cards_count['opponent']);
-
-					//Очищение поля битвы от карт
-					foreach($battle_field as $player => $rows){
-						if($player != 'mid'){
-							$card_to_left = [];
-							//Просчет рассовой способности монстров
-							if($users_data[$player]['current_deck'] == 'monsters'){
-								$card_to_left = self::cardsToLeft($battle_field, $player);
-							}
-
-							foreach($rows as $row => $cards){
-								if($battle_field[$player][$row]['special'] != ''){
-									$users_data[$player]['discard'][] = $battle_field[$player][$row]['special']['card'];
-									$battle_field[$player][$row]['special'] = '';
-								}
-
-								//Заносим карты воинов в отбой
-								foreach($cards['warrior'] as $card_iter => $card_data){
-									$card_is_deadless = false;
-									foreach($card_data['card']['actions'] as $action_iter => $action){
-										if($action->action == '2'){
-											$card_is_deadless = true;
-										}
-									}
-
-									if($card_is_deadless){
-										//Если действие "Бессмертный" была использована в прошлом раунде
-										if( (isset($deadless_cards[$player][$battle->round_count -1])) && (in_array(Crypt::decrypt($card_data['card']['id']), $deadless_cards[$player][$battle->round_count -1])) ){
-											$users_data[$player]['discard'][] = $card_data['card'];
-											unset($battle_field[$player][$row]['warrior'][$card_iter]);
-										}else{
-											$deadless_cards[$player][$battle->round_count][] = Crypt::decrypt($card_data['card']['id']);
-										}
-									}else{
-										$users_data[$player]['discard'][] = $card_data['card'];
-										unset($battle_field[$player][$row]['warrior'][$card_iter]);
-									}
-								}
-								$battle_field[$player][$row]['warrior'] = array_values($battle_field[$player][$row]['warrior']);
-							}
-
-							if(!empty($card_to_left)){
-								foreach($card_to_left as $key => $value){
-									$destignation = explode('_',$key);
-									$battle_field[$destignation[0]][$destignation[1]]['warrior'][] = [
-										'card'      => $value,
-										'strength'  => $value['strength'],
-										'login'     => $users_data[$destignation[0]]['login']
-									];
-									foreach($users_data[$destignation[0]]['discard'] as $discard_iter => $discard_card){
-										if($discard_card['id'] == $value['id']){
-											unset($users_data[$destignation[0]]['discard'][$discard_iter]);
-											$users_data[$destignation[0]]['discard'] = array_values($users_data[$destignation[0]]['discard']);
-										}
-									}
-								}
-							}
-						}else{
-							foreach($battle_field[$player] as $card_iter => $card_data){
-								if($card_data['login'] == $users_data['user']['login']){
-									$users_data['user']['discard'][] = $battle_field['mid'][$card_iter]['card'];
-								}else{
-									$users_data['opponent']['discard'][] = $battle_field['mid'][$card_iter]['card'];
-								}
-							}
-						}
-					}
-
-					$battle_field['mid'] = [];
-
-					$battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+                    $clear_result = self::clearBattleField($battle, $battle_field, $users_data, $magic_usage, $gain_cards_count);
+                    $battle_field = $clear_result['battle_field'];
+                    $users_data   = $clear_result['users_data'];
+                    $magic_usage  = $clear_result['magic_usage'];
 
 					$battle->round_count  = $battle->round_count +1;
 					$battle->round_status = serialize($round_status);
 					$battle->battle_field = serialize($battle_field);
 					$battle->magic_usage  = serialize($magic_usage);
-					$battle->undead_cards = serialize($deadless_cards);
+					$battle->undead_cards = serialize($clear_result['deadless_cards']);
                     $battle->pass_count = 0;
 					$battle->save();
 
@@ -1013,12 +863,278 @@ class GwentSocket extends BaseSocket
 					self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
 				}
 			break;
-
-            case 'userLostConnection':
-                var_dump($msg);
-            break;
 		}
 	}
+
+
+    //Socket actions
+    public function onClose(ConnectionInterface $conn){
+        $battle = Battle::find($this->battle_id);
+
+        if($battle->fight_status < 3){
+            if($battle->disconected_count <= 2){
+                $battle->disconected_count++;
+                $battle->save();
+            }
+
+            if($battle->disconected_count == 2){
+                self::waitForRoundEnds($this, $conn);
+            }
+        }else{
+            $this->clients->detach($conn);
+            echo 'Connection '.$conn->resourceId.' has disconnected'."\n";
+        }
+    }
+
+    protected static function calcStrByPlayers($battle_field){
+        $total_str = ['p1'=> 0, 'p2'=> 0];
+
+        foreach($battle_field as $player => $rows){
+            if($player != 'mid'){
+                foreach($rows as $row => $cards){
+                    foreach($cards['warrior'] as $card_iter => $card_data){
+                        $total_str[$player] += $card_data['strength'];
+                    }
+                }
+            }
+        }
+        return $total_str;
+    }
+
+    protected static function clearBattleField($battle, $battle_field, $users_data, $magic_usage, $gain_cards_count){
+        $deadless_cards = unserialize($battle->undead_cards);
+
+        //Добавление по карте из колоды каждому игроку
+        $users_data['user'] = self::userGainCards($users_data['user'], $gain_cards_count['user']);
+        $users_data['opponent'] = self::userGainCards($users_data['opponent'], $gain_cards_count['opponent']);
+
+        //Очищение поля битвы от карт
+        foreach($battle_field as $player => $rows){
+            if($player != 'mid'){
+                $card_to_left = [];
+                //Просчет рассовой способности монстров
+                if($users_data[$player]['current_deck'] == 'monsters'){
+                    $card_to_left = self::cardsToLeft($battle_field, $player);
+                }
+
+                foreach($rows as $row => $cards){
+                    if($battle_field[$player][$row]['special'] != ''){
+                        $users_data[$player]['discard'][] = $battle_field[$player][$row]['special']['card'];
+                        $battle_field[$player][$row]['special'] = '';
+                    }
+
+                    //Заносим карты воинов в отбой
+                    foreach($cards['warrior'] as $card_iter => $card_data){
+                        $card_is_deadless = false;
+                        foreach($card_data['card']['actions'] as $action_iter => $action){
+                            if($action->action == '2'){
+                                $card_is_deadless = true;
+                            }
+                        }
+
+                        if($card_is_deadless){
+                            //Если действие "Бессмертный" была использована в прошлом раунде
+                            if( (isset($deadless_cards[$player][$battle->round_count -1])) && (in_array(Crypt::decrypt($card_data['card']['id']), $deadless_cards[$player][$battle->round_count -1])) ){
+                                $users_data[$player]['discard'][] = $card_data['card'];
+                                unset($battle_field[$player][$row]['warrior'][$card_iter]);
+                            }else{
+                                $deadless_cards[$player][$battle->round_count][] = Crypt::decrypt($card_data['card']['id']);
+                            }
+                        }else{
+                            $users_data[$player]['discard'][] = $card_data['card'];
+                            unset($battle_field[$player][$row]['warrior'][$card_iter]);
+                        }
+                    }
+                    $battle_field[$player][$row]['warrior'] = array_values($battle_field[$player][$row]['warrior']);
+                }
+
+                if(!empty($card_to_left)){
+                    foreach($card_to_left as $key => $value){
+                        $destignation = explode('_',$key);
+                        $battle_field[$destignation[0]][$destignation[1]]['warrior'][] = [
+                            'card'      => $value,
+                            'strength'  => $value['strength'],
+                            'login'     => $users_data[$destignation[0]]['login']
+                        ];
+                        foreach($users_data[$destignation[0]]['discard'] as $discard_iter => $discard_card){
+                            if($discard_card['id'] == $value['id']){
+                                unset($users_data[$destignation[0]]['discard'][$discard_iter]);
+                                $users_data[$destignation[0]]['discard'] = array_values($users_data[$destignation[0]]['discard']);
+                            }
+                        }
+                    }
+                }
+            }else{
+                foreach($battle_field[$player] as $card_iter => $card_data){
+                    if($card_data['login'] == $users_data['user']['login']){
+                        $users_data['user']['discard'][] = $battle_field['mid'][$card_iter]['card'];
+                    }else{
+                        $users_data['opponent']['discard'][] = $battle_field['mid'][$card_iter]['card'];
+                    }
+                }
+            }
+        }
+
+        $battle_field['mid'] = [];
+
+        $battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+        return [
+            'battle_field'  => $battle_field,
+            'users_data'    => $users_data,
+            'deadless_cards'=> $deadless_cards,
+            'magic_usage'   => $magic_usage
+        ];
+    }
+
+
+    protected static function waitForRoundEnds($_this, $conn){
+        $battle = Battle::find($_this->battle_id);
+
+        $round_status = unserialize($battle->round_status);
+        if( (count($round_status['p1']) == 2) || (count($round_status['p2']) == 2) ){
+            //Конец игры; Подсчет результатов боя; Запись рейтингов
+            $battle->fight_status = 3;
+            $battle->save();
+
+            if( count($round_status['p1']) > count($round_status['p2']) ){
+                self::saveGameResults($_this->users_data['p1']['id'], $battle, 'win');
+                self::saveGameResults($_this->users_data['p2']['id'], $battle, 'loose');
+            }
+
+            if( count($round_status['p1']) < count($round_status['p2']) ){
+                self::saveGameResults($_this->users_data['p2']['id'], $battle, 'win');
+                self::saveGameResults($_this->users_data['p1']['id'], $battle, 'loose');
+            }
+
+            if( count($round_status['p1']) == count($round_status['p2']) ){
+                if( ( ($_this->users_data['user']['current_deck'] == 'undead') || ($_this->users_data['opponent']['current_deck'] == 'undead') ) && ($_this->users_data['user']['current_deck'] != $_this->users_data['opponent']['current_deck']) ){
+                    if($_this->users_data['user']['current_deck'] == 'undead'){
+                        self::saveGameResults($_this->users_data['user']['id'], $battle, 'win');
+                        self::saveGameResults($_this->users_data['opponent']['id'], $battle, 'loose');
+                    }else{
+                        self::saveGameResults($_this->users_data['opponent']['id'], $battle, 'win');
+                        self::saveGameResults($_this->users_data['user']['id'], $battle, 'loose');
+                    }
+                }else{
+                    self::saveGameResults($_this->users_data['user']['id'], $battle, 'draw');
+                    self::saveGameResults($_this->users_data['opponent']['id'], $battle, 'draw');
+                }
+            }
+            //Закрытие соккета
+            $_this->clients->detach($conn);
+        }else{
+
+            if(time() < $battle->turn_expire){
+                sleep(2);
+                if($battle->disconected_count == 2){
+                    self::waitForRoundEnds($_this, $conn);
+                }
+            }else{
+                $timing_settings = SiteGameController::getTimingSettings();
+                $current_turn_member = \DB::table('tbl_battle_members')->select('battle_id','user_id','turn_expire')
+                    ->where('battle_id','=',$_this->battle_id)
+                    ->where('user_id','=',$battle->user_id_turn)
+                    ->get();
+                if($current_turn_member != false){
+                    \DB::table('tbl_battle_members')
+                        ->where('battle_id','=',$_this->battle_id)
+                        ->where('user_id','=',$battle->user_id_turn)
+                        ->update([
+                            'round_passed' => 1
+                        ]);
+                }
+
+                if($_this->users_data['user']['id'] == $battle->first_turn_user_id){
+                    $user_turn_id = $_this->users_data['opponent']['id'];
+                }else{
+                    $user_turn_id = $_this->users_data['user']['id'];
+                }
+
+                $next_turn_member = \DB::table('tbl_battle_members')->select('battle_id','user_id','turn_expire')->where('battle_id','=',$_this->battle_id)->where('user_id','=', $user_turn_id)->get();
+
+                if($next_turn_member != false){
+                    $turn_expire = $current_turn_member[0]->turn_expire;
+                }else{
+                    $turn_expire = 0;
+                }
+
+                $turn_expire = $turn_expire + $timing_settings['first_step_r'.$battle->round_count] + time();
+                if($turn_expire > $timing_settings['max_step_time']){
+                    $turn_expire = $timing_settings['max_step_time'];
+                }
+
+                $battle->user_id_turn = $user_turn_id;
+                $battle->first_turn_user_id =$user_turn_id;
+                $battle->turn_expire = $turn_expire;
+                $battle->pass_count = $battle->pass_count +1;
+
+                if($battle->pass_count > 1) {
+                    $battle_field = unserialize($battle->battle_field);
+
+                    $battle_field = self::recalculateCardsStrength($battle, $battle_field, $_this->users_data, $_this->magic_usage);
+                    //Подсчет результатп раунда по очкам
+                    $total_str = self::calcStrByPlayers($battle_field);
+                    //Статус битвы (очки раундов)
+                    $round_status = unserialize($battle->round_status);
+
+
+                    //Результаты раунда отдельно по игрокам
+                    $user_points = $total_str[$_this->users_data['user']['player']];
+                    $opponent_points = $total_str[$_this->users_data['opponent']['player']];
+
+                    $gain_cards_count = ['user' => 1, 'opponent' => 1];//Количество дополнительных карт
+                    //Определение выигравшего
+                    if($user_points > $opponent_points){
+                        $round_status[$_this->users_data['user']['player']][] = 1;
+                        if($_this->users_data['opponent']['current_deck'] == 'knight') $gain_cards_count['opponent'] = 2;
+                    }
+                    if($user_points < $opponent_points){
+                        $round_status[$_this->users_data['opponent']['player']][] = 1;
+                        if($_this->users_data['user']['current_deck'] == 'knight') $gain_cards_count['user'] = 2;
+                    }
+                    if($user_points == $opponent_points){
+                        //Если колода пользователя - нечисть и противник не играет нечистью
+                        if( ( ($_this->users_data['user']['current_deck'] == 'undead') || ($_this->users_data['opponent']['current_deck'] == 'undead') ) && ($_this->users_data['user']['current_deck'] != $_this->users_data['opponent']['current_deck']) ){
+                            if($_this->users_data['user']['current_deck'] == 'undead'){
+                                $round_status[$_this->users_data['user']['player']][] = 1;
+                                if($_this->users_data['opponent']['current_deck'] == 'knight') $gain_cards_cout['opponent'] = 2;
+                            }else{
+                                $round_status[$_this->users_data['opponent']['player']][] = 1;
+                                if($_this->users_data['user']['current_deck'] == 'knight') $gain_cards_count['user'] = 2;
+                            }
+                        }else{
+                            $round_status[$_this->users_data['user']['player']][] = 1;
+                            $round_status[$_this->users_data['opponent']['player']][] = 1;
+                        }
+                    }
+
+                    $clear_result = self::clearBattleField($battle, $battle_field, $_this->users_data, $_this->magic_usage, $gain_cards_count);
+                    $battle_field = $clear_result['battle_field'];
+                    $_this->users_data   = $clear_result['users_data'];
+                    $_this->magic_usage  = $clear_result['magic_usage'];
+
+                    $battle->battle_field = serialize($battle_field);
+                    $battle->magic_usage  = serialize($_this->magic_usage);
+                    $battle->undead_cards = serialize($clear_result['deadless_cards']);
+                    $battle->pass_count   = 0;
+                    $battle->round_status = serialize($round_status);
+                    $battle->round_count  = $battle->round_count +1;
+                }
+
+                $battle->save();
+                if($battle->disconected_count == 2){
+                    self::waitForRoundEnds($_this, $conn);
+                }else{
+                    $_this->clients->detach($conn);
+                    $_this->clients->attach($conn); //Добавление клиента
+                    echo 'New connection ('.$conn->resourceId.')'."\n\r";
+                }
+            }
+        }
+    }
+
+
+
 
 
 	protected static function sendMessageToOthers($from, $result, $battles){
@@ -1472,11 +1588,6 @@ class GwentSocket extends BaseSocket
 
 								if($card_to_kill_data['id'] == $card_data['card']['id']){
 
-                                    /*$user_type = ($users_data['user']['player'] == $player)
-                                        ? 'user'
-                                        : 'opponent';
-
-                                    $users_data[$user_type]['discard'][] = $card_data['card'];*/
                                     $users_data[$player]['discard'][] = $card_data['card'];
 
 									unset($battle_field[$player][$row]['warrior'][$card_iter]);
@@ -1596,11 +1707,6 @@ class GwentSocket extends BaseSocket
 			break;
 			case '4':
 				foreach($users_data[$user][$deck] as $card_iter => $card_data){
-					/*if($user == 'user'){
-						$allow_to_summon = self::checkForFullImmune($input_action['ignoreImmunity'], $card_data['actions']);
-					}else{
-						$allow_to_summon = self::checkForSimpleImmune($input_action['ignoreImmunity'], $card_data['actions']);
-					}*/
                     $allow_to_summon = ($user == 'user')
                         ? self::checkForFullImmune($input_action['ignoreImmunity'], $card_data['actions'])
                         : self::checkForSimpleImmune($input_action['ignoreImmunity'], $card_data['actions']);
@@ -1800,12 +1906,14 @@ class GwentSocket extends BaseSocket
 		foreach($actions_array_fury as $card_id => $card_data){
 			$enemy_player = ($card_data['login'] == $users_data['user']['login'])? $users_data['opponent']['player']: $users_data['user']['player'];
 
-			$allow_fury_by_race = false; //Неистовость запрещена
-
 			foreach($card_data['card']['actions'] as $action_iter => $action){
 				if($action->action == '8'){
+                    $allow_fury_by_race = false;
+                    $allow_fury_by_row = false;
+                    $allow_fury_by_group = false;
+                    $allow_fury_by_magic = false;
 					//Колода противника вызывает у карты неистовство
-					if( (in_array($users_data[$enemy_player]['current_deck'], $action->fury_enemyRace)) || (empty($action->fury_enemyRace)) ){
+					if( (in_array($users_data[$enemy_player]['current_deck'], $action->fury_enemyRace)) ){
 						$allow_fury_by_race = true;
 					}
 					//Количество воинов в ряду/рядах вызывает неистовство
@@ -1816,28 +1924,35 @@ class GwentSocket extends BaseSocket
 						}
 
 						$allow_fury_by_row = ($row_cards_count >= $action->fury_enemyWarriorsCount) ? true : false;
-					}else{
-						$allow_fury_by_row = true;
 					}
+					//Карта определнной группы вызывает неистовство
+                    if((isset($action->fury_group)) && (!empty($action->fury_group))) {
+                        $player = ($card_data['login'] == $users_data['user']['login'])
+                            ? $users_data['opponent']['player']
+                            : $users_data['user']['player'];
+                        foreach($battle_field[$player] as $row){
+                            foreach($row['warrior'] as $card_iter => $card_data){
+                                if(!empty($card_data['card']['groups'])){
+                                    foreach($card_data['card']['groups'] as $group){
+                                        if(in_array($group, $action->fury_group)){
+                                            $allow_fury_by_group = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
 
-					$allow_fury_by_magic = false;
-                    /*ПЕРЕДЕЛАТЬ*/
-					if( (isset($action->fury_abilityCastEnemy)) && (!empty($action->fury_abilityCastEnemy)) ){
-						foreach($action->fury_abilityCastEnemy as $ability_iter => $ability){
-							if($ability == 'any'){
-								foreach($magic_usage[$enemy_player] as $activated_in_round => $magic_data){
-									if($battle->round_count == $activated_in_round){
-										$allow_fury_by_magic = true;
-									}
-								}
-							}
-						}
-					}else{
-						$allow_fury_by_magic = true;
-					}
-					/***/
+                    //Магия вызывает неистовство
+                    if( (isset($action->fury_abilityCastEnemy)) && ($action->fury_abilityCastEnemy == 1)){
+                        foreach($magic_usage[$enemy_player] as $activated_in_round => $magic_data){
+                            if($battle->round_count == $activated_in_round){
+                                $allow_fury_by_magic = true;
+                            }
+                        }
+                    }
 
-					if(($allow_fury_by_row) && ($allow_fury_by_race) && ($allow_fury_by_magic)){
+					if(($allow_fury_by_row) || ($allow_fury_by_race) || ($allow_fury_by_magic) || ($allow_fury_by_group)){
 						$card_destignation = explode('_',$card_id);
 						$battle_field[$card_destignation[0]][$card_destignation[1]]['warrior'][$card_destignation[2]]['strength'] += $action->fury_strenghtVal;
 					}
