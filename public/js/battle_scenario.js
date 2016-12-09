@@ -796,6 +796,9 @@ $('.convert-left-info .cards-bet #card-give-more-user').on('click', '.card-my-in
 });
 
 function convertTimeToStr(seconds){
+	if(seconds > timeOut){
+		seconds = timeOut;
+	}
 	if(seconds >= 0){
 		var time = {'m':Math.floor(seconds / 60), 's':seconds % 60};
 		for(var i in time){
@@ -1269,6 +1272,7 @@ var socketResult;
 var ident;
 var allowToAction = false;
 var turnDescript = {"cardSource": "hand"};
+var timeOut;
 var conn;
 	$.get('/get_socket_settings', function (data) {
 		socketResult = JSON.parse(data); //Получение данных настроек соккета
@@ -1278,6 +1282,7 @@ var conn;
 			userId: socketResult['user'],
 			hash: socketResult['hash']
 		};
+		timeOut = socketResult['timeOut'];
 
 		$(document).ready(function () {
 

@@ -312,16 +312,17 @@ class SiteGameController extends BaseController
 	public function socketSettings(){
 		$user = Auth::user();
 		$battle_member = \DB::table('tbl_battle_members')->select('battle_id','user_id')->where('user_id', '=', $user->id)->get();
-		$sec = intval(getenv('GAME_SEC_TIMEOUT'));
-		if($sec<=0){
-			$sec = 65;
-		}
+
+		$turn_expire_time = \DB::table('tbl_etc_data')
+            ->select('label_data','meta_key','meta_value')
+            ->where('label_data','=','timing')
+            ->where('meta_key','=','max_step_time')->get();
 		return json_encode([
 			'battle'    => $battle_member[0]->battle_id,
 			'user'      => $user->id,
 			'hash'      => md5(getenv('SECRET_MD5_KEY').$user->id),
 			'dom'       => getenv('APP_DOMEN_NAME'),
-			'timeOut'   => $sec
+			'timeOut'   => $turn_expire_time[0]->meta_value,
 		]);
 	}
 
