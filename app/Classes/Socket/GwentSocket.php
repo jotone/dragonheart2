@@ -108,6 +108,7 @@ class GwentSocket extends BaseSocket
 				$users_data[$user_identificator] = &$users_data['opponent'];
 			}
 		}
+        if(isset($msg->timing)) $users_data['user']['turn_expire'] = $msg->timing;
 
 		switch($msg->action) {
 			//Пользователь присоединился
@@ -454,10 +455,10 @@ class GwentSocket extends BaseSocket
 
 
                     if($add_time === true){
-                        $turn_expire = $msg->timing + $timing_settings['additional_time']-6;
+                        $turn_expire = $msg->timing + $timing_settings['additional_time'];//-6;
                         $showTimerOfUser = 'opponent';
                     }else{
-                        $turn_expire = $msg->timing-6;
+                        $turn_expire = $msg->timing;//-6;
                         $showTimerOfUser = 'user';
                     }
 
@@ -552,6 +553,7 @@ class GwentSocket extends BaseSocket
 
 				$users_battle_data = BattleMembers::find($users_data['user']['battle_member_id']);
 				$users_battle_data['round_passed'] = 1;
+                $users_battle_data['turn_expire']  = $msg->timing;
 				$users_battle_data->save();
 
 				$users_passed_count = $users_data['opponent']['round_passed'] + 1;
@@ -561,6 +563,7 @@ class GwentSocket extends BaseSocket
 
 				$battle->user_id_turn = $user_turn_id;
                 $battle->pass_count++;
+                $battle->turn_expire = $msg->timing + time();
 				$battle->save();
 
 				//Если только один пасанувший
@@ -748,15 +751,13 @@ class GwentSocket extends BaseSocket
 
                         //timing
                         foreach($users_data as $type => $user_data){
-                            if( ($battle->round_count == 2) || ($battle->round_count == 3) ){
-                                $timing = $users_data[$type]['turn_expire']- $timing_settings['additional_time'] + $timing_settings['first_step_r'.$battle->round_count];
-
+                            if( ($type == 'user') || ($type == 'opponent') ){
+                                $timing = $users_data[$type]['turn_expire'] + $timing_settings['first_step_r'.$battle->round_count];// - $timing_settings['additional_time'];
                                 if($timing > $timing_settings['max_step_time']){
                                     $timing = $timing_settings['max_step_time'];
                                 }
                                 \DB::table('tbl_battle_members')
-                                    ->select('id','turn_expire')
-                                    ->where('id','=',$user_data['battle_member_id'])
+                                    ->where('id','=',$users_data[$type]['battle_member_id'])
                                     ->update([
                                         'turn_expire' => $timing
                                     ]);

@@ -357,10 +357,13 @@ function userMakeAction(conn, turnDescript, allowToAction){
 		$('.buttons-block-play button[name=userPassed]').unbind();
 		$('.buttons-block-play button[name=userPassed]').click(function(){
 			if(allowToAction){
+				clearInterval(TimerInterval);
+				var time = parseInt($('.info-block-with-timer span[data-time=minute]').text()) * 60 + parseInt($('.info-block-with-timer span[data-time=seconds]').text());
 				conn.send(
 					JSON.stringify({
 						action: 'userPassed',
-						ident: ident
+						ident: ident,
+						timing: time
 					})
 				);
 				allowToAction = false;
@@ -832,7 +835,8 @@ function startTimer(login){
 					conn.send(
 						JSON.stringify({
 							action: 'userPassed',
-							ident: ident
+							ident: ident,
+							timing: 0
 						})
 					);
 				}

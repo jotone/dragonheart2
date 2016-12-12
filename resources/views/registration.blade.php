@@ -94,7 +94,7 @@ $errors = $errors->all();
                                         <div class="form-wrap-input">
                                             <button class="form-button" type="submit">
                                                 <span class="form-button-hover"></span>
-                                                <span class="form-button-text">ЗАРЕГЕСТРИРОВАТЬСЯ</span>
+                                                <span class="form-button-text">ЗАРЕГИСТРИРОВАТЬСЯ</span>
                                             </button>
                                             <a href="{{ route('user-home') }}" class="form-button back-button">
                                                 <span class="form-button-hover"></span>
