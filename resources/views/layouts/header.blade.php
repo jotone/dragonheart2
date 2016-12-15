@@ -1,5 +1,6 @@
 <?php
 $user = Auth::user();
+$gold_exch = \DB::table('tbl_etc_data')->select('meta_key','meta_value')->where('meta_key','=','usd_to_gold')->get();
 ?>
 <!DOCTYPE html>
 <html>
@@ -202,21 +203,28 @@ $user = Auth::user();
             </div>
             <div class="pop-row">
                 <div class="input-type-number">
-                    <input name="goldToBuy" type="text" required="required" autocomplete="off" value="0" min="0">
+                    <input name="goldToBuy" type="text" required="required" autocomplete="off" value="{{ $gold_exch[0]->meta_value }}" min="{{ $gold_exch[0]->meta_value }}">
                     <div class="increment clckAnim"></div>
                     <div class="decrement clckAnim"></div>
                 </div>
                 <img class="resource" src="{{ URL::asset('images/header_logo_gold.png') }}" alt="">
-                <span> = </span><b id="goldToUsd">0</b><span>&nbsp;$</span>
+
+                <span> = </span>
+                <div class="input-type-number">
+                    <input name="goldToUsd" type="text" required="required" autocomplete="off" value="1" min="1">
+                    <div class="increment clckAnim"></div>
+                    <div class="decrement clckAnim"></div>
+                </div>
+                <span>&nbsp;$</span>
             </div>
             <div class="pop-row">
                 <div class="error">
                     <span>Ошибка.Ведите числовое значение</span>
                 </div>
             </div>
-            <form id="pay" name="pay" method="POST" action="https://merchant.webmoney.ru/lmi/payment.asp" accept-charset="UTF-8">
+            <form id="pay" name="pay" method="POST" action="https://merchant.webmoney.ru/lmi/payment.asp" accept-charset="UTF-8" target="_blank">
                 <input type="hidden" name="LMI_PAYMENT_AMOUNT" value="">
-                <input type="hidden" name="LMI_PAYMENT_DESC" value="Тестовая покупка золота">
+                <input type="hidden" name="LMI_PAYMENT_DESC" value="<?= mb_convert_encoding('Тестовая покупка золота','CP1251'); ?>">
                 <input type="hidden" name="LMI_PAYMENT_NO" value="1">
                 <input type="hidden" name="LMI_PAYEE_PURSE" value="Z145179295679">
                 <input type="hidden" name="LMI_SIM_MODE" value="0">

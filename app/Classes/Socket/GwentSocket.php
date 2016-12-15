@@ -752,6 +752,8 @@ class GwentSocket extends BaseSocket
                         //timing
                         foreach($users_data as $type => $user_data){
                             if( ($type == 'user') || ($type == 'opponent') ){
+                                var_dump($type);
+                                var_dump($users_data[$type]['turn_expire']);
                                 $timing = $users_data[$type]['turn_expire'] + $timing_settings['first_step_r'.$battle->round_count];// - $timing_settings['additional_time'];
                                 if($timing > $timing_settings['max_step_time']){
                                     $timing = $timing_settings['max_step_time'];
@@ -761,6 +763,7 @@ class GwentSocket extends BaseSocket
                                     ->update([
                                         'turn_expire' => $timing
                                     ]);
+                                var_dump($timing);
                             }
                         }
 

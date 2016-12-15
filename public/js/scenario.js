@@ -991,6 +991,12 @@ function eventsToRefreshGoldPrices(input){
     input.keyup(function(){refreshGoldPrices();});
     input.keydown(function(){refreshGoldPrices();});
 }
+//Функция обновления значений цены золото в usd
+function eventsToRefreshUsdPrices(input){
+    input.change(function(){refreshUsdPrices();});
+    input.keyup(function(){refreshUsdPrices();});
+    input.keydown(function(){refreshUsdPrices();});
+}
 //Функция обновления значений цены золото в серебро
 function eventsToRefreshSilverPrices(input){
     input.change(function(){refreshSilverPrices();});
@@ -1000,8 +1006,9 @@ function eventsToRefreshSilverPrices(input){
 function refreshGoldPrices(){
         var goldValue = parseInt($('#buySomeGold input[name=goldToBuy]').val());
         if( Number.isInteger(goldValue) ){
-            var usd = goldValue * window.exgange_gold;
-            $('#buySomeGold #goldToUsd').text(usd);
+            var usd = goldValue / window.exgange_gold;
+            usd = (Math.ceil(usd * 100) / 100).toFixed(2)
+            $('#buySomeGold input[name=goldToUsd]').val(usd);
             $('#buySomeGold .error').removeClass('show');
             $('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val(usd);
             if(goldValue != 0){
@@ -1009,12 +1016,44 @@ function refreshGoldPrices(){
             }else{
                 $('#buySomeGold .button-troll').addClass('unactive');
             }
+            if($('#buySomeGold input[name=goldToBuy]').val() < window.exgange_gold){
+                $('#buySomeGold input[name=goldToBuy]').val(window.exgange_gold);
+            }
+            if($('#buySomeGold input[name=goldToUsd]').val() < 1){
+                $('#buySomeGold input[name=goldToUsd]').val(1);
+            }
         }else{
             $('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val('0');
             $('#buySomeGold .error').addClass('show');
 
             $('#buySomeGold .button-troll').addClass('unactive');
         }
+}
+function refreshUsdPrices(){
+    var usdValue = parseInt($('#buySomeGold input[name=goldToUsd]').val());
+    if( Number.isInteger(usdValue) ){
+        var usd = usdValue * window.exgange_gold;
+        usd = (Math.ceil(usd * 100) / 100).toFixed(0)
+        $('#buySomeGold input[name=goldToBuy]').val(usd);
+        $('#buySomeGold .error').removeClass('show');
+        $('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val(usd);
+        if(usdValue != 0){
+            $('#buySomeGold .button-troll').removeClass('unactive');
+        }else{
+            $('#buySomeGold .button-troll').addClass('unactive');
+        }
+        if($('#buySomeGold input[name=goldToBuy]').val() < window.exgange_gold){
+            $('#buySomeGold input[name=goldToBuy]').val(window.exgange_gold);
+        }
+        if(usdValue < 1){
+            $('#buySomeGold input[name=goldToUsd]').val(1);
+        }
+    }else{
+        $('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val('0');
+        $('#buySomeGold .error').addClass('show');
+
+        $('#buySomeGold .button-troll').addClass('unactive');
+    }
 }
 //Функция обновления значений ресурсов пользователя
 function refreshRosources(resources){
@@ -1148,9 +1187,14 @@ function showGoldBuyingPopup(){
                         }
                     });
 		            $('#buySomeGold .clckAnim').click(function () {
-                        refreshGoldPrices();
+                        if($(this).parent('.input-type-number').find('input[name=goldToUsd]').length > 0){
+                            refreshUsdPrices();
+                        }else{
+                            refreshGoldPrices();
+                        }
                     });
                     refreshGoldPrices();
+                    refreshUsdPrices();
                 }
             },
             error: function (jqXHR, exception) {
@@ -1661,6 +1705,7 @@ $(document).ready(function(){
     animationButtonClick();
     eventsToRefreshSilverPrices($('.market-buy-popup input[name=goldToSell]'));
     eventsToRefreshGoldPrices($('.market-buy-popup input[name=goldToBuy]'));
+    eventsToRefreshUsdPrices($('.market-buy-popup input[name=goldToUsd]'));
     showUserDecks();
     userConnectToGame();
     initSelectDec();
