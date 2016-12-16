@@ -1007,7 +1007,8 @@ function refreshGoldPrices(){
         var goldValue = parseInt($('#buySomeGold input[name=goldToBuy]').val());
         if( Number.isInteger(goldValue) ){
             var usd = goldValue / window.exgange_gold;
-            usd = (Math.ceil(usd * 100) / 100).toFixed(2)
+            usd = (Math.ceil(usd * 100) / 100).toFixed(2);
+            if(usd < 1) usd =1;
             $('#buySomeGold input[name=goldToUsd]').val(usd);
             $('#buySomeGold .error').removeClass('show');
             $('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val(usd);
@@ -1023,7 +1024,7 @@ function refreshGoldPrices(){
                 $('#buySomeGold input[name=goldToUsd]').val(1);
             }
         }else{
-            $('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val('0');
+            $('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val('1');
             $('#buySomeGold .error').addClass('show');
 
             $('#buySomeGold .button-troll').addClass('unactive');
@@ -1032,11 +1033,13 @@ function refreshGoldPrices(){
 function refreshUsdPrices(){
     var usdValue = parseInt($('#buySomeGold input[name=goldToUsd]').val());
     if( Number.isInteger(usdValue) ){
+        if(usdValue < 1) usdValue = 1;
         var usd = usdValue * window.exgange_gold;
-        usd = (Math.ceil(usd * 100) / 100).toFixed(0)
+        usd = (Math.ceil(usd * 100) / 100).toFixed(0);
+
         $('#buySomeGold input[name=goldToBuy]').val(usd);
         $('#buySomeGold .error').removeClass('show');
-        $('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val(usd);
+        $('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val(usdValue);
         if(usdValue != 0){
             $('#buySomeGold .button-troll').removeClass('unactive');
         }else{
@@ -1049,7 +1052,7 @@ function refreshUsdPrices(){
             $('#buySomeGold input[name=goldToUsd]').val(1);
         }
     }else{
-        $('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val('0');
+        $('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val('1');
         $('#buySomeGold .error').addClass('show');
 
         $('#buySomeGold .button-troll').addClass('unactive');
@@ -1228,11 +1231,11 @@ function incrementDecrementInputNumber() {
         $(this).find('.decrement').click(function () {
             var x = parseInt(input.val());
 
-            if(x > 0 ){
+            if(x > 1 ){
                 x--;
                 input.val(x);
             }else {
-               input.val(0);
+               input.val(1);
             }
         });
         input.keydown(function(event) { // Разрешаем: backspace, delete, tab и escape Разрешаем: Ctrl+A Разрешаем: home, end, влево, вправо

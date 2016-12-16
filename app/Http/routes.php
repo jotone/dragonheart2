@@ -201,7 +201,22 @@ Route::get('/get_socket_settings', [
 ]);
 
 
-
+//WebMoney
+//Платежная страница
+Route::get('/pay.html{money?}', [
+    'as'    => 'user-wm-pay',
+    'uses'  => 'Site\WebMoneyController@pay'
+]);
+//Страница успешно выполненного платежа
+Route::get('/success.html{WM_response?}', [
+    'as'    => 'user-wm-success',
+    'uses'  => 'Site\WebMoneyController@success'
+]);
+//Страница невыполненного платежа
+Route::get('/fail.html{WM_response?}', [
+    'as'    => 'user-wm-fail',
+    'uses'  => 'Site\WebMoneyController@fail'
+]);
 
 
 //Admin

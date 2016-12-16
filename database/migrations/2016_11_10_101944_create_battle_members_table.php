@@ -30,6 +30,7 @@ class CreateBattleMembersTable extends Migration
             $table->text('addition_data');
             $table->tinyInteger('round_passed')->unsigned();
             $table->string('turn_expire');
+            $table->string('time_shift');
             $table->timestamps();
         });
     }

@@ -222,17 +222,20 @@ $gold_exch = \DB::table('tbl_etc_data')->select('meta_key','meta_value')->where(
                     <span>Ошибка.Ведите числовое значение</span>
                 </div>
             </div>
+            @if($user)
             <form id="pay" name="pay" method="POST" action="https://merchant.webmoney.ru/lmi/payment.asp" accept-charset="UTF-8" target="_blank">
                 <input type="hidden" name="LMI_PAYMENT_AMOUNT" value="">
-                <input type="hidden" name="LMI_PAYMENT_DESC" value="<?= mb_convert_encoding('Тестовая покупка золота','CP1251'); ?>">
+                <input type="hidden" name="LMI_PAYMENT_DESC_BASE64" value="<?php echo base64_encode('Тестовая покупка золота'); ?>">
                 <input type="hidden" name="LMI_PAYMENT_NO" value="1">
                 <input type="hidden" name="LMI_PAYEE_PURSE" value="Z145179295679">
+                <input type="hidden" name="LMI_PAYMER_EMAIL" value="{{ $user['email'] }}">
                 <input type="hidden" name="LMI_SIM_MODE" value="0">
-                <input type="hidden" name="id" value="@if($user){{ $user['id'] }}@endif">
+                <input type="hidden" name="id" value="{{ $user['id'] }}">
                 <div class="pop-row">
                     <a class="button-troll" href="#"><b>Пополнить</b></a>
                 </div>
             </form>
+            @endif
         </div>
     </div>
     <!-- Покупка Энергии-->

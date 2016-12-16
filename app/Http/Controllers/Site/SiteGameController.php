@@ -209,6 +209,12 @@ class SiteGameController extends BaseController
 
 		$users_result_data = [];
 
+        $time_shift = time() - $data['time'];
+        \DB::table('tbl_battle_members')
+            ->where('battle_id', '=', $data['battle_id'])
+            ->where('user_id', '=', $user['id'])
+            ->update(['time_shift' => $time_shift]);
+
 		foreach($battle_members as $key => $value){
 
 			$user_in_battle = \DB::table('users')

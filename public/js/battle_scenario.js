@@ -286,7 +286,8 @@ function createCardDescriptionView(cardData, strength, titleView){
 		'</div>' +
 		'<div class="card-name-property"><p>'+cardData['title']+'</p></div>' +
 		'<div class="card-description-hidden"><div class="jsp-cont-descr">' +
-			  '<p class="txt">'+cardData['descript']+'</p></div></div> '+
+			  //'<p class="txt">'+cardData['descript']+'</p></div></div> '+
+			  cardData['descript']+'</div></div> '+
 		'</div>' +
 		'</div>' +
 		'</div>';
@@ -910,7 +911,7 @@ function startBattle() {
 					url: '/game_start',
 					type: 'PUT',
 					headers: {'X-CSRF-TOKEN': token},
-					data: {battle_id: result.battleInfo},
+					data: {battle_id: result.battleInfo, time:phpTime()},
 					success: function (data) {
 						data = JSON.parse(data);
 						if (data['message'] == 'success') {
