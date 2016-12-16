@@ -165,48 +165,48 @@ function userChangeDeck(can_change_cards){
 	//Пользователь Выбрал карты для сноса и нажал "ОК"
 	$('#selecthandCardsPopup .acceptHandDeck').click(function(e){
 		e.preventDefault();
-        userChangeCards();
+		userChangeCards();
 		clearInterval(TimerInterval);
 	});
 }
 
 function userChangeCards(){
-    showPreloader();
+	showPreloader();
 
-    var token = $('.market-buy-popup input[name=_token]').val().trim();
-    var turn = '';
-    if($('#selecthandCardsPopup input[name=userTurn]').length > 0){
-        turn = ($('#selecthandCardsPopup input[name=userTurn]:checked').val() == undefined)? $('.convert-right-info .user-describer').attr('id'): $('#selecthandCardsPopup input[name=userTurn]:checked').val();
-    }
+	var token = $('.market-buy-popup input[name=_token]').val().trim();
+	var turn = '';
+	if($('#selecthandCardsPopup input[name=userTurn]').length > 0){
+		turn = ($('#selecthandCardsPopup input[name=userTurn]:checked').val() == undefined)? $('.convert-right-info .user-describer').attr('id'): $('#selecthandCardsPopup input[name=userTurn]:checked').val();
+	}
 
-    var time = parseInt($('#selecthandCardsPopup .timer-in-popup span[data-time=minute]').text()) * 60 + parseInt($('#selecthandCardsPopup .timer-in-popup span[data-time=seconds]').text());
+	var time = parseInt($('#selecthandCardsPopup .timer-in-popup span[data-time=minute]').text()) * 60 + parseInt($('#selecthandCardsPopup .timer-in-popup span[data-time=seconds]').text());
 
-    $.ajax({
-        url:    '/game_user_change_cards',
-        type:   'PUT',
-        headers:{'X-CSRF-TOKEN':token},
+	$.ajax({
+		url:    '/game_user_change_cards',
+		type:   'PUT',
+		headers:{'X-CSRF-TOKEN':token},
 		data:	{time:time},
-        success:function(data){
-            data = JSON.parse(data);
-            $('#allies-deck .jspPane').empty().append(createDeckCardPreview(data[$('.user-describer').attr('id')]['deck'].length, true, data[$('.user-describer').attr('id')]['deck']));
-            $('.user-card-stash #sortableUserCards').empty();
-            for(var i=0; i< data[$('.user-describer').attr('id')]['hand'].length; i++){
-                $('.user-card-stash #sortableUserCards').append(createFieldCardView(data[$('.user-describer').attr('id')]['hand'][i], data[$('.user-describer').attr('id')]['hand'][i]['strength'], true));
+		success:function(data){
+			data = JSON.parse(data);
+			$('#allies-deck .jspPane').empty().append(createDeckCardPreview(data[$('.user-describer').attr('id')]['deck'].length, true, data[$('.user-describer').attr('id')]['deck']));
+			$('.user-card-stash #sortableUserCards').empty();
+			for(var i=0; i< data[$('.user-describer').attr('id')]['hand'].length; i++){
+				$('.user-card-stash #sortableUserCards').append(createFieldCardView(data[$('.user-describer').attr('id')]['hand'][i], data[$('.user-describer').attr('id')]['hand'][i]['strength'], true));
 
-            }
-            conn.send(
-                JSON.stringify({
-                    action: 'userReady',
-                    ident: ident,
-                    turn: turn
-                })
-            );
-            console.log('user send Ready');
-            closeAllTrollPopup();
-            hidePreloader();
-            calculateRightMarginCardHands();
-        }
-    });
+			}
+			conn.send(
+				JSON.stringify({
+					action: 'userReady',
+					ident: ident,
+					turn: turn
+				})
+			);
+			console.log('user send Ready');
+			closeAllTrollPopup();
+			hidePreloader();
+			calculateRightMarginCardHands();
+		}
+	});
 }
 
 function createUserDescriber(userLogin, user_img, userRace){
@@ -1070,11 +1070,11 @@ function startBattle() {
 			calculateRightMarginCardHands();
 			hidePreloader();
 
-            if(result.users != undefined){
-                 for(var login in result.users){
-                    $('.convert-right-info #'+login+' .stats-energy').text(result.users[login]);
-                }
-            }
+			if(result.users != undefined){
+				 for(var login in result.users){
+					$('.convert-right-info #'+login+' .stats-energy').text(result.users[login]);
+				}
+			}
 
 			var expireTime = result.timing - phpTime();
 			convertTimeToStr(expireTime);
@@ -1129,10 +1129,10 @@ function startBattle() {
 							$('#selectCurrentTurn #chooseUser').empty();
 							for(var login in result.users){
 								$('#selectCurrentTurn #chooseUser').append('' +
-                                    '<label>' +
-                                    '<input type="radio" name="usersTurn" value="'+login+'">' +
-                                    '<div class="pseudo-radio"></div> - '+login+
-                                    '</label>');
+									'<label>' +
+									'<input type="radio" name="usersTurn" value="'+login+'">' +
+									'<div class="pseudo-radio"></div> - '+login+
+									'</label>');
 							}
 							$('#selectCurrentTurn #chooseUser input[name=usersTurn]:first').prop('checked', true).next().addClass('active');
 							openTrollPopup($('#selectCurrentTurn'));

@@ -118,7 +118,7 @@ class GwentSocket extends BaseSocket
 			//Пользователь присоединился
 			case 'userJoinedToRoom':
 				if($battle->user_id_turn != 0){
-					$user_turn = $users_data[$battle->user_id_turn]['id']['login'];
+					$user_turn = $users_data[$battle->user_id_turn]['login'];
 				}else{
 					$user_turn = '';
 				}
@@ -198,7 +198,7 @@ class GwentSocket extends BaseSocket
 										? $users_data['p1']['id']
 										: $users_data['p2']['id'];
 								}
-							} else {
+							}else{
 								$rand = mt_rand(0, 1);
 								$players_turn = ($rand == 0)
 									? $users_data['p1']['id']
@@ -350,7 +350,10 @@ class GwentSocket extends BaseSocket
 							$users_data['user']['energy'] = $users_data['user']['energy'] - $magic->energy_cost;
 
 							if(!isset($magic_usage[$users_data['user']['player']][$battle->round_count])){
-								$magic_usage[$users_data['user']['player']][$battle->round_count] = ['id' => $msg->magic, 'allow' => '1'];
+								$magic_usage[$users_data['user']['player']][$battle->round_count] = [
+									'id' => $msg->magic,
+									'allow' => '1'
+								];
 								$current_actions = $magic->actions;
 							}else{
 								$disable_magic = true;
@@ -452,10 +455,10 @@ class GwentSocket extends BaseSocket
 
 
 					if($add_time === true){
-						$turn_expire = $msg->timing + $timing_settings['additional_time'] - $users_data['user']['time_shift'];
+						$turn_expire = $msg->timing + $timing_settings['additional_time'];
 						$showTimerOfUser = 'opponent';
 					}else{
-						$turn_expire = $msg->timing - $users_data['user']['time_shift'];
+						$turn_expire = $msg->timing;
 						$showTimerOfUser = 'user';
 					}
 
@@ -550,7 +553,7 @@ class GwentSocket extends BaseSocket
 
 				$users_battle_data = BattleMembers::find($users_data['user']['battle_member_id']);
 				$users_battle_data['round_passed'] = 1;
-				$users_battle_data['turn_expire'] = $msg->timing - $users_data['user']['time_shift'];
+				$users_battle_data['turn_expire'] = $msg->timing;// - $users_data['user']['time_shift'];
 				$users_battle_data->save();
 
 				$users_passed_count = $users_data['opponent']['round_passed'] + 1;
@@ -560,7 +563,7 @@ class GwentSocket extends BaseSocket
 
 				$battle->user_id_turn = $user_turn_id;
 				$battle->pass_count++;
-				$battle->turn_expire = $msg->timing - $users_data['user']['time_shift'] + time();
+				$battle->turn_expire = $msg->timing + time();
 				$battle->save();
 
 				//Если только один пасанувший
@@ -749,7 +752,7 @@ class GwentSocket extends BaseSocket
 						//timing
 						foreach($users_data as $type => $user_data){
 							if(($type == 'user') || ($type == 'opponent')){
-								$timing = $users_data[$type]['turn_expire'] - $users_data[$type]['time_shift'] + $timing_settings['first_step_r'.$battle->round_count] - $timing_settings['additional_time'];
+								$timing = $users_data[$type]['turn_expire'] + $timing_settings['first_step_r'.$battle->round_count] - $users_data[$type]['time_shift'];// - $timing_settings['additional_time']
 								if($timing > $timing_settings['max_step_time']){
 									$timing = $timing_settings['max_step_time'];
 								}
@@ -814,7 +817,7 @@ class GwentSocket extends BaseSocket
 
 				$user_turn_id = $users_data[$player]['id'];
 
-				$turn_expire = $msg->time - $users_data[$player]['time_shift'];
+				$turn_expire = $msg->time;// - $users_data[$player]['time_shift'];
 				if($turn_expire > $timing_settings['max_step_time']){
 					$turn_expire = $timing_settings['max_step_time'];
 				}
@@ -2313,7 +2316,7 @@ class GwentSocket extends BaseSocket
 
 		$result = [
 			'message'		=> 'userMadeAction',
-			'timing'		=> $users_data['opponent']['turn_expire']+time(),
+			'timing'		=> $timing+time(),
 			'user_hand'		=> $users_data['opponent']['hand'],
 			'user_deck'		=> $users_data['opponent']['deck'],
 			'user_discard'	=> $users_data['opponent']['discard'],
