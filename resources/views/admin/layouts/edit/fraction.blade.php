@@ -38,6 +38,17 @@
                     </td>
                 </tr>
                 <tr>
+                    <td><label>Рубашка карт фракции:</label></td>
+                    <td>
+                        <input name="fractionCardBG" type="file">
+                        <div class="image-container cfix">
+                            @if($fraction->card_img !='')
+                                <img src="{{ URL::asset('/img/fractions_images/'.$fraction->card_img) }}" alt="{{ $fraction->card_img }}" style="max-width: 100px; max-height: 100px;">
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+                <tr>
                     <td><label>Бэкграунд для фракции:</label></td>
                     <td>
                         <input name="fractionBGAddImg" type="file">

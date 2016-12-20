@@ -18,6 +18,7 @@ class CreateFractionsTable extends Migration
             $table->string('slug');
             $table->string('img_url');
             $table->string('bg_img');
+            $table->string('card_img');
             $table->string('type',16);
             $table->text('description');
             $table->text('short_description');

@@ -69,10 +69,15 @@ function buildRoomPreview(userData){
 	$('#selecthandCardsPopup #handCards').empty();
 
 	//Отображаем данные пользователей
+	window.userImgData = {'opponent':'', 'user': ''};
 	for(var key in userData){
+
 		if(key != $('.user-describer').attr('id')){
 			$('#selecthandCardsPopup .opponent-fraction span').text(userData[key]['deck_title']);
 			$('#selecthandCardsPopup .opponent-description span').text(userData[key]['deck_descr']);
+			window.userImgData['opponent'] = userData[key]['deck_img'];
+		}else{
+			window.userImgData['user'] = userData[key]['deck_img'];
 		}
 		if( $('.convert-right-info #'+key).length <1){
 			//Установить никнейм оппонета в правом сайдбаре
@@ -745,15 +750,17 @@ function changeTurnIndicator(login){
 }
 
 //Создание отображения колоды
-function createDeckCardPreview(count, is_user, deck){
+function createDeckCardPreview(count, is_user, deck, user_type){
 	var divClass = (is_user) ? 'card-my-init cards-take-more' : 'card-init';
+	var deckBG = (is_user) ? 'user' : 'opponent';
+	var deckBG = 'style="background-image: url(/img/fractions_images/'+window.userImgData[deckBG]+') !important"';
 	var cardList = '';
 	if(deck != undefined){
 		for(var i=0; i<deck.length; i++){
 			cardList += createFieldCardView(deck[i], deck[i]['strength'], true);
 		}
 	}else{
-		cardList += '<div class="'+divClass+'"><div class="card-otboy-counter deck">'+count+'</div></div>';
+		cardList += '<div class="'+divClass+'" '+deckBG+'><div class="card-otboy-counter deck">'+count+'</div></div>';
 	}
 
 	return cardList;
@@ -1279,5 +1286,4 @@ $(document).ready(function () {
 	calculateRightMarginCardHands();
 	pleaseShowMePopupWithDeckCards();
 	circleRoundIndicator();
-
 });

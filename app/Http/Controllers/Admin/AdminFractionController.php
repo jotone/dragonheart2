@@ -8,8 +8,6 @@ use Illuminate\Http\Request;
 
 class AdminFractionController extends BaseController
 {
-
-
     public function addFraction(Request $request){
         $data = $request->all();
 
@@ -27,12 +25,16 @@ class AdminFractionController extends BaseController
         //Если был указа Бэкграунд фракции
         $bg_file = AdminFunctions::createImg($data['bg_img'], 'fractions_images');
 
+        //Если была указана рубашка фракции
+        $card_file = AdminFunctions::createImg($data['card_img'], 'fractions_images');
+
         $result = Fraction::create([
             'title'         => $data['title'],
             'slug'          => $data['slug'],
             'type'          => $data['type'],
             'img_url'       => $img_file,
             'bg_img'        => $bg_file,
+            'card_img'      => $card_file,
             'cards'         => 'a:0:{}',
             'description'   => $data['description'],
             'short_description'=> $data['short_description'],
@@ -64,12 +66,16 @@ class AdminFractionController extends BaseController
         $bg_file = ($data['bg_img'] != 'undefined')
             ? AdminFunctions::createImg($data['bg_img'], 'fractions_images')
             : $fraction_to_edit -> bg_img;
+        $card_file = ($data['card_img'] != 'undefined')
+            ? AdminFunctions::createImg($data['card_img'], 'fractions_images')
+            : $fraction_to_edit -> card_img;
 
         $fraction_to_edit -> title = $data['title'];
         $fraction_to_edit -> slug = $data['slug'];
         $fraction_to_edit -> type = $data['type'];
         $fraction_to_edit -> img_url = $img_file;
         $fraction_to_edit -> bg_img = $bg_file;
+        $fraction_to_edit -> card_img = $card_file;
         $fraction_to_edit -> description = $data['description'];
         $fraction_to_edit -> short_description = $data['short_description'];
         $fraction_to_edit -> save();

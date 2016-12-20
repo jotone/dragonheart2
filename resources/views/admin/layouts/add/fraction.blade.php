@@ -31,6 +31,10 @@
                 <td><input name="fractionAddImg" type="file"><div class="image-container cfix"></div></td>
             </tr>
             <tr>
+                <td><label>Рубашка карт фракции:</label></td>
+                <td><input name="fractionCardBG" type="file"><div class="image-container cfix"></div></td>
+            </tr>
+            <tr>
                 <td><label>Бэкграунд для фракции:</label></td>
                 <td><input name="fractionBGAddImg" type="file"><div class="image-container cfix"></div></td>
             </tr>

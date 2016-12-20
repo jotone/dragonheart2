@@ -124,6 +124,7 @@ $(window).load(function() {
         formData.append( 'type', $('input[name=fraction_type]').val().trim() );                     //Тип карт колоды (расовая/нейтральная/специальная)
         formData.append( 'img_url', $('input[name=fractionAddImg]').prop('files')[0] );             //Изображение
         formData.append( 'bg_img', $('input[name=fractionBGAddImg]').prop('files')[0] );            //Изображение фона фракции
+        formData.append( 'card_img', $('input[name=fractionCardBG]').prop('files')[0] );            //Изображение рубашки фракции
         $.ajax({
             url:        '/admin/fraction/add',
             headers:    {'X-CSRF-TOKEN': token},
@@ -154,6 +155,7 @@ $(window).load(function() {
         formData.append( 'type', $('input[name=fraction_type]').val().trim() );                     //Тип карт колоды (расовая/нейтральная/специальная)
         formData.append( 'img_url', $('input[name=fractionAddImg]').prop('files')[0] );             //Новый файл изображения
         formData.append( 'bg_img', $('input[name=fractionBGAddImg]').prop('files')[0] );            //Изображение фона фракции
+        formData.append( 'card_img', $('input[name=fractionCardBG]').prop('files')[0] );            //Изображение рубашки фракции
         $.ajax({
             url:        '/admin/fraction/edit',
             headers:    {'X-CSRF-TOKEN': token},

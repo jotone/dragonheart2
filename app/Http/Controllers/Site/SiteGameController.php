@@ -222,7 +222,10 @@ class SiteGameController extends BaseController
 				->where('id', '=', $value -> user_id)
 				->get();// Пользователи участвующие в битве
 
-			$current_user_deck_race = \DB::table('tbl_fraction')->select('title', 'slug', 'short_description')->where('slug','=', $value -> user_deck_race)->get(); //Название колоды
+			$current_user_deck_race = \DB::table('tbl_fraction')
+                ->select('title', 'slug', 'short_description','card_img')
+                ->where('slug','=', $value -> user_deck_race)
+                ->get(); //Название колоды
 
 			$user_current_deck = unserialize($value -> user_deck); //Карты колоды пользователя
 			$user_current_hand = unserialize($value -> user_hand); //Карты руки пользователя
@@ -272,7 +275,8 @@ class SiteGameController extends BaseController
 				'energy'    => $value -> user_energy,
 				'ready'     => $value -> user_ready,
 				'can_change_cards'  => $value->available_to_change,
-				'current_deck'      => $user_in_battle[0]->user_current_deck
+				'current_deck'      => $user_in_battle[0]->user_current_deck,
+                'deck_img'  => $current_user_deck_race[0]->card_img
 			];
 		}
 

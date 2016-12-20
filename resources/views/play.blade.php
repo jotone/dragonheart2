@@ -126,7 +126,7 @@ $round_status = unserialize($battle_data->round_status);
 foreach($battle_members as $key => $value){
 	//Создание сторон противников и союзников
 	$player_data = \DB::table('users')->select('id','login','img_url')->where('id', '=', $value -> user_id)->get();
-	$fraction_name = \DB::table('tbl_fraction')->select('slug', 'title')->where('slug', '=', $value -> user_deck_race)->get();
+	$fraction_name = \DB::table('tbl_fraction')->select('slug', 'title', 'card_img')->where('slug', '=', $value -> user_deck_race)->get();
 
 	$temp_magic = unserialize($value->magic_effects);
 	$user_magic = [];
@@ -150,6 +150,7 @@ foreach($battle_members as $key => $value){
 			'user_discard'  => unserialize($value -> user_discard),
 			'user_deck_race'=> $fraction_name[0] -> title,
 			'user_deck_slug'=> $fraction_name[0] -> slug,
+			'card_img'		=> $fraction_name[0] -> card_img,
 			'user_energy'   => $value -> user_energy,
 			'user_hand'     => $user_hand,
 			'user_hand_count'=>count($user_hand),
@@ -157,7 +158,7 @@ foreach($battle_members as $key => $value){
 			'user_magic'    => $user_magic,
 			'user_nickname' => $player_data[0] -> login,
 			'user_ready'    => $value -> user_ready,
-			'wins_count'    => count($round_status[$user_field_identificator])
+			'wins_count'    => count($round_status[$user_field_identificator]),
 		];
 	}else{
 		$players['enemy'] = [
@@ -165,6 +166,7 @@ foreach($battle_members as $key => $value){
 			'user_discard'  => unserialize($value -> user_discard),
 			'user_deck_race'=> $fraction_name[0] -> title,
 			'user_deck_slug'=> $fraction_name[0] -> slug,
+			'card_img'		=> $fraction_name[0] -> card_img,
 			'user_energy'   => $value -> user_energy,
 			'user_hand_count'=> count($user_hand),
 			'user_img'      => $player_data[0] -> img_url,
@@ -244,7 +246,7 @@ foreach($battle_members as $key => $value){
 						<!-- Колода противника -->
 						<li data-field="deck">
 							@if( (isset($players['enemy']['user_deck'])) and (count($players['enemy']['user_deck']) != 0) )
-								<div class="card-init">
+								<div class="card-init" @if((isset($players['enemy'])) && (!empty($players['enemy']['card_img']))) style="background-image: url('../img/fractions_images/{{$players['enemy']['card_img']}}') !important;" @endif>
 									<div class="card-otboy-counter deck">
 										<div class="counter">{{ count($players['enemy']['user_deck'])}}</div>
 									</div>
@@ -256,7 +258,7 @@ foreach($battle_members as $key => $value){
 						<!-- Отбой противника -->
 						<li data-field="discard">
 							@if( (isset($players['enemy']['user_discard'])) and (count($players['enemy']['user_discard']) != 0) )
-								<div class="card-init">
+								<div class="card-init" @if((isset($players['enemy'])) && (!empty($players['enemy']['card_img']))) style="background-image: url('../img/fractions_images/{{$players['enemy']['card_img']}}') !important;" @endif>
 									<div class="card-otboy-counter deck">
 										<div class="counter">{{ count($players['enemy']['user_discard'])}}</div>
 									</div>
@@ -490,7 +492,7 @@ foreach($battle_members as $key => $value){
 					<ul id="card-give-more-user" data-user="{{ (isset($players['allied']['user_nickname'])?$players['allied']['user_nickname']:'') }}">
 						<li data-field="deck">
 							@if( (isset($players['allied']['user_deck'])) and (count($players['allied']['user_deck']) != 0) )
-								<div class="card-my-init cards-take-more">
+								<div class="card-my-init cards-take-more" @if((isset($players['allied'])) && (!empty($players['allied']['card_img']))) style="background-image: url('../img/fractions_images/{{$players['allied']['card_img']}}') !important;" @endif>
 									<!-- Количество карт в колоде -->
 									<div class="card-take-more-counter deck">
 										<div class="counter">{{ count($players['allied']['user_deck'])}}</div>
@@ -503,7 +505,7 @@ foreach($battle_members as $key => $value){
 						</li>
 						<li data-field="discard">
 							@if( (isset($players['allied']['user_discard'])) and (count($players['allied']['user_discard']) != 0) )
-								<div class="card-my-init cards-take-more">
+								<div class="card-my-init cards-take-more" @if((isset($players['allied'])) && (!empty($players['allied']['card_img']))) style="background-image: url('../img/fractions_images/{{$players['allied']['card_img']}}') !important;" @endif>
 									<!--Список карт отбоя -->
 
 									<!-- Количество карт в отбое -->
