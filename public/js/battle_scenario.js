@@ -247,12 +247,12 @@ function createCardDescriptionView(cardData, strength, titleView){
 		result += ' leader-type';}
 
 	switch (cardData['fraction']) {
-		case 'highlander':  result += ' highlander-race'; break;
-		case 'monsters':    result += ' monsters-race'; break;
-		case 'undead':      result += ' undead-race'; break;
-		case 'cursed':      result += ' cursed-race'; break;
-		case 'knight':      result += ' knight-race'; break;
-		case 'forest':      result += ' forest-race'; break;
+		case 'highlander':	result += ' highlander-race'; break;
+		case 'monsters':	result += ' monsters-race'; break;
+		case 'undead':		result += ' undead-race'; break;
+		case 'cursed':		result += ' cursed-race'; break;
+		case 'knight':		result += ' knight-race'; break;
+		case 'forest':		result += ' forest-race'; break;
 		default:
 			if(cardData['type'] == 'neutrall'){result += ' neutrall-race';}
 	}
@@ -423,10 +423,10 @@ function showCardActiveRow(card, type, conn, ident){
 		var url = '/game_get_magic_data';
 	}
 	$.ajax({
-		url:     url,
-		type:    'GET',
-		data:    {card:card},
-		success: function(data){
+		url:	url,
+		type:	'GET',
+		data:	{card:card},
+		success:function(data){
 			data = JSON.parse(data);
 			var dataType = ''; // Тип карты race или special
 			var dataStrength = ''; //Сила карты
@@ -968,20 +968,6 @@ function startBattle() {
 			break;
 
 			//Пользователь использовал карты с возможностью призыва карт
-			/*
-			 * @result
-			 * user_deck    //Массив карт колоды игрока
-			 * user_discard //Массив карт отбоя игрока
-			 * counts [     //Счетчики
-			 *      user_deck       - Количество карт колоды отправителя
-			 *      user_discard    - Количество карт отбоя отправителя
-			 *      opon_discard    - Количество карт отбоя противника
-			 *      opon_deck       - Количество карт колоды противника
-			 *      opon_hand'      - Количество карт руки противника
-			 * ]
-			 * turnDescript         - описания действий по умолчанию
-			 * (field_data)         - данные о поле битвы (необязательный)
-			 */
 			case 'dropCard':
 				if(result.field_data != undefined) buildBattleField(result.field_data);//Если возыращаются данные о поле битвы - перестраиваем его
 				recalculateDecks(result);//Пересчет колод пользователя и противника
@@ -993,9 +979,7 @@ function startBattle() {
 
 			//Раунд окончен
 			case 'roundEnds':
-
 				var win_status = [0,0];
-
 				for(var login in result.roundStatus){
 					if(login == $('.user-describer').attr('id')){
 						win_status[0] = result.roundStatus[login].length;
@@ -1058,6 +1042,7 @@ function startBattle() {
 						break;
 				}
 
+				closeAllTrollPopup();
 				openTrollPopup(resPop);
 				$('#successEvent').removeClass('show');
 				allowToAction = false;
@@ -1084,14 +1069,6 @@ function startBattle() {
 			}
 			//Произошло действие призыва или лекарь
 			if( (result.addition_data !== undefined) && (!$.isEmptyObject(result.addition_data)) ){
-				/*
-				 * @result.addition_data[
-				 *      action :
-				 *          activate_choise - произведено действие призыва карт
-				 *          activate_view   - произведено действие просмотра карт противника
-				 *          activate_regroup- произведено действие "перегруппировка"
-				 * ]
-				 */
 				if(allowPopups){
 					switch(result.addition_data['action']){
 						//Задействовать popup выбора карт
@@ -1115,7 +1092,6 @@ function startBattle() {
 										$('#selectNewCardsPopup #handNewCards li').removeClass('glow');
 										$(this).addClass('glow');
 									}
-
 								});
 
 								incomeCardSelection(conn, ident, result.turnDescript); //Отслеживание нажатия кнопки "Готово"
@@ -1182,8 +1158,8 @@ function startBattle() {
 							}
 							openTrollPopup($('#selectNewCardsPopup'));
 
-
 							$('#selectNewCardsPopup #handNewCards li, #selectNewCardsPopup .button-troll.acceptRegroupCards').unbind();
+							$('#selectNewCardsPopup #handNewCards li:first').addClass('glow');
 							$('#selectNewCardsPopup #handNewCards li').click(function(event){
 								if((!$(event.target).hasClass('ignore')) && event.which==1){
 									$('#selectNewCardsPopup #handNewCards li').removeClass('glow');
@@ -1197,9 +1173,7 @@ function startBattle() {
 					}
 				}
 			}
-			/*
-			 * @result.login  - указатель пользотеля что проводит текущий ход
-			 */
+
 			if(result.login == $('.user-describer').attr('id')){
 				$('.info-block-with-timer .title-timer').text('Ваш ход').addClass('user-turn-green');
 				allowToAction = true;
