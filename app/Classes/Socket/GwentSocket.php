@@ -523,6 +523,11 @@ class GwentSocket extends BaseSocket
 				$magic_usage = unserialize($battle->magic_usage);//Данные о использовании магии
 				$player = $users_data[$msg->ident->userId]['player'];
 
+                $turn_expire = $users_data[$msg->ident->userId]['turn_expire'] + $timing_settings['additional_time'] - $users_data[$msg->ident->userId]['time_shift'];
+                \DB::table('tbl_battle_members')
+                    ->where('id','=',$users_data[$msg->ident->userId]['battle_member_id'])
+                    ->update(['turn_expire' => $turn_expire]);
+
 				foreach($battle_field[$player] as $row => $row_data){
 					foreach($row_data['warrior'] as $card_iter => $card_data){
 						if(Crypt::decrypt($card_data['card']['id']) == Crypt::decrypt($msg->card)){
@@ -541,6 +546,7 @@ class GwentSocket extends BaseSocket
 
 				$battle->battle_field = serialize($battle_field);
 				$battle->user_id_turn = $users_data[$user_type]['id'];
+                $battle->turn_expire = $turn_expire + time();
 				$battle->save();
 
 				self::sendUserMadeActionData($msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $users_data[$user_type]['login'], [], $battle->round_count);
