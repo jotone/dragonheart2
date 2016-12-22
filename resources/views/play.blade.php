@@ -63,14 +63,16 @@ function cardView($card){
 				<div class="hovered-items">
 					<div class="card-game-status">
 						<div class="card-game-status-role">';
+			if($card_data['type'] == 'special'){
+				foreach($card_data['row_txt'] as $i => $dist){
+					if(!is_array($dist)) $dist = get_object_vars($dist);
+					$card_view .= '
+						<img src="'.URL::asset($dist['image']).'" alt="">
+						<span class="card-action-description">'.$dist['title'].'</span>
+						';
+				}
+			}
 
-					foreach($card_data['row_txt'] as $i => $dist){
-						if(!is_array($dist)) $dist = get_object_vars($dist);
-						$card_view .= '
-							<img src="'.URL::asset($dist['image']).'" alt="">
-							<span class="card-action-description">'.$dist['title'].'</span>
-							';
-					}
 	$card_view .= '
 						</div>
 						<div class="card-game-status-wrap">

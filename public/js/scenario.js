@@ -248,9 +248,11 @@ function buildCardDeckView(cardData, wraper){
 				'<div class="hovered-items">' +
 					'<div class="card-game-status">' +
 						'<div class="card-game-status-role">' ;
+						if(cardData['type'] != 'special'){
 							for (var j = 0; j < cardData['allowed_rows'].length; j++) {
 								result +='<img src="'+cardData['allowed_rows'][j].image+'" alt=""><span class="card-action-description">'+cardData['allowed_rows'][j].title+'</span>';
 							}
+						}
 
 			result += '</div><div class="card-game-status-wrap">';
 							if(cardData['actions'].length>0){
@@ -420,7 +422,6 @@ function sortSomeDeck(side){
 	var tempArrWarior = [];
 
 	$(side+' li').each(function(){
-		console.log($(this));
 		if($(this).find('.content-card-item-main').attr('data-type') == 'special'){
 			tempArrSpecial.push($(this));
 		}else{

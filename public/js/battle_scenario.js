@@ -276,9 +276,11 @@ function createCardDescriptionView(cardData, strength, titleView){
 		'<div class="hovered-items">' +
 			'<div class="card-game-status">' +
 				'<div class="card-game-status-role">' ;
+				if(cardData['type'] != 'special'){
 					for (var j = 0; j < cardData['row_txt'].length; j++) {
 						result +='<img src="'+cardData['row_txt'][j].image+'" alt=""><span class="card-action-description">'+cardData['row_txt'][j].title+'</span>';
 					}
+				}
 
 	result += '</div><div class="card-game-status-wrap">';
 	if(cardData['action_txt'].length>0){
