@@ -23,6 +23,12 @@ function openTrollPopup(popup){
 function resultPopupShow(message){
 	$('#successEvent').find('.result').text(message);
 	openTrollPopup($('#successEvent'));
+	setTimeout(function () {
+		$('#successEvent').removeClass('show');
+		if(!$('div.troll-popup').hasClass('show')){
+			$('.new-popups-block').removeClass('show');
+		}
+	}, 3000);
 }
 function closeAllTrollPopup(){
 	$('div.troll-popup').removeClass('show');

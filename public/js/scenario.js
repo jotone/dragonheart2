@@ -1257,7 +1257,10 @@ function resultPopupShow(message){
 	$('#successEvent').find('.result').html(message);
 	openTrollPopup($('#successEvent'));
 	setTimeout(function () {
-		closeAllTrollPopup();
+		$('#successEvent').removeClass('show');
+		if(!$('div.troll-popup').hasClass('show')){
+			$('.new-popups-block').removeClass('show');
+		}
 	}, 3000);
 }
 function showErrorMessage(message){
@@ -1265,7 +1268,10 @@ function showErrorMessage(message){
 	$('#buyingCardOrmagic .popup-content-wrap').html('<p>' + message + '</p>');
 	openTrollPopup($('#buyingCardOrmagic'));
 	setTimeout(function () {
-		closeAllTrollPopup();
+		$('#buyingCardOrmagic').removeClass('show');
+		if(!$('div.troll-popup').hasClass('show')){
+			$('.new-popups-block').removeClass('show');
+		}
 	}, 3000);
 }
 function showPreloader() {

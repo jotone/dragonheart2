@@ -799,6 +799,9 @@ border-radius: 50%;
 #sortableUserCards li:hover .content-card-item-main{
     width: 145px; height: 212px; position: absolute; bottom: 0;
 }
+#sortableUserCards  .content-card-item-main .hovered-items .card-game-status .card-game-status-role { width: 32px;}
+#sortableUserCards li:hover .content-card-item-main .hovered-items .card-game-status .card-game-status-role{ width: 48px;}
+#sortableUserCards li.active .content-card-item-main .hovered-items .card-game-status .card-game-status-role{ width: 48px;}
 #sortable-user-cards {
   height: 100%;
   text-align: center; }
