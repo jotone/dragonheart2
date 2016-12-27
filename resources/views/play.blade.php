@@ -735,6 +735,7 @@ foreach($battle_members as $key => $value){
 						if(count($magic_usage[$user_field_identificator]) >= $magic_using_times){
 							$disable_by_over = 'disactive';
 						}
+						$used = '';
 						?>
 						@foreach($players['allied']['user_magic'] as $i => $value)
 							<?php $disactive = ''; ?>
