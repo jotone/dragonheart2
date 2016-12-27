@@ -1534,7 +1534,21 @@ border-radius: 50%;
 .fancybox-form2 .fancybox-close {
   display: none; }
 
-
+ul.magic-effects-wrap li{transform: rotateY(0deg); transition: transform 600ms;}
+ul.magic-effects-wrap li.used{transform: rotateY(360deg);}
+ul.magic-effects-wrap li:before{
+  display: block;
+  content: '';
+  position: absolute; width: 100%; height: 100%;
+  opacity:0;
+  background-image: url(../images/used.png);
+  background-size:cover;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  z-index: 100;
+  transition: opacity 300ms linear 300ms;
+}
+ul.magic-effects-wrap li.used:before{ opacity:1;}
 .another-header-wrap .header-box {
   min-height: auto; }
 
@@ -3185,6 +3199,7 @@ input.book-style{
 .magic-effects-wrap .info-img{
   top: 67px;
   right: calc(50% - 12px);
+  z-index: 200;
 }
 .info-img{
   position: absolute;
