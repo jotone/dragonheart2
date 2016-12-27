@@ -75,7 +75,7 @@ function buildRoomPreview(userData){
 	$('#selecthandCardsPopup #handCards').empty();
 
 	//Отображаем данные пользователей
-	window.userImgData = {'opponent':'', 'user': ''};
+
 	for(var key in userData){
 
 		if(key != $('.user-describer').attr('id')){
@@ -881,7 +881,9 @@ function count(arr){
 function magicReview(result){
 	$('.convert-right-info .magic-effects-wrap li').removeClass('disactive');
 	for(var player in result.magicUsage){
+
 		var magicUsingTimes = (result.deck_slug == 'forest')? 2: 1;
+
 		for(var activatedInRound in result.magicUsage[player]){
 			if( (activatedInRound == result.round) || (count(result.magicUsage[player]) >= magicUsingTimes) ){
 				$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li').removeClass('active').addClass('disactive');
@@ -889,6 +891,9 @@ function magicReview(result){
 			if(activatedInRound <= result.round){
 				$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li[data-cardid="'+result.magicUsage[player][activatedInRound]['id']+'"]').removeClass('active').addClass('disactive');
 			}
+			console.log(result.magicUsage[player][activatedInRound]['id']);
+			$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li').removeClass('used');
+			$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li[data-cardid="'+result.magicUsage[player][activatedInRound]['id']+'"]').addClass('used');
 		}
 	}
 }
@@ -1262,6 +1267,7 @@ function pleaseShowMePopupWithDeckCards() {
 	});
 }
 var oponentHandCounter='';
+window.userImgData = {'opponent':'', 'user': ''};
 var socketResult;
 var ident;
 var allowToAction = false;
