@@ -745,7 +745,7 @@ foreach($battle_members as $key => $value){
 									if( ($value->id == base64_decode(base64_decode($magic_id['id'])) ) || ($battle_data->round_count == $activated_in_round) ){
 										$disactive = 'disactive';
 									}
-									$used = ($value->id == base64_decode(base64_decode($magic_id['id'])))? 'used': $used = '';
+									$used = ($value->id == base64_decode(base64_decode($magic_id['id'])))? 'used': '';
 									?>
 								@else
 									<?php $disactive = 'disactive'; ?>
