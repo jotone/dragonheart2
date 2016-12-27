@@ -892,8 +892,8 @@ function magicReview(result){
 				$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li[data-cardid="'+result.magicUsage[player][activatedInRound]['id']+'"]').removeClass('active').addClass('disactive');
 			}
 			console.log(result.magicUsage[player][activatedInRound]['id']);
-			//$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li').removeClass('used');
-			//$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li[data-cardid='+result.magicUsage[player][activatedInRound]['id']+']').addClass('used);
+			$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li').removeClass('used');
+			$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li[data-cardid="'+result.magicUsage[player][activatedInRound]['id']+'"]').addClass('used');
 		}
 	}
 }
