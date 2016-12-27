@@ -853,10 +853,11 @@ border-radius: 50%;
   padding: 30px 0 0;
 }
 .user-card-stash {
-  width: -webkit-calc(100% - 390px);
-  width: -moz-calc(100% - 390px);
-  width: calc(100% - 390px);
+  width: -webkit-calc(100% - 410px);
+  width: -moz-calc(100% - 410px);
+  width: calc(100% - 410px);
   display: inline-block;
+  margin-left: 20px;
 }
    .timer-for-play {
     width: 100%;
@@ -2998,13 +2999,21 @@ input.book-style{
 .pop-row.hr-bot{ padding-top: 5px;}
 #buySomeEnergy .pop-row span,
 #buySomeEnergy .pop-row img{vertical-align: top;}
+.change-card-start,
 .button-troll{border: 2px solid #714026; background-color: transparent;cursor: pointer;     display: inline-block;  padding: 0 10px; height: 33px; line-height: 33px;border-radius: 5px;  margin: 0 auto; position: relative;transition:all 300ms;}
+.change-card-start b,
 .button-troll b{  display: inline-block;  color: #714026;  margin-top: 0;  text-shadow: none;  font-weight: 700;  font-size:14px;  transition:all 300ms;}
+.change-card-start:hover,
 .button-troll:hover{ background: #714026;}
+.change-card-start:hover b,
 .button-troll:hover b{ color: #fae4aa;}
+.change-card-start:before,
+.change-card-start:after,
 .button-troll:before,
 .button-troll:after{content: ''; height: 1px; width: 60px; background-color: #714026; vertical-align: middle; position: absolute; top: 50%;}
+.change-card-start:before{right: 100%;}
 .button-troll:before{right: 100%;}
+.change-card-start:after{left: 100%;}
 .button-troll:after{left: 100%;}
 .button-troll.left{ margin-right: 83px;}
 .button-troll.left:after{ display: none;}
@@ -3197,8 +3206,8 @@ input.book-style{
   color:#714026;
   font-size:16px;
   font-weight: 500;
-  padding: 50px 20px 20px;
-  height: 250px;
+  padding: 20px;
+  height: 220px;
     position: relative;
 }
 .jsp-cont-descr{
@@ -3216,8 +3225,8 @@ div.troll-popup#card-info.mdesc li{ list-style-type: none;}
 div.troll-popup#card-info.mdesc .magic-description{ display: block;  color:#714026;
   font-size:16px;
   font-weight: 500;}
-div.troll-popup#card-info{  padding: 20px; width: 590px; height: 890px;z-index: 1010; }
-#card-info .content-card-item-main{ background-size:cover; width: 550px; height: 850px;}
+div.troll-popup#card-info{  padding: 20px; width: 590px; height: 920px;z-index: 1010; }
+#card-info .content-card-item-main{ background-size:100%; width: 550px; height: 880px;    background-position: 50% top;}
 #card-info .market-card-item-buy,
 #card-info .market-card-item-price,
 #card-info .info-img,

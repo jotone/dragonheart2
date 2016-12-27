@@ -1021,6 +1021,8 @@
         top: 0; }
       .content-card-item-main .hovered-items .card-name-property:after {
         bottom: 0; }
+#card-info .content-card-item-main .hovered-items .card-name-property p { font-size: 16px;}
+#card-info .content-card-item-main .hovered-items { padding-top: 33px;}
       .content-card-item-main .hovered-items .card-name-property p {
         color: white;
         font-size: 12px;

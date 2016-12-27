@@ -23,12 +23,12 @@ function openTrollPopup(popup){
 function resultPopupShow(message){
 	$('#successEvent').find('.result').text(message);
 	openTrollPopup($('#successEvent'));
-	setTimeout(function () {
-		$('#successEvent').removeClass('show');
-		if(!$('div.troll-popup').hasClass('show')){
-			$('.new-popups-block').removeClass('show');
-		}
-	}, 3000);
+	// setTimeout(function () {
+	// 	$('#successEvent').removeClass('show');
+	// 	if(!$('div.troll-popup').hasClass('show')){
+	// 		$('.new-popups-block').removeClass('show');
+	// 	}
+	// }, 3000);
 }
 function closeAllTrollPopup(){
 	$('div.troll-popup').removeClass('show');
@@ -152,7 +152,7 @@ function userChangeDeck(can_change_cards){
 		if((!$(event.target).hasClass('ignore')) && event.which==1){
 			if(parseInt($('#selecthandCardsPopup .popup-content-wrap h5 span').text()) > 0){
 				var button =$(document.createElement('div'));
-				button.addClass('change-card').html('<span>—CМЕНИТЬ—</span>');
+				button.addClass('change-card').html('<div class="change-card-start"><b>Сменить</b></div>');
 
 				if($(this).hasClass('disactive')){
 					$(this).removeClass('disactive');
