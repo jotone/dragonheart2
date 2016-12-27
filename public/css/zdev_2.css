@@ -3011,6 +3011,8 @@ input.book-style{
 .change-card-start:after,
 .button-troll:before,
 .button-troll:after{content: ''; height: 1px; width: 60px; background-color: #714026; vertical-align: middle; position: absolute; top: 50%;}
+.change-card-start:before,
+.change-card-start:after{ width: 33px;}
 .change-card-start:before{right: 100%;}
 .button-troll:before{right: 100%;}
 .change-card-start:after{left: 100%;}
@@ -3574,7 +3576,7 @@ div.troll-popup#card-info{  padding: 20px; width: 590px; height: 920px;z-index: 
  text-align: center;
  position: absolute;
  width: 100%;
- padding: 3px 0;
+ padding: 6px 0;
 }
 .rounds-counter-wrapper{ position: absolute; top: 5px; left: 0; width: 100%; text-align: center;}
 .rounds-counter-wrapper .vs{ padding-top: 21px;}
