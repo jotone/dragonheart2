@@ -56,4 +56,11 @@ class AdminUserController extends BaseController
             return 'success';
         }
     }
+
+    public function dropUser(Request $request){
+        $data = $request->all();
+        $result = User::find($data['user_id']);
+        $result -> delete();
+        return redirect(route('admin-users'));
+    }
 }
