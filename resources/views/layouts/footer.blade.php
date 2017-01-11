@@ -5,13 +5,10 @@
 
             <div class="forms-footer-blocks right">
                 <span class="forms-footer-link">
-                    <a href="{{ URL::asset('support.html') }}">Техническая поддержка</a>
+                    <a href="{{ route('user-support') }}">Техническая поддержка</a>
                 </span>
             </div>
         </div>
-
-
-
 
 </body>
 </html>
