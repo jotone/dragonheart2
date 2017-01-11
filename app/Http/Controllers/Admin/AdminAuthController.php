@@ -19,7 +19,6 @@ class AdminAuthController extends BaseController
         $log = 'unkownUser';
         $data = $request->all();
 
-
         //Валидация полей логина и пароля
         $validator = Validator::make($data, [
             'username' => 'required|max:255',

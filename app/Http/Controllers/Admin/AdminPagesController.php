@@ -10,6 +10,7 @@ use App\Fraction;
 use App\League;
 use App\MagicEffect;
 use App\Page;
+use App\Rubric;
 use App\User;
 use App\Http\Controllers\Admin\AdminViews;
 use Illuminate\Http\Request;
@@ -406,6 +407,99 @@ class AdminPagesController extends BaseController
             'text'  => $data['text']
         ]);
         return 'success';
+    }
+
+    public function supportPage(){
+        $rubrics = Rubric::orderBy('title','asc')->get();
+        $emails_list = EtcData::select('label_data', 'meta_key', 'meta_key_title')
+            ->where('label_data','=','support')
+            ->where('meta_key','=','emails')
+            ->get();
+        return view('admin.support', [
+            'rubrics' => $rubrics,
+            'emails_list' => unserialize($emails_list[0]->meta_key_title)
+        ]);
+    }
+    public function supportAddRubric(Request $request){
+        $data = $request->all();
+        $slug = AdminFunctions::str2url($data['title']).'_'.uniqid();
+        $result = Rubric::create([
+            'title' => $data['title'],
+            'slug'  => $slug
+        ]);
+        if($result){
+            return json_encode(['message'=>'success', 'id'=>$result->id]);
+        }
+    }
+
+    public function supportEditRubric(Request $request){
+        $data = $request->all();
+        $result = Rubric::find($data['id']);
+        $result -> title = $data['title'];
+        $result -> save();
+        if($result){
+            return 'success';
+        }
+    }
+
+    public function supportDropRubric(Request $request){
+        $data = $request->all();
+        $result = Rubric::find($data['id']);
+        $result -> delete();
+        if($result){
+            return 'success';
+        }
+    }
+
+    public function supportAddEmail(Request $request){
+        $data = $request->all();
+        $emails = EtcData::select('label_data', 'meta_key', 'meta_key_title')
+            ->where('label_data','=','support')
+            ->where('meta_key','=','emails')
+            ->get();
+        $emails = unserialize($emails[0]->meta_key_title);
+        $emails[] = $data['email'];
+        $emails = serialize(array_values(array_unique($emails)));
+        $result = EtcData::where('label_data','=','support')
+            ->where('meta_key','=','emails')
+            ->update(['meta_key_title'=>$emails]);
+        if($result){
+            return 'success';
+        }
+    }
+
+    public function supportEditEmail(Request $request){
+        $data = $request->all();
+        $emails = EtcData::select('label_data', 'meta_key', 'meta_key_title')
+            ->where('label_data','=','support')
+            ->where('meta_key','=','emails')
+            ->get();
+        $emails = unserialize($emails[0]->meta_key_title);
+        $emails[$data['iter']] = $data['email'];
+        $emails = serialize(array_values(array_unique($emails)));
+        $result = EtcData::where('label_data','=','support')
+            ->where('meta_key','=','emails')
+            ->update(['meta_key_title'=>$emails]);
+        if($result){
+            return 'success';
+        }
+    }
+
+    public function supportDropEmail(Request $request){
+        $data = $request->all();
+        $emails = EtcData::select('label_data', 'meta_key', 'meta_key_title')
+            ->where('label_data','=','support')
+            ->where('meta_key','=','emails')
+            ->get();
+        $emails = unserialize($emails[0]->meta_key_title);
+        unset($emails[$data['iter']]);
+        $emails = serialize(array_values(array_unique($emails)));
+        $result = EtcData::where('label_data','=','support')
+            ->where('meta_key','=','emails')
+            ->update(['meta_key_title'=>$emails]);
+        if($result){
+            return 'success';
+        }
     }
     //END OF Страницы
 }
