@@ -329,6 +329,7 @@ class ComposerStaticInitb0f981b1c8772fcb824c8d09755f1e7a
         'CreateFractionsTable' => __DIR__ . '/../..' . '/database/migrations/2016_11_10_095003_create_fractions_table.php',
         'CreateLeagueTable' => __DIR__ . '/../..' . '/database/migrations/2016_11_10_101203_create_league_table.php',
         'CreateMagicEffectsTable' => __DIR__ . '/../..' . '/database/migrations/2016_11_10_100545_create_magic_effects__table.php',
+        'CreatePagesTable' => __DIR__ . '/../..' . '/database/migrations/2017_01_11_100454_create_pages_table.php',
         'CreatePasswordResetsTable' => __DIR__ . '/../..' . '/database/migrations/2014_10_12_100000_create_password_resets_table.php',
         'CreateUsersTable' => __DIR__ . '/../..' . '/database/migrations/2014_10_12_000000_create_users_table.php',
         'DatabaseSeeder' => __DIR__ . '/../..' . '/database/seeds/DatabaseSeeder.php',

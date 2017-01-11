@@ -9,6 +9,7 @@ use App\EtcData;
 use App\Fraction;
 use App\League;
 use App\MagicEffect;
+use App\Page;
 use App\User;
 use App\Http\Controllers\Admin\AdminViews;
 use Illuminate\Http\Request;
@@ -378,4 +379,33 @@ class AdminPagesController extends BaseController
         return view('admin.layouts.edit.user', ['user' => $user]);
     }
     //END OF Пользователи
+
+    //Страницы
+    public function viewPages(){
+        $pages = Page::orderBy('title','asc')->get();
+
+        $first_editable = (isset($pages[0]))? $pages[0]: ['title'=>'', 'slug'=>[], 'text'=>''];
+
+        return view('admin.pages', ['pages'=>$pages, 'first_editable'=>$first_editable]);
+    }
+
+    public function viewEditablePage(Request $request){
+        $data = $request->all();
+        $pages = Page::where('slug','=',$data['slug'])->get();
+        return json_encode([
+            'title' => $pages[0]->title,
+            'slug'  => $pages[0]->slug,
+            'text'  => $pages[0]->text
+        ]);
+    }
+
+    public function editPage(Request $request){
+        $data = $request->all();
+        $result = Page::where('slug','=',$data['slug'])->update([
+            'title' => $data['title'],
+            'text'  => $data['text']
+        ]);
+        return 'success';
+    }
+    //END OF Страницы
 }
