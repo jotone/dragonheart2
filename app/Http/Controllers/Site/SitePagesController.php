@@ -7,6 +7,7 @@ use App\Card;
 use App\Fraction;
 use App\EtcData;
 use App\League;
+use App\Page;
 use App\User;
 
 use Illuminate\Http\Request;
@@ -49,11 +50,15 @@ class SitePagesController extends BaseController
 			$output[$key]['description'] = $fraction['description'];
 			$output[$key]['short_description'] = $fraction['short_description'];
 		}
+
+		$page_content = Page::where('slug','=','about_game')->get();
+
 		return view('home', [
 		    'fractions' => $output,
             'exchange_options' => $exchange_options,
             'user' => $user,
-            'bg_img' => $bg_img
+            'bg_img' => $bg_img,
+            'page_content' => $page_content[0]
         ]);
 	}
 
@@ -224,8 +229,14 @@ class SitePagesController extends BaseController
 			->orderBy('meta_value','asc')
 			->get();
 
+        $page_content = Page::where('slug','=','license')->get();
+
 		$fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
-		return view('registration', ['fractions' => $fractions, 'exchange_options' => $exchange_options]);
+		return view('registration', [
+		    'fractions' => $fractions,
+            'exchange_options' => $exchange_options,
+            'page_content' => $page_content[0]
+        ]);
 	}
 
 	//Мои карты
@@ -314,6 +325,12 @@ class SitePagesController extends BaseController
 			->get();
 
 		$fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
-		return view('training', ['fractions' => $fractions, 'exchange_options' => $exchange_options]);
+        $page_content = Page::where('slug','=','training')->get();
+
+		return view('training', [
+		    'fractions' => $fractions,
+            'exchange_options' => $exchange_options,
+            'page_content' => $page_content[0]
+        ]);
 	}
 }
