@@ -28,7 +28,12 @@
             </tr>
             <tr>
                 <td><label>Изображение фракции:</label></td>
-                <td><input name="fractionAddImg" type="file"><div class="image-container cfix"></div></td>
+                <td>
+                    <input name="fractionAddImg" type="file">
+                    <div class="image-container cfix">
+
+                    </div>
+                </td>
             </tr>
             <tr>
                 <td><label>Рубашка карт фракции:</label></td>

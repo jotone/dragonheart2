@@ -16,7 +16,7 @@
                 </tr>
                 <tr>
                     <td><label>Тип:</label></td>
-                    <td><input name="fraction_type" type="text" value="{{ $fraction->race_type }}"></td>
+                    <td><input name="fraction_type" type="text" value="{{ $fraction->type }}"></td>
                 </tr>
                 <tr>
                     <td><label>Описание:</label></td>
