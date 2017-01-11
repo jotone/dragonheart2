@@ -537,6 +537,10 @@ $(window).load(function() {
             }
         });
     });
+    /*
+    * END OF Пользователи
+    */
+
     function tinyMCE(selector){
         if($(selector).length>0){
             tinymce.init({ selector:selector });
@@ -545,4 +549,42 @@ $(window).load(function() {
     tinyMCE('textarea[name=card_short_descr]');
     tinyMCE('textarea[name=card_full_descr]');
     tinyMCE('textarea[name=magic_descr]');
+
+    /*
+     * Страницы
+     */
+
+    $('#sitePagesTexts').on('change', 'select[name=pageSelector]', function(){
+        var slug = $(this).val();
+        $.ajax({
+            url:    '/admin/pages/show_to_edit',
+            type:   'GET',
+            data:   {slug:slug},
+            success:function(data){
+                data = JSON.parse(data);
+                $('#sitePagesTexts input[name=pageTitle]').val(data['title']);
+                $('#sitePagesTexts textarea[name=pageText]').val(data['text']);
+                $('#sitePagesTexts input[name=applyPage]').attr('data-slug',data['slug']);
+            }
+        });
+    });
+
+    $('#sitePagesTexts').on('click', 'input[name=applyPage]', function(){
+        var title = $('#sitePagesTexts input[name=pageTitle]').val();
+        var slug = $(this).attr('data-slug');
+        var text = $('#sitePagesTexts textarea[name=pageText]').val();
+        var token = $('input[name=_token]').val();
+        $.ajax({
+            url:    '/admin/pages/edit',
+            type:   'PUT',
+            headers:{'X-CSRF-TOKEN': token},
+            data:   {slug:slug, title:title, text:text},
+            success:function(data){
+                if(data != 'success') alert(data);
+            }
+        });
+    });
+    /*
+     * END OF Страницы
+     */
 });

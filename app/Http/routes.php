@@ -501,6 +501,17 @@ Route::group(['middleware' => 'admin'], function() {
 			'uses'  => 'Admin\AdminUserController@userEdit'
 		]);
 
+	//Страницы
+    Route::get('/admin/pages', [
+        'as'    => 'admin-pages',
+        'uses'  => 'Admin\AdminPagesController@viewPages'
+    ]);
+        Route::get('admin/pages/show_to_edit', [
+            'uses'  => 'Admin\AdminPagesController@viewEditablePage'
+        ]);
+        Route::put('/admin/pages/edit', [
+            'uses'  => 'Admin\AdminPagesController@editPage'
+        ]);
 
 
 	//Получить селектор всех карт в таблице
