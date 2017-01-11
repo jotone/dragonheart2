@@ -70,14 +70,11 @@ $errors = $errors->all();
                                 </div>
 
                                 <div class="agree-field">
-
-
                                     <input type="checkbox" name="check-agree" id="linka-check" value="false">
                                     <label for="linka-check" class="swicher-maker">
                                         <span class="kvadratic kv-true "></span>
                                         <span>я принимаю условия <a href="#">лицензионного соглашения</a> </span>
                                     </label>
-
                                 </div>
 
                                 <div class="form-wrap-row error-text" @if(!empty($errors)) style="display: block;" @endif>

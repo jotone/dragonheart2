@@ -8,6 +8,7 @@ use App\Fraction;
 use App\EtcData;
 use App\League;
 use App\Page;
+use App\Rubric;
 use App\User;
 
 use Illuminate\Http\Request;
@@ -314,6 +315,24 @@ class SitePagesController extends BaseController
 		$fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
 		return view('settings', ['fractions' => $fractions, 'exchange_options' => $exchange_options]);
 	}
+
+	//Тех поддержка
+    public function supportPage(){
+        $exchange_options = \DB::table('tbl_etc_data')
+            ->select('label_data','meta_key','meta_value', 'meta_key_title')
+            ->where('label_data', '=', 'premium_buing')
+            ->orderBy('meta_value','asc')
+            ->get();
+
+        $fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
+
+        $rubrics = Rubric::orderBy('position','asc')->get();
+        return view('support', [
+            'fractions' => $fractions,
+            'exchange_options' => $exchange_options,
+            'rubrics' => $rubrics
+        ]);
+    }
 
 	//Обучение
 	public function trainingPage(){

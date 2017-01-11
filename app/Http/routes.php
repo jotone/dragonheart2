@@ -30,6 +30,17 @@ Route::get('/confirm/{token}',[
 	'uses'  => 'Site\UserAuthController@confirmAccessToken'
 ]);
 
+//Тех поддержка
+Route::get('/support', [
+    'as'    => 'user-support',
+    'uses'  => 'Site\SitePagesController@supportPage'
+]);
+
+Route::post('/support', [
+    'as'    => 'user-sends-letter',
+    'uses'  => 'Site\UserAuthController@userSendsLetter'
+]);
+
 //Авторизация пользователя
 Route::post('/login', [
 	'as'    => 'user-login',
@@ -512,7 +523,29 @@ Route::group(['middleware' => 'admin'], function() {
         Route::put('/admin/pages/edit', [
             'uses'  => 'Admin\AdminPagesController@editPage'
         ]);
-
+    //Тех поддержка
+    Route::get('/admin/support', [
+        'as'    => 'admin-support',
+        'uses'  => 'Admin\AdminPagesController@supportPage'
+    ]);
+        Route::post('/admin/support/add', [
+            'uses'  => 'Admin\AdminPagesController@supportAddRubric'
+        ]);
+        Route::put('/admin/support/edit', [
+            'uses'  => 'Admin\AdminPagesController@supportEditRubric'
+        ]);
+        Route::delete('/admin/support/drop', [
+            'uses'  => 'Admin\AdminPagesController@supportDropRubric'
+        ]);
+        Route::post('/admin/support/add_admin', [
+            'uses'  => 'Admin\AdminPagesController@supportAddEmail'
+        ]);
+        Route::put('/admin/support/edit_admin', [
+            'uses'  => 'Admin\AdminPagesController@supportEditEmail'
+        ]);
+        Route::delete('/admin/support/drop_admin', [
+            'uses'  => 'Admin\AdminPagesController@supportDropEmail'
+        ]);
 
 	//Получить селектор всех карт в таблице
 	Route::get('/admin/get_all_cards_selector', [

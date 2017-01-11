@@ -584,6 +584,125 @@ $(window).load(function() {
             }
         });
     });
+
+    $('#supportPage input[name=addRubric]').click(function(){
+        var token = $('input[name=_token]').val();
+        var title = $('#supportPage input[name=newRubricTitle]').val().trim();
+        if(title.length >0){
+            $.ajax({
+                url:    '/admin/support/add',
+                type:   'POST',
+                headers:{'X-CSRF-TOKEN': token},
+                data:   {title:title},
+                success:function(data){
+                    data =JSON.parse(data);
+                    if(data['message'] == 'success'){
+                        $('#supportPage #rubricsTable').append('<tr>' +
+                            '<td><input class="drop" value="" type="button" data-id="'+data['id']+'"></td>'+
+                            '<td>' +
+                            '<input name="changeTitle" type="text" value="'+title+'">'+
+                            '<input name="applyChange" type="button" value="Применить" data-id="'+data['id']+'">' +
+                            '</td>' +
+                        '</tr>');
+                    }
+                }
+            });
+        }
+    });
+
+    $('#supportPage').on('click', 'input[name=applyChange]', function(){
+        var id = $(this).attr('data-id');
+        var token = $('input[name=_token]').val();
+        var title = $(this).parent().find('input[name=changeTitle]').val();
+        if(title.length >0){
+            $.ajax({
+                url:    '/admin/support/edit',
+                type:   'PUT',
+                headers:{'X-CSRF-TOKEN': token},
+                data:   {id:id, title:title},
+                success:function(data){
+                    if(data != 'success') alert(data);
+                }
+            })
+        }
+    });
+
+    $('#supportPage').on('click', 'input[name=dropRubric]', function(){
+        var id = $(this).attr('data-id');
+        var token = $('input[name=_token]').val();
+        var _that = $(this);
+        $.ajax({
+            url:    '/admin/support/drop',
+            type:   'DELETE',
+            headers:{'X-CSRF-TOKEN': token},
+            data:   {id:id},
+            success:function(data){
+                if(data == 'success'){
+                    _that.parents('tr').remove();
+                }
+            }
+        })
+    });
+
+    $('#supportPage input[name=addEmail]').click(function(){
+        var token = $('input[name=_token]').val();
+        var email = $('#supportPage input[name=rubricAdminEmail]').val().trim();
+        if(email.length >0){
+            $.ajax({
+                url:    '/admin/support/add_admin',
+                type:   'POST',
+                headers:{'X-CSRF-TOKEN': token},
+                data:   {email:email},
+                success:function(data){
+                    if(data == 'success'){
+                        var lastIndex = parseInt($('#supportPage #adminsTable tr:last input.drop').attr('data-id')) +1;
+                        $('#supportPage #adminsTable').append('<tr>'+
+                            '<td><input name="dropEmail" class="drop" value="" type="button" data-id="'+lastIndex+'"></td>'+
+                            '<td><input name="changeEmail" type="text" value="'+email+'">'+
+                            '<input name="applyChange" type="button" value="Применить" data-id="'+lastIndex+'"></td></tr>');
+                        $('#supportPage input[name=rubricAdminEmail]').val('');
+                    }
+                }
+            });
+        }
+    });
+
+    $('#supportPage').on('click', 'input[name=applyEmailChange]', function(){
+        var iter = $(this).attr('data-id');
+        var token = $('input[name=_token]').val();
+        var email = $(this).parent().find('input[name=changeEmail]').val();
+        if(email.length >0){
+            $.ajax({
+                url:    '/admin/support/edit_admin',
+                type:   'PUT',
+                headers:{'X-CSRF-TOKEN': token},
+                data:   {iter:iter, email:email},
+                success:function(data){
+                    if(data != 'success') alert(data);
+                }
+            })
+        }
+    });
+    $('#supportPage').on('click', 'input[name=dropEmail]', function(){
+        var iter = $(this).attr('data-id');
+        var token = $('input[name=_token]').val();
+        var _that = $(this);
+        $.ajax({
+            url:    '/admin/support/drop_admin',
+            type:   'DELETE',
+            headers:{'X-CSRF-TOKEN': token},
+            data:   {iter:iter},
+            success:function(data){
+                if(data == 'success'){
+                    _that.parents('tr').remove();
+                    $('#supportPage #adminsTable tr').each(function(){
+                        $(this).find('input.drop').attr('data-id', $(this).index());
+                        $(this).find('input[name=applyEmailChange]').attr('data-id', $(this).index());
+                    });
+                }
+            }
+        })
+    });
     /*
      * END OF Страницы
      */

@@ -323,4 +323,9 @@ class UserAuthController extends BaseController
 			return redirect(route('user-home'))->withErrors(['Произошел сбой в подтверждении регистрации. Обратитесь в тех. поддержку.']);
 		}
 	}
+
+	public function userSendsLetter(Request $request){
+	    $data = $request->all();
+	    dd($data);
+    }
 }

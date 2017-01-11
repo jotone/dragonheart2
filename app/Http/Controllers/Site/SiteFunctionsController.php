@@ -21,19 +21,21 @@ class SiteFunctionsController extends BaseController
 	//Получить данные о пользователе
 	public function getUserData(){
 		$user = Auth::user();
+
 		//Достаем из БД дополнительные данные пользователя
 		$etc_data = EtcData::where('label_data', '=', 'deck_options')->get();
 
 		$leagues = \DB::table('tbl_league')->select('title', 'min_lvl')->orderBy('min_lvl', 'asc')->get();
 		$exchanges = EtcData::where('label_data', '=', 'exchange_options')->get();
 
-		$result = [
-			'avatar'    => $user->img_url,
-			'gold'      => $user->user_gold,
-			'silver'    => $user->user_silver,
-			'energy'    => $user->user_energy,
-		];
-
+		if($user){
+            $result = [
+                'avatar'    => $user->img_url,
+                'gold'      => $user->user_gold,
+                'silver'    => $user->user_silver,
+                'energy'    => $user->user_energy,
+            ];
+        }
 
 		foreach ($etc_data as $key => $value) {
 			$result[$value->meta_key] = $value->meta_value;

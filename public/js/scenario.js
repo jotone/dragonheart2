@@ -1728,6 +1728,9 @@ $(document).ready(function(){
 	$('.male-select').styler({
 			selectPlaceholder: 'Выбор фракции'
 	});
+    $('.rubric-select').styler({
+        selectPlaceholder: 'Тип вопроса'
+    });
 	//вычисление количества активных пользователей на сайте
 	setInterval(function(){
 	   $.get('/get_user_quantity', function(data){
