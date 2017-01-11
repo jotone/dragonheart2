@@ -34,6 +34,7 @@
         <li><a href="{{ route('admin-magic') }}">Волшебство</a></li>
         <li><a href="{{ route('admin-actions') }}">Действия</a></li>
         <li><a href="{{ route('admin-users') }}">Пользователи</a></li>
+        <li><a href="{{ route('admin-pages') }}">Страницы</a></li>
     </ul>
     
     <div class="admin-status-bar">
