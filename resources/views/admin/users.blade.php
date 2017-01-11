@@ -24,7 +24,7 @@
             <td>
                 {{ Form::open(['route' => 'admin-user-drop', 'method' => 'POST']) }}
                 {{ Form::hidden('_method', 'DELETE') }}
-                <input name="card_id" type="hidden" value="{{ $user['id'] }}">
+                <input name="user_id" type="hidden" value="{{ $user['id'] }}">
                 <input type="submit" class="drop" value="">
                 {{ Form::close() }}
             </td>

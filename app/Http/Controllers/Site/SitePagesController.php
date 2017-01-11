@@ -28,6 +28,18 @@ class SitePagesController extends BaseController
 
 		$fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
 		$output = [];
+        $user = Auth::user();
+
+        $fraction_image = Fraction::select('slug','bg_img')->where('slug', '=', $user['user_current_deck'])->get();
+
+        if(count($fraction_image->all()) > 0){
+            $bg_img = (!empty($fraction_image[0]->bg_img))
+                ? '../img/fractions_images/'.$fraction_image[0]->bg_img
+                : '../images/main_bg_1.jpg';
+        }else{
+            $bg_img = '../images/main_bg_1.jpg';
+        }
+
 		foreach($fractions as $key => $fraction) {
 			$output[$key]['title'] = $fraction['title'];
 			$output[$key]['slug'] = $fraction['slug'];
@@ -37,7 +49,12 @@ class SitePagesController extends BaseController
 			$output[$key]['description'] = $fraction['description'];
 			$output[$key]['short_description'] = $fraction['short_description'];
 		}
-		return view('home', ['fractions' => $output, 'exchange_options' => $exchange_options]);
+		return view('home', [
+		    'fractions' => $output,
+            'exchange_options' => $exchange_options,
+            'user' => $user,
+            'bg_img' => $bg_img
+        ]);
 	}
 
 	//Страница игры

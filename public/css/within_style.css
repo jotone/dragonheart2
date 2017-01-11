@@ -106,14 +106,12 @@ header .top-menu li ul li{
 .drop{background: url('/img/drop.png') 0 0 no-repeat;}
 .list-icon{background: url('/img/list.png') 0 0 no-repeat;}
 
-.image-container{
+.image-container{position: relative;}
+.image-container img{
    max-width: 200px;
    max-height: 200px;
-    position: relative;
 }
-.image-container img{
-    height: 50%;
-}
+
 .button-wrap{
     display: block;
     padding: 20px 40px;
