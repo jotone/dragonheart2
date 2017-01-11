@@ -1,7 +1,6 @@
 @extends('layouts.default')
 @section('content')
 <?php
-$user = Auth::user();
 $errors = $errors->all();
 ?>
 @if(isset($user))
@@ -25,7 +24,7 @@ $errors = $errors->all();
 		        <div class="pager-wrapper">
                     @include('layouts.sidebar')
 
-                    <div class="content-wrap main-bg" style="background-image: url(../images/main_bg_1.jpg);"></div>
+                    <div class="content-wrap main-bg" style="background-image: url({{$bg_img}});"></div>
 		        </div>
 
 	        </div>

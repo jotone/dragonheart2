@@ -230,6 +230,9 @@ $gold_exch = \DB::table('tbl_etc_data')->select('meta_key','meta_value')->where(
                 <input type="hidden" name="LMI_PAYEE_PURSE" value="Z145179295679">
                 <input type="hidden" name="LMI_PAYMER_EMAIL" value="{{ $user['email'] }}">
                 <input type="hidden" name="LMI_SIM_MODE" value="0">
+                <input type="hidden" name="LMI_RESULT_URL" value="{{URL::asset('/wm/payment')}}">
+                <input type="hidden" name="LMI_SUCCESS_URL" value="{{URL::asset('/wm/success')}}">
+                <input type="hidden" name="LMI_FAIL_URL" value="{{URL::asset('/wm/fail')}}">
                 <input type="hidden" name="id" value="{{ $user['id'] }}">
                 <div class="pop-row">
                     <a class="button-troll" href="#"><b>Пополнить</b></a>
