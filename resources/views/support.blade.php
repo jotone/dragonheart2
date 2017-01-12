@@ -1,6 +1,7 @@
 @extends('layouts.default')
 @section('content')
 <?php
+$user = Auth::user();
 $errors = $errors->all();
 ?>
 <div class="not-main registration-main-page one-screen-login">
@@ -30,14 +31,32 @@ $errors = $errors->all();
 
                         <div class="form-wrap-row form_row">
                             <div class="form-wrap-value">
-                                <div class="form-wrap-input">
-                                    <textarea name="qestionText" style="min-height: 200px;"></textarea>
+                                <div class="form-wrap-input form_input">
+                                    <input type="email" name="email" placeholder="Email" required @if($user) value="{{$user['email']}}" @endif>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-wrap-row form_row">
+                            <div class="form-wrap-value">
+                                <div class="form-wrap-input form_input">
+                                    <textarea name="qestionText" style="min-height: 200px;" required placeholder="Сообщение"></textarea>
                                 </div>
                             </div>
                         </div>
 
                         <div class="reCaptcha-wrap">
                             <div class="g-recaptcha" data-sitekey="6LfWZyQTAAAAAP3EiGHuaUaTb1t3si4fOBv8E4YK"></div>
+                        </div>
+
+                        <div class="form-wrap-row error-text" @if(!empty($errors)) style="display: block;" @endif>
+
+                            @if(!empty($errors))
+                                @foreach($errors as $error)
+                                    <p>{!! $error !!}</p>
+                                @endforeach
+                            @endif
+
                         </div>
 
                         <div class="form-wrap-row submit">

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Site;
 use App\EtcData;
 use App\League;
 use App\Fraction;
+use App\Rubric;
 use App\User;
 use Auth;
 use Validator;
@@ -326,6 +327,26 @@ class UserAuthController extends BaseController
 
 	public function userSendsLetter(Request $request){
 	    $data = $request->all();
-	    dd($data);
+	    if(!empty($data['g-recaptcha-response'])){
+            $rubric = Rubric::select('title','slug')->where('slug','=',$data['rubric_select'])->get();
+            $message = $rubric[0]->title."\n".strip_tags(htmlspecialchars(trim($data['qestionText'])));
+
+            $email_from = strip_tags(htmlspecialchars(trim($data['email'])));
+
+            $emails_to = EtcData::select('label_data', 'meta_key', 'meta_key_title')
+                ->where('label_data','=','support')
+                ->where('meta_key','=','emails')
+                ->get();
+
+            $emails_to = unserialize($emails_to[0]->meta_key_title);
+            $emails_to = implode(', ', $emails_to);
+
+            $result = mail($emails_to, $rubric[0]->title, $message, 'From: '.$email_from);
+            if($result){
+                redirect(route('user-home'));
+            }
+        }else{
+	        return redirect(route('user-support'))->withErrors('Подтвердите, что вы не робот.');
+        }
     }
 }

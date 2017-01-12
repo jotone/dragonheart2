@@ -2059,16 +2059,11 @@ ul.magic-effects-wrap li.used:before{ opacity:1;}
     .not-main .form-wrap .error-text.hide-it {
       display: none !important; }
 
-.not-main .form_row .form_input {
-  position: relative; }
-  .not-main .form_row .form_input input::-webkit-input-placeholder {
-    color: #d8ac4a; }
-  .not-main .form_row .form_input input:-moz-placeholder {
-    color: #d8ac4a; }
-  .not-main .form_row .form_input input::-moz-placeholder {
-    color: #d8ac4a; }
-  .not-main .form_row .form_input input:-ms-input-placeholder {
-    color: #d8ac4a; }
+.not-main .form_row .form_input{position: relative;}
+.not-main .form_row .form_input input::-webkit-input-placeholder, .form_row .form_input textarea::-webkit-input-placeholder{color: #d8ac4a;}
+.not-main .form_row .form_input input:-moz-placeholder, .form_row .form_input textarea:-moz-placeholder{color: #d8ac4a;}
+.not-main .form_row .form_input input::-moz-placeholder, .form_row .form_input textarea::-moz-placeholder{color: #d8ac4a;}
+.not-main .form_row .form_input input:-ms-input-placeholder, .form_row .form_input textarea:-ms-input-placeholder{color: #d8ac4a;}
   .not-main .form_row .form_input .errorText {
     font-size: 0;
     color: transparent;
@@ -2793,7 +2788,7 @@ html{height:100%;}
   height: 100%;
 }
 .login-page .forms-main .conteiner-form .form-wrap .form-wrap-main .form-wrap-for-rows input:focus{box-shadow: 0px 0px 0px 1px rgba(255, 255, 255, 0.5), inset 0 0 35px 0 #fdcb06;}
-.registration-main-page  input:focus{box-shadow: 0px 0px 0px 1px rgba(255, 255, 255, 0.5), inset 0 0 35px 0 #fdcb06;}
+.registration-main-page input:focus, .registration-main-page textarea:focus{box-shadow: 0px 0px 0px 1px rgba(255, 255, 255, 0.5), inset 0 0 35px 0 #fdcb06;}
 /*END login screen*/
 /*registr screen*/
 .not-main.one-screen-login{height: calc(100vh - 56px);}
