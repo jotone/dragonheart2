@@ -410,7 +410,7 @@ class AdminPagesController extends BaseController
     }
 
     public function supportPage(){
-        $rubrics = Rubric::orderBy('title','asc')->get();
+        $rubrics = Rubric::orderBy('position','asc')->orderBy('title','asc')->get();
         $emails_list = EtcData::select('label_data', 'meta_key', 'meta_key_title')
             ->where('label_data','=','support')
             ->where('meta_key','=','emails')
@@ -500,6 +500,16 @@ class AdminPagesController extends BaseController
         if($result){
             return 'success';
         }
+    }
+
+    public function supportChangeRubricPosition(Request $request){
+        $data = $request->all();
+        foreach($data['rubrics'] as $position => $id){
+            $result = Rubric::select('id','position')->find($id);
+            $result ->position = $position;
+            $result ->save();
+        }
+        return 'success';
     }
     //END OF Страницы
 }
