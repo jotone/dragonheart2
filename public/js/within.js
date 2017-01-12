@@ -703,6 +703,25 @@ $(window).load(function() {
             }
         })
     });
+
+    $('#supportPage #rubricsTable tbody').sortable({
+        update: function(e, ui){
+            var rubrics = [];
+            var token = $('input[name=_token]').val();
+            $('#supportPage #rubricsTable tr').each(function(){
+                rubrics.push($(this).find('input[name=dropRubric]').attr('data-id'));
+            });
+            $.ajax({
+                url:    '/admin/support/change_positions',
+                type:   'PUT',
+                headers:{'X-CSRF-TOKEN': token},
+                data:   {rubrics:rubrics},
+                success:function(data){
+                    if(data!='success') alert(data);
+                }
+            });
+        }
+    });
     /*
      * END OF Страницы
      */

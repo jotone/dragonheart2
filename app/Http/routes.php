@@ -535,6 +535,9 @@ Route::group(['middleware' => 'admin'], function() {
         Route::put('/admin/support/edit', [
             'uses'  => 'Admin\AdminPagesController@supportEditRubric'
         ]);
+        Route::put('/admin/support/change_positions', [
+            'uses'  => 'Admin\AdminPagesController@supportChangeRubricPosition'
+        ]);
         Route::delete('/admin/support/drop', [
             'uses'  => 'Admin\AdminPagesController@supportDropRubric'
         ]);
