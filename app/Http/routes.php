@@ -27,6 +27,7 @@ Route::post('/registration', [
 ]);
 //Получение подтверждения регистрации
 Route::get('/confirm/{token}',[
+    'as'    => 'user-confirm-token',
 	'uses'  => 'Site\UserAuthController@confirmAccessToken'
 ]);
 

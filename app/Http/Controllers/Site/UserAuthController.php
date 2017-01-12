@@ -193,15 +193,14 @@ class UserAuthController extends BaseController
 				'user_cards_in_deck'=> serialize($user_card_deck),
 				'user_magic'=> 'a:0:{}',
 				'user_rating'=> serialize($league_options),
-				'is_activated'  => 1,
+				'is_activated'  => 1, //ПОМЕНЯТЬ НА 0
 				'activation_code'   => $activation_code,
 			]);
 
 			if($result !== false){
-				/*\Mail::send('email.welcome', ['code' => $activation_code], function($mess) use ($result){
-					$mess -> from('dragon_heart@xmail.com');
-					$mess -> to($result->email)-> subject('Подтвердите регистрацию');
-				});*/
+			    $code = '<a href="'.route('user-confirm-token',$activation_code).'">'.$activation_code.'</a>';
+			    $mail_result = mail($result->email, 'Подтвердите регистрацию', $activation_code, 'From: dragonheart@xmail.com');
+
 				return redirect(route('user-home'))->withErrors(['Регистрация почти завершена.<br>Вам необходимо подтвердить e-mail, указанный при регистрации, перейдя по ссылке в письме.']);
 			}
 		}else{
@@ -343,7 +342,7 @@ class UserAuthController extends BaseController
 
             $result = mail($emails_to, $rubric[0]->title, $message, 'From: '.$email_from);
             if($result){
-                redirect(route('user-home'));
+                return redirect(route('user-home'));
             }
         }else{
 	        return redirect(route('user-support'))->withErrors('Подтвердите, что вы не робот.');
