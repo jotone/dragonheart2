@@ -597,13 +597,7 @@ $(window).load(function() {
                 success:function(data){
                     data =JSON.parse(data);
                     if(data['message'] == 'success'){
-                        $('#supportPage #rubricsTable').append('<tr>' +
-                            '<td><input class="drop" value="" type="button" data-id="'+data['id']+'"></td>'+
-                            '<td>' +
-                            '<input name="changeTitle" type="text" value="'+title+'">'+
-                            '<input name="applyChange" type="button" value="Применить" data-id="'+data['id']+'">' +
-                            '</td>' +
-                        '</tr>');
+                        location.reload(true);
                     }
                 }
             });
