@@ -388,8 +388,14 @@ function userMakeAction(conn, turnDescript, allowToAction){
 function cardCase(turnDescript, allowToAction){
 	hidePreloader();
 	$('#sortableUserCards li').unbind();
+	console.log("turnDescript['cardSource']");
+	console.log(turnDescript['cardSource']);
+	console.log('allow::::'+ allowToAction);
 	if( (turnDescript['cardSource'] == 'hand') && (allowToAction) ){
+		console.log("events:::::::::");
+		console.log($('#sortableUserCards li'));
 		$('#sortableUserCards li').click(function(event){
+			console.log('cli4eck');
 			if((!$(event.target).hasClass('ignore')) && event.which==1){
 				$('.user-describer .magic-effects-wrap li').removeClass('active');
 				if($(this).hasClass('active')){
@@ -911,7 +917,7 @@ function startBattle() {
 				ident: ident
 			})
 		);
-	}
+	};
 
 	conn.onclose = function (event) {}
 	conn.onerror = function (e) {
@@ -936,7 +942,7 @@ function startBattle() {
 						data = JSON.parse(data);
 						if (data['message'] == 'success') {
 							//Формирование данных пользователей и окна выбора карт
-
+							console.log(data['userData']);
 							buildRoomPreview(data['userData']);
 							hidePreloader();
 							console.log('room builded');
@@ -968,6 +974,19 @@ function startBattle() {
 			case 'allUsersAreReady':
 				changeTurnIndicator(result.login);//смена индикатора хода
 				recalculateBattleField();
+				currentRound = result['round'];
+				setTimeout(function () {
+					var userImg=$('#card-give-more-user .card-my-init').attr('style');
+					var a = userImg.match(/\/([^\/]*)('|")/);
+					window.userImgData['user'] = a[1];
+					var oponImg=$('#card-give-more-oponent .card-init').attr('style');
+					if(oponImg != undefined){
+						var b = oponImg.match(/\/([^\/]*)('|")/);
+						window.userImgData['opponent'] = b[1];
+					}
+
+				},300);
+
 			break;
 
 			//Пользователь сделал действие
@@ -976,10 +995,30 @@ function startBattle() {
 				console.log('currentRound',currentRound);
 				if(currentRound != result['round']){
 					console.log('MA timeout-start');
-					$('.convert-cards.oponent .content-card-item').addClass('oponent-animate');
-					$('.convert-cards.user .content-card-item').addClass('user-animate');
-					setTimeout(function () {
+					$('.convert-cards .content-card-item').addClass('transition');
+					$('.field-for-cards').addClass('visible');
+					var timeout1=0;
+					var timeout2=0;
+					$('.convert-cards.oponent .content-card-item-main').addClass('oponent-animate');
+					$('.convert-cards.user .content-card-item-main').addClass('user-animate');
+					$('.convert-cards.oponent .content-card-item').each(function () {
+						var k = $(this);
+						setTimeout(function () {
+							k.addClass('oponent-animate');
+						},timeout1);
+						timeout1+=50;
+					});
 
+					$('.convert-cards.user .content-card-item').each(function () {
+						var k = $(this);
+						setTimeout(function () {
+							k.addClass('user-animate');
+						},timeout2);
+						timeout2+=50;
+					});
+					setTimeout(function () {
+						$('.field-for-cards').removeClass('visible');
+						$('.convert-cards .content-card-item').removeClass('transition');
 						if(result.turnDescript !== undefined) turnDescript = result.turnDescript;
 
 						changeTurnIndicator(result.login);//смена индикатора хода
@@ -995,7 +1034,20 @@ function startBattle() {
 						}
 						currentRound = result['round'];
 						console.log('MA timeout-end');
-					},40000)
+
+						if(result.login == $('.user-describer').attr('id')){
+							$('.info-block-with-timer .title-timer').text('Ваш ход').addClass('user-turn-green');
+							allowToAction = true;
+						}else{
+							$('.info-block-with-timer .title-timer').text('ход противника:').removeClass('user-turn-green');
+							allowToAction = false;
+						}
+
+						cardCase(turnDescript, allowToAction);//Функция выбора карт
+						userMakeAction(conn, turnDescript, allowToAction);//Функция разрешает пользователю действие
+						clearRowSelection();//Очистка активированых рядов действий карт
+
+					},1000)
 
 				}else{
 					console.log('MA without');
@@ -1029,7 +1081,7 @@ function startBattle() {
 			//Раунд окончен
 			case 'roundEnds':
 
-				setTimeout(function () {
+
 					var win_status = [0, 0];
 					for (var login in result.roundStatus) {
 						if (login == $('.user-describer').attr('id')) {
@@ -1048,7 +1100,7 @@ function startBattle() {
 						magicReview(result)
 					}
 
-					//if(result.field_data !== undefined) buildBattleField(result.field_data);
+					if(result.field_data !== undefined) buildBattleField(result.field_data);
 					resultPopupShow(result.roundResult + '! Подождите, идет подготовка нового раунда.');
 					allowToAction = false;
 					turnDescript = {"cardSource": "hand"};
@@ -1061,7 +1113,7 @@ function startBattle() {
 						}
 						hidePreloader();
 					}, 3000);
-				},40000);
+
 
 			break;
 			//Игра закончена

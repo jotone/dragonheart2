@@ -1986,6 +1986,9 @@ ul.user-hand-cards-wrap li{
 
 }
 .image-inside-line .info-img{ width: 15px; height: 15px;}
-.convert-cards .content-card-item{transition: 400ms;}
-.oponent-animate{transform:translate(-2000px -200px);}
-.user-animate{transform:translate(-2000px 200px);}
+.field-for-cards.visible{overflow: visible!important;}
+.convert-cards .content-card-item.transition{transition:transform 1000ms;}
+.oponent-animate{transform:translate(-2000px, -200px);}
+.user-animate{transform:translate(-2000px, 200px);}
+.content-card-item-main.oponent-animate{transform:translateY(-700px); z-index:99;transition:transform 500ms; }
+.content-card-item-main.user-animate{transform:translateY(700px); z-index:99;transition:transform 500ms;}
