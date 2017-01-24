@@ -785,7 +785,7 @@ border-radius: 50%;
     text-align: center;
       position: relative;
   }
-#sortableUserCards li .content-card-item-main{ width: 103px; height: 150px;}
+#sortableUserCards li .content-card-item-main{ width: 103px; height: 150px;border: 1px solid #fff;}
 #sortableUserCards li{
     position: relative;z-index: 10;
 

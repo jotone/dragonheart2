@@ -897,7 +897,7 @@ function magicReview(result){
 		}
 	}
 }
-
+var currentRound=1;
 function startBattle() {
 	conn = new WebSocket('ws://' + socketResult['dom'] + ':8080');//Создание сокет-соединения
 	console.log(conn);
@@ -972,19 +972,48 @@ function startBattle() {
 
 			//Пользователь сделал действие
 			case 'userMadeAction':
-				if(result.turnDescript !== undefined) turnDescript = result.turnDescript;
 
-				changeTurnIndicator(result.login);//смена индикатора хода
+				console.log('currentRound',currentRound);
+				if(currentRound != result['round']){
+					console.log('MA timeout-start');
+					$('.convert-cards.oponent .content-card-item').addClass('oponent-animate');
+					$('.convert-cards.user .content-card-item').addClass('user-animate');
+					setTimeout(function () {
 
-				buildBattleField(result.field_data);//Отображение поля битвы
+						if(result.turnDescript !== undefined) turnDescript = result.turnDescript;
 
-				recalculateDecks(result);//Пересчет колод пользователя и противника
-				calculateRightMarginCardHands();
+						changeTurnIndicator(result.login);//смена индикатора хода
 
-				//Обработка Маг. Эффектов (МЭ)
-				if(result.magicUsage !== undefined){
-					magicReview(result)
+						buildBattleField(result.field_data);//Отображение поля битвы
+
+						recalculateDecks(result);//Пересчет колод пользователя и противника
+						calculateRightMarginCardHands();
+
+						//Обработка Маг. Эффектов (МЭ)
+						if(result.magicUsage !== undefined){
+							magicReview(result)
+						}
+						currentRound = result['round'];
+						console.log('MA timeout-end');
+					},40000)
+
+				}else{
+					console.log('MA without');
+					if(result.turnDescript !== undefined) turnDescript = result.turnDescript;
+
+					changeTurnIndicator(result.login);//смена индикатора хода
+
+					buildBattleField(result.field_data);//Отображение поля битвы
+
+					recalculateDecks(result);//Пересчет колод пользователя и противника
+					calculateRightMarginCardHands();
+
+					//Обработка Маг. Эффектов (МЭ)
+					if(result.magicUsage !== undefined){
+						magicReview(result)
+					}
 				}
+
 			break;
 
 			//Пользователь использовал карты с возможностью призыва карт
@@ -999,35 +1028,40 @@ function startBattle() {
 
 			//Раунд окончен
 			case 'roundEnds':
-				var win_status = [0,0];
-				for(var login in result.roundStatus){
-					if(login == $('.user-describer').attr('id')){
-						win_status[0] = result.roundStatus[login].length;
-					}else{
-						win_status[1] = result.roundStatus[login].length;
-					}
-				}
-				$('.rounds-counts.user .rounds-counts-count').text(win_status[0]);
-				$('.rounds-counts.oponent .rounds-counts-count').text(win_status[1]);
-
-				recalculateDecks(result);
-				circleRoundIndicator();
-
-				if(result.magicUsage !== undefined){
-					magicReview(result)
-				}
-
-				if(result.field_data !== undefined) buildBattleField(result.field_data);
-				resultPopupShow(result.roundResult+'! Подождите, идет подготовка нового раунда.');
-				allowToAction = false;
-				turnDescript = {"cardSource" : "hand"};
-				changeTurnIndicator(null);
 
 				setTimeout(function () {
-					$('#successEvent').removeClass('show');
-					if($('div.troll-popup.show').length<=0){closeAllTrollPopup();}
-					hidePreloader();
-				}, 3000);
+					var win_status = [0, 0];
+					for (var login in result.roundStatus) {
+						if (login == $('.user-describer').attr('id')) {
+							win_status[0] = result.roundStatus[login].length;
+						} else {
+							win_status[1] = result.roundStatus[login].length;
+						}
+					}
+					$('.rounds-counts.user .rounds-counts-count').text(win_status[0]);
+					$('.rounds-counts.oponent .rounds-counts-count').text(win_status[1]);
+
+					recalculateDecks(result);
+					circleRoundIndicator();
+
+					if (result.magicUsage !== undefined) {
+						magicReview(result)
+					}
+
+					//if(result.field_data !== undefined) buildBattleField(result.field_data);
+					resultPopupShow(result.roundResult + '! Подождите, идет подготовка нового раунда.');
+					allowToAction = false;
+					turnDescript = {"cardSource": "hand"};
+					changeTurnIndicator(null);
+
+					setTimeout(function () {
+						$('#successEvent').removeClass('show');
+						if ($('div.troll-popup.show').length <= 0) {
+							closeAllTrollPopup();
+						}
+						hidePreloader();
+					}, 3000);
+				},40000);
 
 			break;
 			//Игра закончена
@@ -1224,6 +1258,7 @@ function startBattle() {
 		});
 	}
 }
+
 function circleRoundIndicator(){
 	var opon = parseInt($('.rounds-counts.oponent .rounds-counts-count').text());
 	var user = parseInt($('.rounds-counts.user .rounds-counts-count').text());
