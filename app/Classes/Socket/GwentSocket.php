@@ -150,6 +150,7 @@ class GwentSocket extends BaseSocket
 						'addition_data'	=> $users_data['user']['addition_data'],
 						'battleInfo'	=> $msg->ident->battleId,
 						'login'			=> $user_turn,
+                        'round'         => $battle->round_count,
 						'users'			=> [
 							$users_data['user']['login']	=> $users_data['user']['energy'],
 							$users_data['opponent']['login']=> $users_data['opponent']['energy']
@@ -221,6 +222,7 @@ class GwentSocket extends BaseSocket
 							'addition_data'	=> $users_data['user']['addition_data'],
 							'battleInfo'	=> $msg->ident->battleId,
 							'login'			=> $users_data[$battle->user_id_turn]['login'],
+                            'round'         => $battle->round_count,
 							'users'			=> [
 								$users_data['user']['login']	=> $users_data['user']['energy'],
 								$users_data['opponent']['login']=> $users_data['opponent']['energy']
@@ -244,6 +246,7 @@ class GwentSocket extends BaseSocket
 							'addition_data'	=> $users_data['user']['addition_data'],
 							'battleInfo'	=> $msg->ident->battleId,
 							'login'			=> $users_data[$battle->user_id_turn]['login'],
+                            'round'         => $battle->round_count,
 							'users'			=> [
 								$users_data['user']['login']	=> $users_data['user']['energy'],
 								$users_data['opponent']['login']=> $users_data['opponent']['energy']
