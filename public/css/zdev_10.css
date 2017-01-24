@@ -1988,7 +1988,20 @@ ul.user-hand-cards-wrap li{
 .image-inside-line .info-img{ width: 15px; height: 15px;}
 .field-for-cards.visible{overflow: visible!important;}
 .convert-cards .content-card-item.transition{transition:transform 1000ms;}
-.oponent-animate{transform:translate(-2000px, -200px);}
-.user-animate{transform:translate(-2000px, 200px);}
-.content-card-item-main.oponent-animate{transform:translateY(-700px); z-index:99;transition:transform 500ms; }
-.content-card-item-main.user-animate{transform:translateY(700px); z-index:99;transition:transform 500ms;}
+.oponent-animate{transform:translate(-2000px, -700px);}
+.user-animate{transform:translate(-2000px, 700px);}
+.content-card-item-main.oponent-animatet{transform:translateY(-700px); z-index:99;transition:transform 500ms; }
+.content-card-item-main.user-animatet{transform:translateY(700px); z-index:99;transition:transform 500ms;}
+
+#sortableUserCards li.transitiontime{
+  opacity:0; transform:translateX(-800px);
+}
+
+#sortableUserCards li.notransition{
+  -webkit-animation-name: mmm;
+  animation-name: mmm;
+}
+@keyframes mmm {
+  from {opacity:0; transform:translateX(-800px);}
+  to {opacity:1; transform:translateX(0);}
+}
