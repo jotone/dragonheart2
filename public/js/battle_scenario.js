@@ -985,10 +985,20 @@ function startBattle() {
 				resultPopupShow('Противник пасует');
 			break;
 			case 'changeCardInHand':
-				$('#selecthandCardsPopup #handCards li[data-cardid="'+result.card_to_drop+'"]').remove();
-				$('#selecthandCardsPopup h5 span').text(result.can_change_cards);
-				$('#selecthandCardsPopup #handCards').append(createFieldCardView(result.card_to_hand, result.card_to_hand['strength'], true));
+				
 				hidePreloader();
+				$('#selecthandCardsPopup #handCards li[data-cardid="'+result.card_to_drop+'"]').addClass('animator-out');
+				setTimeout(function(){
+					$('#selecthandCardsPopup #handCards li[data-cardid="'+result.card_to_drop+'"]').remove();
+					$('#selecthandCardsPopup h5 span').text(result.can_change_cards);
+					$('#selecthandCardsPopup #handCards').append(createFieldCardView(result.card_to_hand, result.card_to_hand['strength'], true));
+					$('#selecthandCardsPopup #handCards li:last-child').addClass('animator-in');
+					$('#selecthandCardsPopup #handCards li:last-child').addClass('go');
+					setTimeout(function () {
+						$('#selecthandCardsPopup #handCards li:last-child').removeClass('animator-in go');
+					},700);
+				},700);
+
 			break;
 			//Все пользователи готовы к игре
 			case 'allUsersAreReady':

@@ -1987,14 +1987,62 @@ ul.user-hand-cards-wrap li{
 }
 .image-inside-line .info-img{ width: 15px; height: 15px;}
 .field-for-cards.visible{overflow: visible!important;}
-.convert-cards .content-card-item.transition{transition:transform 1000ms;}
-.oponent-animate{transform:translate(-2000px, -700px);}
-.user-animate{transform:translate(-2000px, 700px);}
-.content-card-item-main.oponent-animatet{transform:translateY(-700px); z-index:99;transition:transform 500ms; }
-.content-card-item-main.user-animatet{transform:translateY(700px); z-index:99;transition:transform 500ms;}
+.convert-cards .content-card-item.transition{
+  -webkit-transition:transform 1000ms;
+  -ms-transition:transform 1000ms;
+  -moz-transition:transform 1000ms;
+  -o-transition:transform 1000ms;
+  transition:transform 1000ms;
+}
+.oponent-animate{
+  -webkit-transform:translate(-2000px, -700px);
+  -ms-transform:translate(-2000px, -700px);
+  -moz-transform:translate(-2000px, -700px);
+  -o-transform:translate(-2000px, -700px);
+  transform:translate(-2000px, -700px);
+}
+.user-animate{
+    -webkit-transform:translate(-2000px, 700px);
+    -ms-transform:translate(-2000px, 700px);
+    -moz-transform:translate(-2000px, 700px);
+    -o-transform:translate(-2000px, 700px);
+    transform:translate(-2000px, 700px);
+}
+.content-card-item-main.oponent-animatet{
+    transform:translateY(-700px);
+    -webkit-transform:translateY(-700px);
+    -ms-transform:translateY(-700px);
+    -moz-transform:translateY(-700px);
+    -o-transform:translateY(-700px);
+    z-index:99;
+    -webkit-transition:transform 500ms;
+    -ms-transition:transform 500ms;
+    -moz-transition:transform 500ms;
+    -o-transition:transform 500ms;
+    transition:transform 500ms;
+}
+.content-card-item-main.user-animatet{
+    -webkit-transform:translateY(700px);
+    -ms-transform:translateY(700px);
+    -moz-transform:translateY(700px);
+    -o-transform:translateY(700px);
+    transform:translateY(700px);
+    z-index:99;
+    -webkit-transition:transform 500ms;
+    -ms-transition:transform 500ms;
+    -moz-transition:transform 500ms;
+    -o-transition:transform 500ms;
+    transition:transform 500ms;
+}
 
 #sortableUserCards li.transitiontime{
-  opacity:0; transform:translateX(-800px);
+
+  opacity:0;
+    transform:translateX(-800px);
+    -webkit-transform:translateX(-800px);
+    -ms-transform:translateX(-800px);
+    -moz-transform:translateX(-800px);
+    -o-transform:translateX(-800px);
 }
 
 #sortableUserCards li.notransition{
@@ -2002,6 +2050,73 @@ ul.user-hand-cards-wrap li{
   animation-name: mmm;
 }
 @keyframes mmm {
-  from {opacity:0; transform:translateX(-800px);}
-  to {opacity:1; transform:translateX(0);}
+  from {
+      opacity:0;
+      transform:translateX(-800px);
+      -webkit-transform:translateX(-800px);
+      -ms-transform:translateX(-800px);
+      -moz-transform:translateX(-800px);
+      -o-transform:translateX(-800px);
+  }
+  to {
+      opacity:1;
+      transform:translateX(0);
+      -webkit-transform:translateX(0);
+      -ms-transform:translateX(0);
+      -moz-transform:translateX(0);
+      -o-transform:translateX(0);
+  }
 }
+
+#handCards li.animator-out{
+    -webkit-transition:transform 700ms;
+    -ms-transition:all 700ms;
+    -moz-transition:all 700ms;
+    -o-transition:all 700ms;
+    transition:all 700ms;
+  -webkit-transform: scale(0) rotate(720deg);
+  -ms-transform: scale(0) rotate(720deg);
+  -moz-transform: scale(0) rotate(720deg);
+  -o-transform: scale(0) rotate(720deg);
+  transform: scale(0) rotate(720deg);
+  opacity:0;
+}
+#handCards li.animator-in{
+
+    -webkit-transform: scale(0) rotate(720deg);
+    -ms-transform: scale(0) rotate(720deg);
+    -moz-transform: scale(0) rotate(720deg);
+    -o-transform: scale(0) rotate(720deg);
+    transform: scale(0) rotate(720deg);
+    opacity:0;
+}
+#handCards li.animator-in.go{
+    -webkit-animation-name: gogogo;
+    animation-name: gogogo;
+    -webkit-animation-duration: 700ms;
+    animation-duration: 700ms;
+}
+@keyframes gogogo {
+    from {
+        -webkit-transform: scale(0) rotate(720deg);
+        -ms-transform: scale(0) rotate(720deg);
+        -moz-transform: scale(0) rotate(720deg);
+        -o-transform: scale(0) rotate(720deg);
+        transform: scale(0) rotate(720deg);
+        opacity:0;
+    }
+    to {
+        -webkit-transform: scale(1) rotate(0deg);
+        -ms-transform: scale(1) rotate(0deg);
+        -moz-transform: scale(1) rotate(0deg);
+        -o-transform: scale(1) rotate(0deg);
+        transform: scale(1) rotate(0deg);
+        opacity:1;
+    }
+}
+/*
+-webkit-
+-ms-
+-moz-
+-o-
+*/
