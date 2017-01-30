@@ -242,8 +242,8 @@ class SiteFunctionsController extends BaseController
 		$data = $request -> all();
 		$current_user = Auth::user();
 		$user = (isset($data['user_login']))
-			? User::where('login', '=', $data['user_login'])->get()
-			: User::where('login', '=', $current_user['login'])->get();
+			? User::select('login','user_rating')->where('login', '=', $data['user_login'])->get()
+			: User::select('login','user_rating')->where('login', '=', $current_user['login'])->get();
 
 		if(!empty($user[0])){
 			$users_rates = [];
@@ -298,6 +298,49 @@ class SiteFunctionsController extends BaseController
 			return json_encode(['message' => 'Данного пользователя не существует']);
 		}
 	}
+
+    public function getUsersRatingByScroll(Request $request){
+        $data = $request -> all();
+
+        $current_user = Auth::user();
+        $user = (isset($data['user_login']))? User::where('login', '=', $data['user_login'])->get(): User::where('login', '=', $current_user['login'])->get();
+
+        if(!empty($user[0])){
+            $users_rates = [];
+            $users = User::select('login','user_rating')->get();
+
+            foreach($users as $user_to_rate_data){
+                $users_rates[] = self::calcUserRating($data['league'], $user_to_rate_data);
+            }
+
+            usort($users_rates, function($a, $b){return ($b['rating'] - $a['rating']);});
+
+            $user_rates_count = count($users_rates);
+            for($i = 0; $i < $user_rates_count; $i++){
+                $users_rates[$i]['position'] = $i+1;
+            }
+
+            $users_out = [];
+            if($data['direction'] == 1){
+                $n = ($data['position'] +10 <= $user_rates_count)? $data['position'] +10: $user_rates_count;
+                for($i = $data['position']; $i < $n; $i++){
+                    $users_out[] = $users_rates[$i];
+                }
+            }else{
+                $n = ($data['position'] -10 >= 3)? $data['position'] -10: 3;
+                for($i = $n; $i < $data['position']-1 ; $i++){
+                    $users_out[] = $users_rates[$i];
+                }
+            }
+
+            return json_encode([
+                'message' => 'success',
+                'users'   => $users_out
+            ]);
+        }else{
+            return json_encode(['message' => 'Данного пользователя не существует']);
+        }
+    }
 	/*
 	 * END OF Рейтинг
 	*/

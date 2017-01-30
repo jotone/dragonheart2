@@ -105,6 +105,9 @@ Route::group(['middleware' => 'notAuth'], function() {
 		Route::get('user_rating', [
 			'uses'  => 'Site\SiteFunctionsController@getUserRating'
 		]);
+		Route::get('/user_rating_scroll', [
+		    'uses'  => 'Site\SiteFunctionsController@getUsersRatingByScroll'
+        ]);
 
 	//Мои карты
 	Route::get('/deck', [
