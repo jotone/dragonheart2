@@ -941,7 +941,7 @@ function startBattle() {
 
 	conn.onclose = function (event) {}
 	conn.onerror = function (e) {
-		showPopup('Socket error');
+		alert('Socket error');
 	};
 	conn.onmessage = function (e) {
 		var result = JSON.parse(e.data);
@@ -1108,8 +1108,6 @@ function startBattle() {
 
 			//Раунд окончен
 			case 'roundEnds':
-
-
 					var win_status = [0, 0];
 					for (var login in result.roundStatus) {
 						if (login == $('.user-describer').attr('id')) {
