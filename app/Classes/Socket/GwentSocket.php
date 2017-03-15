@@ -17,11 +17,13 @@ class GwentSocket extends BaseSocket
 	protected $battle_id;
 	protected $users_data;
 	protected $magic_usage;
+	public $step_status;
 
 	public function __construct(){
 		$this->clients = new \SplObjectStorage;
 	}
 
+    //Socket actions
 	public function onError(ConnectionInterface $conn, \Exception $e){
 		echo 'An error has occured: '.$e->getMessage()."\n";
 		$conn -> close();
@@ -32,12 +34,82 @@ class GwentSocket extends BaseSocket
 		$this->clients->attach($conn); //Добавление клиента
 		echo 'New connection ('.$conn->resourceId.')'."\n\r";
 	}
+
+    public function onClose(ConnectionInterface $conn){
+        $battle = Battle::find($this->battle_id);
+
+        if($battle->fight_status < 3){
+            if($battle->disconected_count <= 2){
+                $battle->disconected_count++;
+                $battle->save();
+            }
+
+            if($battle->disconected_count == 2){
+                self::waitForRoundEnds($this, $conn);
+            }
+        }else{
+            $this->clients->detach($conn);
+            echo 'Connection '.$conn->resourceId.' has disconnected'."\n";
+        }
+    }
+
+    protected static function sendMessageToOthers($from, $result, $battles){
+        foreach ($battles as $client) {
+            if ($client->resourceId != $from->resourceId) {
+                $client->send(json_encode($result));
+            }
+        }
+    }
+
+    protected static function sendMessageToSelf($from, $message){
+        $from->send(json_encode($message));
+    }
+    //Socket actions end
+
+    //Service functons
+    protected static function strRowToInt($field){
+        switch($field){ //Порядковый номер поля
+            case 'meele':		$field_row = 0; break;
+            case 'range':		$field_row = 1; break;
+            case 'superRange':	$field_row = 2; break;
+            case 'sortable-cards-field-more':$field_row = 3; break;
+        }
+        return $field_row;
+    }
+
+    public static function transformObjToArr($card){
+        if(!is_array($card)){
+            $card = get_object_vars($card);
+        }
+        return $card;
+    }
+
+    protected static function sortingDeck(&$deck){
+        usort($deck, function($a, $b){
+            $r = ($b['strength']  - $a['strength']);
+            if($r !== 0) return $r;
+            return strnatcasecmp($a['title'], $b['title']);
+        });
+    }
+
+    protected static function sortDecksByStrength($users_data){
+        self::sortingDeck($users_data['user']['deck']);
+        self::sortingDeck($users_data['user']['discard']);
+        self::sortingDeck($users_data['user']['hand']);
+        self::sortingDeck($users_data['opponent']['deck']);
+        self::sortingDeck($users_data['opponent']['discard']);
+        self::sortingDeck($users_data['opponent']['hand']);
+        return $users_data;
+    }
+    // /Service functons
+
 	//Обработчик каждого сообщения
 	public function onMessage(ConnectionInterface $from, $msg){
+        
 		$msg = json_decode($msg); // сообщение от пользователя arr[action, ident[battleId, UserId, Hash]]
 
 		if(!isset($this->battles[$msg->ident->battleId])){
-			$this->battles[$msg->ident->battleId] = new \SplObjectStorage;
+			$this->battles[$msg->ident->battleId] = new \SplObjectStorage; 
 		}
 
 		if(!$this->battles[$msg->ident->battleId]->contains($from)){
@@ -61,9 +133,7 @@ class GwentSocket extends BaseSocket
 		//Создание массивов пользовательских данных
 		foreach($battle_members as $key => $value){
 			$user = User::find($value->user_id);
-
 			$user_identificator = ($value->user_id == $battle->creator_id)? 'p1' : 'p2';
-
 			if($value->user_id == $msg->ident->userId){
 				$users_data['user'] = [
 					'id'			=> $value->user_id,
@@ -83,7 +153,7 @@ class GwentSocket extends BaseSocket
 					'addition_data'	=> unserialize($value->addition_data),
 					'battle_member_id'=> $value->id,						//ID текущей битвы
 					'turn_expire'	=> $value->turn_expire,
-                    'time_shift'	=> $value->time_shift
+                    'time_shift'	=> $value->time_shift,
 				];
 				$users_data[$user_identificator] = &$users_data['user'];
 				$users_data[$value->user_id] = &$users_data['user'];
@@ -112,788 +182,833 @@ class GwentSocket extends BaseSocket
                 $users_data[$value->user_id] = &$users_data['opponent'];
 			}
 		}
+
+		$this->step_status = [
+            'added_cards'   => [],
+            'played_card'   => [
+                'card' => '',
+                'move_to' => [
+                        'player'=> '',
+                        'row'   => ''
+                    ],
+                'strength' => ''
+            ],
+            'dropped_cards' => [],
+            'played_magic'  => '',
+            'cards_strength'=> [],
+            'actions'       => []
+        ];
 		if(isset($msg->timing)) $users_data['user']['turn_expire'] = $msg->timing - $users_data['user']['time_shift'];
+        var_dump($msg);
+        switch($msg->action){
+            //Пользователь присоединился
+            case 'userJoinedToRoom':
+                if($battle->user_id_turn != 0){
+                    $user_turn = $users_data[$battle->user_id_turn]['login'];
+                }else{
+                    $user_turn = '';
+                }
+                if ($battle->fight_status <= 1) {
+                    if (count($battle_members) == $battle->players_quantity) {
+                        if ($battle->fight_status == 0) {
+                            $battle->turn_expire = $timing_settings['card_change'] - $users_data['user']['time_shift'] + time();
+                            $battle->fight_status = 1; // Подключилось нужное количество пользователей
+                            $battle->save();
+                        }
 
-		switch($msg->action) {
-			//Пользователь присоединился
-			case 'userJoinedToRoom':
-				if($battle->user_id_turn != 0){
-					$user_turn = $users_data[$battle->user_id_turn]['login'];
-				}else{
-					$user_turn = '';
-				}
-				if ($battle->fight_status <= 1) {
-					if (count($battle_members) == $battle->players_quantity) {
-						if ($battle->fight_status == 0) {
-							$battle->turn_expire = $timing_settings['card_change'] - $users_data['user']['time_shift'] + time();
-							$battle->fight_status = 1; // Подключилось нужное количество пользователей
-							$battle->save();
-						}
+                        $result = [
+                            'message'	=> 'usersAreJoined',
+                            'JoinedUser'=> $users_data['user']['login'],
+                            'login'		=> $user_turn,
+                            'battleInfo'=> $msg->ident->battleId,
+                            'turn_expire'=>$battle->turn_expire
+                        ];
 
-						$result = [
-							'message'	=> 'usersAreJoined',
-							'JoinedUser'=> $users_data['user']['login'],
-							'login'		=> $user_turn,
-							'battleInfo'=> $msg->ident->battleId,
-							'turn_expire'=> $battle->turn_expire
-						];
+                        self::sendMessageToSelf($from, $result); //Отправляем результат отправителю
+                        self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
+                    }
+                }
 
-						self::sendMessageToSelf($from, $result); //Отправляем результат отправителю
-						self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
-					}
-				}
-
-				if ($battle->fight_status == 2) {
-					$result = [
-						'message'		=> 'allUsersAreReady',
+                if ($battle->fight_status == 2) {
+                    $result = [
+                        'message'		=> 'allUsersAreReady',
                         'timing'		=> $battle->turn_expire,
-						'addition_data'	=> $users_data['user']['addition_data'],
-						'battleInfo'	=> $msg->ident->battleId,
-						'login'			=> $user_turn,
+                        'addition_data'	=> $users_data['user']['addition_data'],
+                        'battleInfo'	=> $msg->ident->battleId,
+                        'login'			=> $user_turn,
                         'round'         => $battle->round_count,
-						'users'			=> [
-							$users_data['user']['login']	=> $users_data['user']['energy'],
-							$users_data['opponent']['login']=> $users_data['opponent']['energy']
-						],
-						'turnDescript'	=> [
-							'cardSource'	=> $users_data['user']['card_source'],
-							'playerSource'	=> $users_data['user']['player_source'],
-							'cardToPlay'	=> $users_data['user']['cards_to_play'],
-						]
-					];
-					self::sendMessageToSelf($from, $result);
-				}
-				break;
+                        'users'			=> [
+                            $users_data['user']['login']	=> $users_data['user']['energy'],
+                            $users_data['opponent']['login']=> $users_data['opponent']['energy']
+                        ],
+                        'turnDescript'	=> [
+                            'cardSource'	=> $users_data['user']['card_source'],
+                            'playerSource'	=> $users_data['user']['player_source'],
+                            'cardToPlay'	=> $users_data['user']['cards_to_play'],
+                        ]
+                    ];
+                    self::sendMessageToSelf($from, $result);
+                }
+            break;
 
-			//Пользователь готов
-			case 'userReady':
-				if($battle->fight_status == 1){
-					$ready_players_count = 0;//Количество игроков за столом готовых к игре
-					foreach($battle_members as $key => $value){
-						if($value->user_ready != 0){
-							$ready_players_count++;
-						}
-					}
+            case 'changeCardInHand':
+                $users_battle_data = BattleMembers::find($users_data['user']['battle_member_id']);
+                if($users_battle_data['available_to_change'] > 0){
+                    $rand = mt_rand(0, count($users_data['user']['deck']) - 1);
+                    $card_to_add = $users_data['user']['deck'][$rand];
 
-					if($ready_players_count == 2){
-						$cursed_players = [];
-						$player = 'p1';
-						if($users_data['p1']['current_deck'] == 'cursed'){
-							$cursed_players[] = $users_data['user']['player'];
-							$player = 'p1';
-						}
-						if($users_data['p2']['current_deck'] == 'cursed'){
-							$cursed_players[] = $users_data['opponent']['player'];
-							$player = 'p2';
-						}
+                    unset($users_data['user']['deck'][$rand]);
+                    $users_data['user']['deck'] = array_values($users_data['user']['deck']);
 
-						if($battle->user_id_turn < 1){
-							if((count($cursed_players) == 1) && ($msg->ident->userId == $users_data[$player]['id'])){
-								if(isset($msg->turn)){
-									$players_turn = (($users_data['user']['login'] == $msg->turn) || ($msg->turn == ''))
-										? $users_data['user']['id']
-										: $users_data['opponent']['id'];
-								}else{
-									$rand = mt_rand(0, 1);
-									$players_turn = ($rand == 0)
-										? $users_data['p1']['id']
-										: $users_data['p2']['id'];
-								}
-							}else{
-								$rand = mt_rand(0, 1);
-								$players_turn = ($rand == 0)
-									? $users_data['p1']['id']
-									: $users_data['p2']['id'];
-							}
-							$battle->user_id_turn = $players_turn;
-							$battle->first_turn_user_id = $players_turn;
-							$battle->save();
-						}
+                    foreach($users_data['user']['hand'] as $hand_iter => $hand_card_data){
+                        if(Crypt::decrypt($hand_card_data['id']) == Crypt::decrypt($msg->card)){
+                            $users_data['user']['deck'][] = $users_data['user']['hand'][$hand_iter];
+                            unset($users_data['user']['hand'][$hand_iter]);
+                            $users_data['user']['hand'][] = $card_to_add;
+                            break;
+                        }
+                    }
+                    $users_data['user']['hand'] = array_values($users_data['user']['hand']);
 
-						$user_timing = \DB::table('tbl_battle_members')
-							->select('user_id','turn_expire')
-							->where('user_id','=',$battle->user_id_turn)
-							->get();
-						$battle->turn_expire = $user_timing[0]->turn_expire - $users_data[$battle->user_id_turn]['time_shift'] + time();
+                    $users_battle_data['user_deck'] = serialize($users_data['user']['deck']);
+                    $users_battle_data['user_hand'] = serialize($users_data['user']['hand']);
+                    $users_battle_data['available_to_change'] = $users_battle_data['available_to_change'] - 1;
 
-						$result = [
-							'message'		=> 'allUsersAreReady',
-							'timing'		=> $battle->turn_expire,
-							'addition_data'	=> $users_data['user']['addition_data'],
-							'battleInfo'	=> $msg->ident->battleId,
-							'login'			=> $users_data[$battle->user_id_turn]['login'],
+                    $users_battle_data->save();
+
+                    $users_data = self::sortDecksByStrength($users_data);
+
+                    $result = [
+                        'message'		=> 'changeCardInHand',
+                        'user_deck'		=> $users_data['user']['deck'],
+                        'card_to_hand'	=> $card_to_add,
+                        'card_to_drop'	=> $msg->card,
+                        'can_change_cards'=> $users_battle_data['available_to_change']
+                    ];
+
+                    self::sendMessageToSelf($from, $result);
+                }
+            break;
+
+            //Пользователь готов
+            case 'userReady':
+                if($battle->fight_status == 1){
+                    $ready_players_count = 0;//Количество игроков за столом готовых к игре
+                    foreach($battle_members as $key => $value){
+                        if($value->user_ready != 0){
+                            $ready_players_count++;
+                        }
+                    }
+
+                    if($ready_players_count == 2){
+                        $cursed_players = [];
+                        $player = 'p1';
+                        if($users_data['p1']['current_deck'] == 'cursed'){
+                            $cursed_players[] = $users_data['user']['player'];
+                            $player = 'p1';
+                        }
+                        if($users_data['p2']['current_deck'] == 'cursed'){
+                            $cursed_players[] = $users_data['opponent']['player'];
+                            $player = 'p2';
+                        }
+
+                        if($battle->user_id_turn < 1){
+                            if((count($cursed_players) == 1) && ($msg->ident->userId == $users_data[$player]['id'])){
+                                if(isset($msg->turn)){
+                                    $players_turn = (($users_data['user']['login'] == $msg->turn) || ($msg->turn == ''))
+                                        ? $users_data['user']['id']
+                                        : $users_data['opponent']['id'];
+                                }else{
+                                    $rand = mt_rand(0, 1);
+                                    $players_turn = ($rand == 0)
+                                        ? $users_data['p1']['id']
+                                        : $users_data['p2']['id'];
+                                }
+                            }else{
+                                $rand = mt_rand(0, 1);
+                                $players_turn = ($rand == 0)
+                                    ? $users_data['p1']['id']
+                                    : $users_data['p2']['id'];
+                            }
+                            $battle->user_id_turn = $players_turn;
+                            $battle->first_turn_user_id = $players_turn;
+                            $battle->save();
+                        }
+
+                        $user_timing = \DB::table('tbl_battle_members')
+                            ->select('user_id','turn_expire')
+                            ->where('user_id','=',$battle->user_id_turn)
+                            ->first();
+                        $battle->turn_expire = $user_timing->turn_expire - $users_data[$battle->user_id_turn]['time_shift'] + time();
+
+                        $result = [
+                            'message'		=> 'allUsersAreReady',
+                            'timing'		=> $battle->turn_expire,
+                            'addition_data'	=> $users_data['user']['addition_data'],
+                            'battleInfo'	=> $msg->ident->battleId,
+                            'login'			=> $users_data[$battle->user_id_turn]['login'],
                             'round'         => $battle->round_count,
-							'users'			=> [
-								$users_data['user']['login']	=> $users_data['user']['energy'],
-								$users_data['opponent']['login']=> $users_data['opponent']['energy']
-							],
-							'turnDescript'	=> [
-								'cardSource'	=> $users_data['opponent']['card_source'],
-								'playerSource'	=> $users_data['opponent']['player_source'],
-								'cardToPlay'	=> $users_data['opponent']['cards_to_play'],
-							],
-						];
+                            'users'			=> [
+                                $users_data['user']['login']	=> $users_data['user']['energy'],
+                                $users_data['opponent']['login']=> $users_data['opponent']['energy']
+                            ],
+                            'turnDescript'	=> [
+                                'cardSource'	=> $users_data['opponent']['card_source'],
+                                'playerSource'	=> $users_data['opponent']['player_source'],
+                                'cardToPlay'	=> $users_data['opponent']['cards_to_play'],
+                            ],
+                        ];
 
-						if ($battle->fight_status <= 1) {
-							self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
-						}
-						$battle->fight_status = 2;
-						$battle->save();
+                        if ($battle->fight_status <= 1) {
+                            self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
+                        }
+                        $battle->fight_status = 2;
+                        $battle->save();
 
-						$result = [
-							'message'		=> 'allUsersAreReady',
-							'timing'		=> $battle->turn_expire,
-							'addition_data'	=> $users_data['user']['addition_data'],
-							'battleInfo'	=> $msg->ident->battleId,
-							'login'			=> $users_data[$battle->user_id_turn]['login'],
+                        $result = [
+                            'message'		=> 'allUsersAreReady',
+                            'timing'		=> $battle->turn_expire,
+                            'addition_data'	=> $users_data['user']['addition_data'],
+                            'battleInfo'	=> $msg->ident->battleId,
+                            'login'			=> $users_data[$battle->user_id_turn]['login'],
                             'round'         => $battle->round_count,
-							'users'			=> [
-								$users_data['user']['login']	=> $users_data['user']['energy'],
-								$users_data['opponent']['login']=> $users_data['opponent']['energy']
-							],
-							'turnDescript'	=> [
-								'cardSource'	=> $users_data['user']['card_source'],
-								'playerSource'	=> $users_data['user']['player_source'],
-								'cardToPlay'	=> $users_data['user']['cards_to_play'],
-							],
-						];
-						self::sendMessageToSelf($from, $result);
+                            'users'			=> [
+                                $users_data['user']['login']	=> $users_data['user']['energy'],
+                                $users_data['opponent']['login']=> $users_data['opponent']['energy']
+                            ],
+                            'turnDescript'	=> [
+                                'cardSource'	=> $users_data['user']['card_source'],
+                                'playerSource'	=> $users_data['user']['player_source'],
+                                'cardToPlay'	=> $users_data['user']['cards_to_play'],
+                            ],
+                        ];
+                        self::sendMessageToSelf($from, $result);
 
-					}else{
-						$cursed_players = [];
-						$player = 'p1';
-						if($users_data['p1']['current_deck'] == 'cursed'){
-							$cursed_players[] = $users_data['user']['player'];
-							$player = 'p1';
-						}
-						if($users_data['p2']['current_deck'] == 'cursed'){
-							$cursed_players[] = $users_data['opponent']['player'];
-							$player = 'p2';
-						}
+                    }else{
+                        $cursed_players = [];
+                        $player = 'p1';
+                        if($users_data['p1']['current_deck'] == 'cursed'){
+                            $cursed_players[] = $users_data['user']['player'];
+                            $player = 'p1';
+                        }
+                        if($users_data['p2']['current_deck'] == 'cursed'){
+                            $cursed_players[] = $users_data['opponent']['player'];
+                            $player = 'p2';
+                        }
 
-						if((count($cursed_players) == 1) && ($msg->ident->userId == $users_data[$player]['id'])){
+                        if((count($cursed_players) == 1) && ($msg->ident->userId == $users_data[$player]['id'])){
 
-							if(isset($msg->turn)){
-								$players_turn = (($users_data['p1']['login'] == $msg->turn) || ($msg->turn == ''))
-									? $users_data['p1']['id']
-									: $players_turn = $users_data['p2']['id'];
-							}else{
-								$players_turn = $users_data['user']['id'];
-							}
-							$battle->user_id_turn = $players_turn;
-							$battle->save();
-						}
-					}
-				}
-				break;
+                            if(isset($msg->turn)){
+                                $players_turn = (($users_data['p1']['login'] == $msg->turn) || ($msg->turn == ''))
+                                    ? $users_data['p1']['id']
+                                    : $players_turn = $users_data['p2']['id'];
+                            }else{
+                                $players_turn = $users_data['user']['id'];
+                            }
+                            $battle->user_id_turn = $players_turn;
+                            $battle->save();
+                        }
+                    }
+                }
+            break;
 
-			case 'changeCardInHand':
-				$users_battle_data = BattleMembers::find($users_data['user']['battle_member_id']);
-				if($users_battle_data['available_to_change'] > 0){
-					$rand = mt_rand(0, count($users_data['user']['deck']) - 1);
-					$card_to_add = $users_data['user']['deck'][$rand];
+            case 'userMadeCardAction':
+                if($battle->fight_status == 2){
+                    //Данные о текущем пользователе
+                    $battle_field = unserialize($battle->battle_field);//Данные о поле битвы
+                    $magic_usage = unserialize($battle->magic_usage);//Данные о использовании магии
+                    //Установка источника хода по умолчанию
+                    $users_data['user']['player_source'] = $users_data['user']['player'];
+                    $users_data['user']['cards_to_play'] = [];
+                    $users_data['user']['card_source'] = 'hand';
+                    $addition_data = [];
 
-					unset($users_data['user']['deck'][$rand]);
-					$users_data['user']['deck'] = array_values($users_data['user']['deck']);
+                    if($users_data['opponent']['round_passed'] == 1){
+                        $user_turn = $users_data['user']['login'];
+                        $user_turn_id = $users_data['user']['id'];
+                    }else{
+                        $user_turn = $users_data['opponent']['login'];
+                        $user_turn_id = $users_data['opponent']['id'];
+                    }
 
-					foreach($users_data['user']['hand'] as $hand_iter => $hand_card_data){
-						if(Crypt::decrypt($hand_card_data['id']) == Crypt::decrypt($msg->card)){
-							$users_data['user']['deck'][] = $users_data['user']['hand'][$hand_iter];
-							unset($users_data['user']['hand'][$hand_iter]);
-							$users_data['user']['hand'][] = $card_to_add;
-							break;
-						}
-					}
-					$users_data['user']['hand'] = array_values($users_data['user']['hand']);
+                    if($msg->magic != ''){
+                        $disable_magic = false;
+                        $magic = json_decode(SiteGameController::getMagicData($msg->magic));
+                        if (($users_data['user']['user_magic'][Crypt::decrypt($magic->id)]['used_times'] > 0) && ($users_data['user']['energy'] >= $magic->energy_cost)) {
+                            $users_data['user']['user_magic'][Crypt::decrypt($magic->id)]['used_times'] = $users_data['user']['user_magic'][Crypt::decrypt($magic->id)]['used_times'] - 1;
+                            $users_data['user']['energy'] = $users_data['user']['energy'] - $magic->energy_cost;
 
-					$users_battle_data['user_deck'] = serialize($users_data['user']['deck']);
-					$users_battle_data['user_hand'] = serialize($users_data['user']['hand']);
-					$users_battle_data['available_to_change'] = $users_battle_data['available_to_change'] - 1;
+                            if(!isset($magic_usage[$users_data['user']['player']][$battle->round_count])){
+                                $magic_usage[$users_data['user']['player']][$battle->round_count] = [
+                                    'id' => $msg->magic,
+                                    'allow' => '1'
+                                ];
+                                $current_actions = $magic->actions;
+                                $this->step_status['played_magic'][$users_data['user']['player']] = $magic;
+                            }else{
+                                $disable_magic = true;
+                            }
+                        }else{
+                            $disable_magic = true;
+                        }
 
-					$users_battle_data->save();
+                        if($disable_magic){
+                            $current_actions = [];
+                        }
 
-					$users_data = self::sortDecksByStrength($users_data);
+                        \DB::table('users')->where('id', '=', $users_data['user']['id'])->update([
+                            'user_energy' => $users_data['user']['energy'],
+                            'user_magic' => serialize($users_data['user']['user_magic'])
+                        ]);
+                    }
 
-					$result = [
-						'message'		=> 'changeCardInHand',
-						'user_deck'		=> $users_data['user']['deck'],
-						'card_to_hand'	=> $card_to_add,
-						'card_to_drop'	=> $msg->card,
-						'can_change_cards'=> $users_battle_data['available_to_change']
-					];
+                    if($msg->card != ''){
+                        $card = json_decode(SiteGameController::getCardData($msg->card));//Получаем данные о карте
+                        $card = self::transformObjToArr($card);
 
-					self::sendMessageToSelf($from, $result);
-				}
-				break;
+                        $card_row = self::strRowToInt($msg->BFData->row);
+                        $card_field = $msg->BFData->field;
 
-			case 'userMadeCardAction':
-				if($battle->fight_status == 2){
-					//Данные о текущем пользователе
-					$battle_field = unserialize($battle->battle_field);//Данные о поле битвы
-					$magic_usage = unserialize($battle->magic_usage);//Данные о использовании магии
-					//Установка источника хода по умолчанию
-					$users_data['user']['player_source'] = $users_data['user']['player'];
-					$users_data['user']['cards_to_play'] = [];
-					$users_data['user']['card_source'] = 'hand';
-					$addition_data = [];
+                        if($card['type'] == 'special'){
+                            if($card_row == 3){
+                                $battle_field['mid'][] = ['card' => $card, 'strength' => $card['strength'], 'login' => $users_data['user']['login']];
+                                //Если карт на поле спец карт больше 6ти
+                                if(count($battle_field['mid']) > 6){
+                                    //Кидает первую карту в отбой
+                                    if($users_data['user']['login'] == $battle_field['mid'][0]['login']){
+                                        $users_data['user']['discard'][] = $battle_field['mid'][0]['card'];
+                                    }else{
+                                        $users_data['opponent']['discard'][] = $battle_field['mid'][0]['card'];
+                                    }
+                                    //Удаляем первую карту
+                                    unset($battle_field['mid'][0]);
+                                }
+                                //Добавляем текущую карту на поле боя и её принадлежность пользователю
+                                $battle_field['mid'] = array_values($battle_field['mid']);
+                            }else{
+                                //Если логика карт предусматривает сразу уходить в отбой
+                                foreach($card['actions'] as $i => $action){
+                                    if (($action->action == '6') || ($action->action == '7') || ($action->action == '10') || ($action->action == '11') || ($action->action == '15') || ($action->action == '19')) {
+                                        $users_data['user']['discard'][] = $card;
+                                    }else{
+                                        //Еcли в ряду уже есть спец карта
+                                        if (!empty($battle_field[$card_field][$card_row]['special'])) {
+                                            $users_data[$card_field]['discard'][] = $battle_field[$card_field][$card_row]['special']['card'];
+                                        }
+                                        $battle_field[$card_field][$card_row]['special'] = [
+                                            'card' => $card,
+                                            'strength' => $card['strength'],
+                                            'login' => $users_data['user']['login']
+                                        ];
+                                    }
+                                }
+                            }
+                        }else{
+                            $battle_field[$card_field][$card_row]['warrior'][] = [
+                                'card' => $card,
+                                'strength' => $card['strength'],
+                                'login' => $users_data['user']['login']
+                            ];
+                        }
+                        $this->step_status['played_card'] = [
+                            'card' => $card,
+                            'move_to' => [
+                                'player'=> $users_data['user']['player'],
+                                'row'   => $card_row
+                            ],
+                            'strength' => $card['strength']
+                        ];
+                        //Если был задействован МЭ "Марионетка"
 
-					if($users_data['opponent']['round_passed'] == 1){
-						$user_turn = $users_data['user']['login'];
-						$user_turn_id = $users_data['user']['id'];
-					}else{
-						$user_turn = $users_data['opponent']['login'];
-						$user_turn_id = $users_data['opponent']['id'];
-					}
+                        if(
+                            (isset($magic_usage[$users_data['user']['player']][$battle->round_count]['id']))
+                            && (base64_decode(base64_decode($magic_usage[$users_data['user']['player']][$battle->round_count]['id'])) == '19')
+                            && ($magic_usage[$users_data['user']['player']][$battle->round_count]['allow'] == 1)
+                        ){
+                            $magic_usage[$users_data['user']['player']][$battle->round_count]['allow'] = '0';
+                            $user_type = 'opponent';
+                        }else{
+                            $user_type = 'user';
+                        }
 
-					if($msg->magic != ''){
-						$disable_magic = false;
-						$magic = json_decode(SiteGameController::getMagicData($msg->magic));
-						if (($users_data['user']['user_magic'][Crypt::decrypt($magic->id)]['used_times'] > 0) && ($users_data['user']['energy'] >= $magic->energy_cost)) {
-							$users_data['user']['user_magic'][Crypt::decrypt($magic->id)]['used_times'] = $users_data['user']['user_magic'][Crypt::decrypt($magic->id)]['used_times'] - 1;
-							$users_data['user']['energy'] = $users_data['user']['energy'] - $magic->energy_cost;
+                        //Убираем карту из текущй колоды
+                        $users_data[$user_type][$msg->source] = self::dropCardFromDeck($users_data[$user_type][$msg->source], $card);
+                        //$users_data['user'][$msg->source] = self::dropCardFromDeck($users_data['user'][$msg->source], $card);
+                        $current_actions = $card['actions'];
+                    }
 
-							if(!isset($magic_usage[$users_data['user']['player']][$battle->round_count])){
-								$magic_usage[$users_data['user']['player']][$battle->round_count] = [
-									'id' => $msg->magic,
-									'allow' => '1'
-								];
-								$current_actions = $magic->actions;
-							}else{
-								$disable_magic = true;
-							}
-						}else{
-							$disable_magic = true;
-						}
+                    //Применение действий
+                    $add_time = true;
+                    foreach($current_actions as $action_iter => $action){
+                        $action_result = self::actionProcessing($action, $battle_field, $users_data, $addition_data, $user_turn_id, $user_turn, $msg, $magic_usage, $this->step_status);
+                        $this->step_status = $action_result['step_status'];
+                        $battle_field   = $action_result['battle_field'];
+                        $users_data     = $action_result['users_data'];
+                        $addition_data  = $action_result['addition_data'];
+                        $user_turn_id   = $action_result['user_turn_id'];
+                        $user_turn      = $action_result['user_turn'];
+                        $magic_usage    = $action_result['magic_usage'];
+                        if( ($action->action == '7') || ($action->action == '10') || ($action->action == '14') || ($action->action == '15') ){
+                            $add_time = false;
+                        }
+                    }
 
-						if($disable_magic){
-							$current_actions = [];
-						}
+                    //Сортировка колод
+                    $users_data = self::sortDecksByStrength($users_data);
+                    //Обработка действий
+                    $battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
 
-						\DB::table('users')->where('id', '=', $users_data['user']['id'])->update([
-							'user_energy' => $users_data['user']['energy'],
-							'user_magic' => serialize($users_data['user']['user_magic'])
-						]);
-					}
+                    foreach($battle_field as $player => $rows) {
+                        if($player != 'mid'){
+                            foreach ($rows as $row => $row_data) {
+                                foreach ($row_data['warrior'] as $card_iter => $card_data) {
+                                    //cards_strength
+                                    $this->step_status['cards_strength'][$player][$row][$card_iter] = $card_data['strength'];
+                                    //added_cards
+                                    foreach ($this->step_status['added_cards'] as $player_in_added => $rows_in_added) {
+                                        foreach($rows_in_added as $row_source => $cards){
+                                            if($row_source !== 'hand'){
+                                                foreach ($cards as $iter => $card) {
+                                                    if($card['card']['id'] == $card_data['card']['id']){
+                                                        $this->step_status['added_cards'][$player_in_added][$row_source][$iter]['strength'] = $card_data['strength'];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
-					if($msg->card != ''){
-						$card = json_decode(SiteGameController::getCardData($msg->card));//Получаем данные о карте
-						$card = self::transformObjToArr($card);
+                    }
+                    if($add_time === true){
+                        $turn_expire = $msg->timing + $timing_settings['additional_time'];
+                        $showTimerOfUser = 'opponent';
+                    }else{
+                        $turn_expire = $msg->timing;
+                        $showTimerOfUser = 'user';
+                    }
 
-						$card_row = self::strRowToInt($msg->BFData->row);
-						$card_field = $msg->BFData->field;
+                    if($turn_expire > $timing_settings['max_step_time']){
+                        $turn_expire = $timing_settings['max_step_time'];
+                    }
 
-						if($card['type'] == 'special'){
-							if($card_row == 3){
-								$battle_field['mid'][] = ['card' => $card, 'strength' => $card['strength'], 'login' => $users_data['user']['login']];
-								//Если карт на поле спец карт больше 6ти
-								if(count($battle_field['mid']) > 6){
-									//Кидает первую карту в отбой
-									if($users_data['user']['login'] == $battle_field['mid'][0]['login']){
-										$users_data['user']['discard'][] = $battle_field['mid'][0]['card'];
-									}else{
-										$users_data['opponent']['discard'][] = $battle_field['mid'][0]['card'];
-									}
-									//Удаляем первую карту
-									unset($battle_field['mid'][0]);
-								}
-								//Добавляем текущую карту на поле боя и её принадлежность пользователю
-								$battle_field['mid'] = array_values($battle_field['mid']);
-							}else{
-								//Если логика карт предусматривает сразу уходить в отбой
-								foreach($card['actions'] as $i => $action){
-									if (($action->action == '6') || ($action->action == '7') || ($action->action == '10') || ($action->action == '11') || ($action->action == '15') || ($action->action == '19')) {
-										$users_data['user']['discard'][] = $card;
-									}else{
-										//Еcли в ряду уже есть спец карта
-										if (!empty($battle_field[$card_field][$card_row]['special'])) {
-											$users_data[$card_field]['discard'][] = $battle_field[$card_field][$card_row]['special']['card'];
-										}
-										$battle_field[$card_field][$card_row]['special'] = [
-											'card' => $card,
-											'strength' => $card['strength'],
-											'login' => $users_data['user']['login']
-										];
-									}
-								}
-							}
-						}else{
-							$battle_field[$card_field][$card_row]['warrior'][] = [
-								'card' => $card,
-								'strength' => $card['strength'],
-								'login' => $users_data['user']['login']
-							];
-						}
-						//Если был задействован МЭ "Марионетка"
-						if((isset($magic_usage[$users_data['user']['player']][$battle->round_count]['id'])) && (base64_decode(base64_decode($magic_usage[$users_data['user']['player']][$battle->round_count]['id'])) == '19') && ($magic_usage[$users_data['user']['player']][$battle->round_count]['allow'] == 1)){
-							$magic_usage[$users_data['user']['player']][$battle->round_count]['allow'] = '0';
-							$user_type = 'opponent';
-						}else{
-							$user_type = 'user';
-						}
-						//Убираем карту из текущй колоды
-						$users_data[$user_type][$msg->source] = self::dropCardFromDeck($users_data[$user_type][$msg->source], $card);
+                    $this->users_data = &$users_data;
+                    $this->magic_usage = &$magic_usage;
 
-						$current_actions = $card['actions'];
-					}
-					//Применение действий
-					$add_time = true;
-					foreach($current_actions as $action_iter => $action){
+                    //Сохранение данных битвы
+                    $users_battle_data = \DB::table('tbl_battle_members')->where('id', '=', $users_data['user']['battle_member_id'])->update([
+                        'user_deck'		=> serialize($users_data['user']['deck']),
+                        'user_hand'		=> serialize($users_data['user']['hand']),
+                        'user_discard'	=> serialize($users_data['user']['discard']),
+                        'card_source'	=> $users_data['user']['card_source'],
+                        'player_source'	=> $users_data['user']['player_source'],
+                        'card_to_play'	=> serialize($users_data['user']['cards_to_play']),
+                        'round_passed'	=> '0',
+                        'addition_data'	=> serialize($addition_data),
+                        'turn_expire'	=> $turn_expire
+                    ]);
+                    $opponent_battle_data = \DB::table('tbl_battle_members')->where('id', '=', $users_data['opponent']['battle_member_id'])->update([
+                        'user_deck'	=> serialize($users_data['opponent']['deck']),
+                        'user_hand'	=> serialize($users_data['opponent']['hand']),
+                        'user_discard'=> serialize($users_data['opponent']['discard'])
+                    ]);
 
-						$action_result = self::actionProcessing($action, $battle_field, $users_data, $addition_data, $user_turn_id, $user_turn, $msg, $magic_usage);
+                    //Сохраняем поле битвы
+                    $battle->battle_field	= serialize($battle_field);
+                    $battle->magic_usage	= serialize($magic_usage);
+                    $battle->user_id_turn	= $user_turn_id;
+                    $battle->turn_expire	= $turn_expire+time();
+                    $battle->save();
 
-						$battle_field = $action_result['battle_field'];
-						$users_data = $action_result['users_data'];
-						$addition_data = $action_result['addition_data'];
-						$user_turn_id = $action_result['user_turn_id'];
-						$user_turn = $action_result['user_turn'];
-						$magic_usage = $action_result['magic_usage'];
-						if( ($action->action == '7') || ($action->action == '10') || ($action->action == '14') || ($action->action == '15') ){
-							$add_time = false;
-						}
-					}
-					//Сортировка колод
-					$users_data = self::sortDecksByStrength($users_data);
-					//Обработка действий
-					$battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+                    self::sendUserMadeActionData($this->step_status, $msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $user_turn, $addition_data, $battle->round_count, '', $showTimerOfUser);
 
+                }
+            break;
 
-					if($add_time === true){
-						$turn_expire = $msg->timing + $timing_settings['additional_time'];
-						$showTimerOfUser = 'opponent';
-					}else{
-						$turn_expire = $msg->timing;
-						$showTimerOfUser = 'user';
-					}
+            case 'dropCard':
+                var_dump($msg->player != $users_data['user']['player']);
+                if($msg->player != $users_data['user']['player']){
+                    $position = -1;
+                    foreach($users_data[$msg->player][$msg->deck] as $card_iter => $card_data){
+                        if(Crypt::decrypt($card_data['id']) == Crypt::decrypt($msg->card)){
+                            $position = $card_iter;
+                            break;
+                        }
+                    }
+                    if($position >= 0){
+                        $this->step_status['dropped_cards'][$msg->player][$msg->deck][] = $users_data[$msg->player][$msg->deck][$position];
+                        unset($users_data[$msg->player][$msg->deck][$position]);
+                        $users_data[$msg->player][$msg->deck] = array_values($users_data[$msg->player][$msg->deck]);
 
-					if($turn_expire > $timing_settings['max_step_time']){
-						$turn_expire = $timing_settings['max_step_time'];
-					}
+                        \DB::table('tbl_battle_members')->where('id','=',$users_data[$msg->player]['battle_member_id'])->update([
+                            'user_'.$msg->deck => serialize($users_data[$msg->player][$msg->deck])
+                        ]);
+                        $result = [
+                            'message' => 'dropCard',
+                            'step_data' => $this->step_status
+                        ];
+                        self::sendMessageToSelf($from, $result);
+                        self::sendMessageToOthers($from, $result, $SplBattleObj[$msg->ident->battleId]);
+                    }
+                }
+            break;
 
-					$this->users_data = &$users_data;
-					$this->magic_usage = &$magic_usage;
-
-					//Сохранение данных битвы
-					$users_battle_data = \DB::table('tbl_battle_members')->where('id', '=', $users_data['user']['battle_member_id'])->update([
-						'user_deck'		=> serialize($users_data['user']['deck']),
-						'user_hand'		=> serialize($users_data['user']['hand']),
-						'user_discard'	=> serialize($users_data['user']['discard']),
-						'card_source'	=> $users_data['user']['card_source'],
-						'player_source'	=> $users_data['user']['player_source'],
-						'card_to_play'	=> serialize($users_data['user']['cards_to_play']),
-						'round_passed'	=> '0',
-						'addition_data'	=> serialize($addition_data),
-						'turn_expire'	=> $turn_expire
-					]);
-					$opponent_battle_data = \DB::table('tbl_battle_members')->where('id', '=', $users_data['opponent']['battle_member_id'])->update([
-						'user_deck'	=> serialize($users_data['opponent']['deck']),
-						'user_hand'	=> serialize($users_data['opponent']['hand']),
-						'user_discard'=> serialize($users_data['opponent']['discard'])
-					]);
-
-					//Сохраняем поле битвы
-					$battle->battle_field	= serialize($battle_field);
-					$battle->magic_usage	= serialize($magic_usage);
-					$battle->user_id_turn	= $user_turn_id;
-					$battle->turn_expire	= $turn_expire+time();
-					$battle->save();
-
-					self::sendUserMadeActionData($msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $user_turn, $addition_data, $battle->round_count, '', $showTimerOfUser);
-				}
-			break;
-
-			case 'dropCard':
-				if($msg->player != $users_data['user']['player']){
-					$position = -1;
-					foreach($users_data[$msg->player][$msg->deck] as $card_iter => $card_data){
-						if(Crypt::decrypt($card_data['id']) == Crypt::decrypt($msg->card)){
-							$position = $card_iter;
-							break;
-						}
-					}
-					if($position >= 0){
-						unset($users_data[$msg->player][$msg->deck][$position]);
-						$users_data[$msg->player][$msg->deck] = array_values($users_data[$msg->player][$msg->deck]);
-
-						\DB::table('tbl_battle_members')->where('id','=',$users_data[$msg->player]['battle_member_id'])->update([
-							'user_'.$msg->deck => serialize($users_data[$msg->player][$msg->deck])
-						]);
-					}
-				}
-			break;
-
-			case 'returnCardToHand':
-				$battle_field = unserialize($battle->battle_field);
-				$magic_usage = unserialize($battle->magic_usage);//Данные о использовании магии
-				$player = $users_data[$msg->ident->userId]['player'];
+            case 'returnCardToHand':
+                $battle_field = unserialize($battle->battle_field);
+                $magic_usage = unserialize($battle->magic_usage);//Данные о использовании магии
+                $player = $users_data[$msg->ident->userId]['player'];
 
                 $turn_expire = $users_data[$msg->ident->userId]['turn_expire'] + $timing_settings['additional_time'] - $users_data[$msg->ident->userId]['time_shift'];
                 \DB::table('tbl_battle_members')
                     ->where('id','=',$users_data[$msg->ident->userId]['battle_member_id'])
                     ->update(['turn_expire' => $turn_expire]);
 
-				foreach($battle_field[$player] as $row => $row_data){
-					foreach($row_data['warrior'] as $card_iter => $card_data){
-						if(Crypt::decrypt($card_data['card']['id']) == Crypt::decrypt($msg->card)){
-							$users_data[$player]['hand'][] = $card_data['card'];
-							unset($battle_field[$player][$row]['warrior'][$card_iter]);
-							$battle_field[$player][$row]['warrior'] = array_values($battle_field[$player][$row]['warrior']);
-							break 2;
-						}
-					}
-				}
-				$users_data[$player]['addition_data'] = [];
-				$users_data = self::sortDecksByStrength($users_data);
-				self::saveUsersDecks($users_data);
+                foreach($battle_field[$player] as $row => $row_data){
+                    foreach($row_data['warrior'] as $card_iter => $card_data){
+                        if(Crypt::decrypt($card_data['card']['id']) == Crypt::decrypt($msg->card)){
+                            $users_data[$player]['hand'][] = $card_data['card'];
+                            $this->step_status['added_cards'][$player]['hand'][] = $card_data['card'];
+                            unset($battle_field[$player][$row]['warrior'][$card_iter]);
+                            $battle_field[$player][$row]['warrior'] = array_values($battle_field[$player][$row]['warrior']);
+                            break 2;
+                        }
+                    }
+                }
+                $users_data[$player]['addition_data'] = [];
+                $users_data = self::sortDecksByStrength($users_data);
+                self::saveUsersDecks($users_data);
 
-				$user_type = (0 != $users_data['opponent']['round_passed'])? 'user': 'opponent';
+                $user_type = (0 != $users_data['opponent']['round_passed'])? 'user': 'opponent';
 
-				$battle->battle_field = serialize($battle_field);
-				$battle->user_id_turn = $users_data[$user_type]['id'];
+                $battle->battle_field = serialize($battle_field);
+                $battle->user_id_turn = $users_data[$user_type]['id'];
                 $battle->turn_expire = $turn_expire + time();
-				$battle->save();
+                $battle->save();
 
-				self::sendUserMadeActionData($msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $users_data[$user_type]['login'], [], $battle->round_count);
-			break;
+                self::sendUserMadeActionData($this->step_status, $msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $users_data[$user_type]['login'], [], $battle->round_count, '');
+            break;
 
-			case 'userPassed':
-				$battle_field = unserialize($battle->battle_field);
-				$magic_usage = unserialize($battle->magic_usage);
-				$addition_data = [];
+            case 'userPassed':
+                $battle_field = unserialize($battle->battle_field);
+                $magic_usage = unserialize($battle->magic_usage);
+                $addition_data = [];
 
-				$users_battle_data = BattleMembers::find($users_data['user']['battle_member_id']);
-				$users_battle_data['round_passed'] = 1;
-				$users_battle_data['turn_expire'] = $msg->timing;// - $users_data['user']['time_shift'];
-				$users_battle_data->save();
+                $users_battle_data = BattleMembers::find($users_data['user']['battle_member_id']);
+                $users_battle_data['round_passed'] = 1;
+                $users_battle_data['turn_expire'] = $msg->timing;// - $users_data['user']['time_shift'];
+                $users_battle_data->save();
 
-				$users_passed_count = $users_data['opponent']['round_passed'] + 1;
+                $users_passed_count = $users_data['opponent']['round_passed'] + 1;
 
-				$user_turn = $users_data['opponent']['login'];
-				$user_turn_id = $users_data['opponent']['id'];
+                $user_turn = $users_data['opponent']['login'];
+                $user_turn_id = $users_data['opponent']['id'];
 
-				$battle->user_id_turn = $user_turn_id;
-				$battle->pass_count++;
-				$battle->turn_expire = $msg->timing + time();
-				$battle->save();
+                $battle->user_id_turn = $user_turn_id;
+                $battle->pass_count++;
+                $battle->turn_expire = $msg->timing + time();
+                $battle->save();
 
-				//Если только один пасанувший
-				if($users_passed_count == 1){
-					self::sendUserMadeActionData($msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $user_turn, $addition_data, $battle->round_count);
-					$result = ['message'=> 'userPassed', 'user_login'=>$users_data['user']['login']];
-					self::sendMessageToOthers($from, $result, $SplBattleObj[$msg->ident->battleId]);
-				}
+                //Если только один пасанувший
+                if($users_passed_count == 1){
+                    self::sendUserMadeActionData($this->step_status, $msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $user_turn, $addition_data, $battle->round_count);
+                    $result = ['message'=> 'userPassed', 'user_login'=>$users_data['user']['login']];
+                    self::sendMessageToOthers($from, $result, $SplBattleObj[$msg->ident->battleId]);
+                }
 
-				//Если спасовало 2 пользователя
-				if($users_passed_count == 2){
-					$battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+                //Если спасовало 2 пользователя
+                if($users_passed_count == 2){
+                    $battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
 
-					//Подсчет результатп раунда по очкам
-					$total_str = self::calcStrByPlayers($battle_field);
+                    //Подсчет результатп раунда по очкам
+                    $total_str = self::calcStrByPlayers($battle_field);
 
-					//Статус битвы (очки раундов)
-					$round_status = unserialize($battle->round_status);
-					//Результаты раунда отдельно по игрокам
-					$user_points = $total_str[$users_data['user']['player']];
-					$opponent_points = $total_str[$users_data['opponent']['player']];
+                    //Статус битвы (очки раундов)
+                    $round_status = unserialize($battle->round_status);
+                    //Результаты раунда отдельно по игрокам
+                    $user_points = $total_str[$users_data['user']['player']];
+                    $opponent_points = $total_str[$users_data['opponent']['player']];
 
-					$gain_cards_count = ['user' => 1, 'opponent' => 1];//Количество дополнительных карт
-					//Определение выигравшего
-					if($user_points > $opponent_points){
-						$round_status[$users_data['user']['player']][] = 1;
-						$round_result = 'Выграл '.$users_data['user']['login'];
+                    $gain_cards_count = ['user' => 1, 'opponent' => 1];//Количество дополнительных карт
+                    //Определение выигравшего
+                    if($user_points > $opponent_points){
+                        $round_status[$users_data['user']['player']][] = 1;
+                        $round_result = 'Выграл '.$users_data['user']['login'];
 
-						if($users_data['opponent']['current_deck'] == 'knight') $gain_cards_count['opponent'] = 2;
-					}
-					if($user_points < $opponent_points){
-						$round_status[$users_data['opponent']['player']][] = 1;
-						$round_result = 'Выграл '.$users_data['opponent']['login'];
+                        if($users_data['opponent']['current_deck'] == 'knight') $gain_cards_count['opponent'] = 2;
+                    }
+                    if($user_points < $opponent_points){
+                        $round_status[$users_data['opponent']['player']][] = 1;
+                        $round_result = 'Выграл '.$users_data['opponent']['login'];
 
-						if($users_data['user']['current_deck'] == 'knight') $gain_cards_count['user'] = 2;
-					}
-					if($user_points == $opponent_points){
-						//Если колода пользователя - нечисть и противник не играет нечистью
-						if( ( ($users_data['user']['current_deck'] == 'undead') || ($users_data['opponent']['current_deck'] == 'undead') ) && ($users_data['user']['current_deck'] != $users_data['opponent']['current_deck']) ){
-							if($users_data['user']['current_deck'] == 'undead'){
-								$round_status[$users_data['user']['player']][] = 1;
-								$round_result = 'Выграл '.$users_data['user']['login'];
+                        if($users_data['user']['current_deck'] == 'knight') $gain_cards_count['user'] = 2;
+                    }
+                    if($user_points == $opponent_points){
+                        //Если колода пользователя - нечисть и противник не играет нечистью
+                        if( ( ($users_data['user']['current_deck'] == 'undead') || ($users_data['opponent']['current_deck'] == 'undead') ) && ($users_data['user']['current_deck'] != $users_data['opponent']['current_deck']) ){
+                            if($users_data['user']['current_deck'] == 'undead'){
+                                $round_status[$users_data['user']['player']][] = 1;
+                                $round_result = 'Выграл '.$users_data['user']['login'];
 
-								if($users_data['opponent']['current_deck'] == 'knight') $gain_cards_count['opponent'] = 2;
-							}else{
-								$round_status[$users_data['opponent']['player']][] = 1;
-								$round_result = 'Выграл '.$users_data['opponent']['login'];
+                                if($users_data['opponent']['current_deck'] == 'knight') $gain_cards_count['opponent'] = 2;
+                            }else{
+                                $round_status[$users_data['opponent']['player']][] = 1;
+                                $round_result = 'Выграл '.$users_data['opponent']['login'];
 
-								if($users_data['user']['current_deck'] == 'knight') $gain_cards_count['user'] = 2;
-							}
-						}else{
-							$round_status[$users_data['user']['player']][] = 1;
-							$round_status[$users_data['opponent']['player']][] = 1;
-							$round_result = 'Ничья';
-						}
-					}
+                                if($users_data['user']['current_deck'] == 'knight') $gain_cards_count['user'] = 2;
+                            }
+                        }else{
+                            $round_status[$users_data['user']['player']][] = 1;
+                            $round_status[$users_data['opponent']['player']][] = 1;
+                            $round_result = 'Ничья';
+                        }
+                    }
 
-					$wins_status = [
-						$users_data['p1']['login'] => $round_status['p1'],
-						$users_data['p2']['login'] => $round_status['p2']
-					];
-					//Отпарвка результатов пользователям
-					$result = [
-						'message'		=> 'roundEnds',
-						'battleInfo'	=> $msg->ident->battleId,
-						'roundResult'	=> $round_result,
-						'roundStatus'	=> $wins_status,
-						'user_hand'		=> $users_data['user']['hand'],
-						'user_deck'		=> $users_data['user']['deck'],
-						'user_discard'	=> $users_data['user']['discard'],
-						'opon_discard'	=> $users_data['opponent']['discard'],
-						'magicUsage'	=> $magic_usage,
-						'round'			=> $battle->round_count,
-						'deck_slug'		=> $users_data['user']['current_deck'],
-						'counts'		=> [
-							'user_deck'		=> count($users_data['user']['deck']),
-							'user_discard'	=> count($users_data['user']['discard']),
-							'opon_discard'	=> count($users_data['opponent']['discard']),
-							'opon_deck'		=> count($users_data['opponent']['deck']),
-							'opon_hand'		=> count($users_data['opponent']['hand'])
-						]
-					];
-					self::sendMessageToSelf($from, $result);
-					$result = [
-						'message'		=> 'roundEnds',
-						'battleInfo'	=> $msg->ident->battleId,
-						'roundResult'	=> $round_result,
-						'roundStatus'	=> $wins_status,
-						'user_hand'		=> $users_data['opponent']['hand'],
-						'user_deck'		=> $users_data['opponent']['deck'],
-						'user_discard'	=> $users_data['opponent']['discard'],
-						'opon_discard'	=> $users_data['user']['discard'],
-						'magicUsage'	=> $magic_usage,
-						'round'			=> $battle->round_count,
-						'deck_slug'		=> $users_data['user']['current_deck'],
-						'counts'		=> [
-							'user_deck'		=> count($users_data['opponent']['deck']),
-							'user_discard'	=> count($users_data['opponent']['discard']),
-							'opon_discard'	=> count($users_data['user']['discard']),
-							'opon_deck'		=> count($users_data['user']['deck']),
-							'opon_hand'	=> count($users_data['user']['hand'])
-						],
-					];
-					self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
+                    $wins_status = [
+                        $users_data['p1']['login'] => $round_status['p1'],
+                        $users_data['p2']['login'] => $round_status['p2']
+                    ];
+                    //Отпарвка результатов пользователям
+                    $result = [
+                        'message'		=> 'roundEnds',
+                        'battleInfo'	=> $msg->ident->battleId,
+                        'roundResult'	=> $round_result,
+                        'roundStatus'	=> $wins_status,
+                        'user_hand'		=> $users_data['user']['hand'],
+                        'user_deck'		=> $users_data['user']['deck'],
+                        'user_discard'	=> $users_data['user']['discard'],
+                        'opon_discard'	=> $users_data['opponent']['discard'],
+                        'magicUsage'	=> $magic_usage,
+                        'round'			=> $battle->round_count,
+                        'deck_slug'		=> $users_data['user']['current_deck'],
+                        'counts'		=> [
+                            'user_deck'		=> count($users_data['user']['deck']),
+                            'user_discard'	=> count($users_data['user']['discard']),
+                            'opon_discard'	=> count($users_data['opponent']['discard']),
+                            'opon_deck'		=> count($users_data['opponent']['deck']),
+                            'opon_hand'		=> count($users_data['opponent']['hand'])
+                        ]
+                    ];
+                    self::sendMessageToSelf($from, $result);
+                    $result = [
+                        'message'		=> 'roundEnds',
+                        'battleInfo'	=> $msg->ident->battleId,
+                        'roundResult'	=> $round_result,
+                        'roundStatus'	=> $wins_status,
+                        'user_hand'		=> $users_data['opponent']['hand'],
+                        'user_deck'		=> $users_data['opponent']['deck'],
+                        'user_discard'	=> $users_data['opponent']['discard'],
+                        'opon_discard'	=> $users_data['user']['discard'],
+                        'magicUsage'	=> $magic_usage,
+                        'round'			=> $battle->round_count,
+                        'deck_slug'		=> $users_data['user']['current_deck'],
+                        'counts'		=> [
+                            'user_deck'		=> count($users_data['opponent']['deck']),
+                            'user_discard'	=> count($users_data['opponent']['discard']),
+                            'opon_discard'	=> count($users_data['user']['discard']),
+                            'opon_deck'		=> count($users_data['user']['deck']),
+                            'opon_hand'	=> count($users_data['user']['hand'])
+                        ],
+                    ];
+                    self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
 
-					$clear_result	= self::clearBattleField($battle, $battle_field, $users_data, $magic_usage, $gain_cards_count);
-					$battle_field	= $clear_result['battle_field'];
-					$users_data		= $clear_result['users_data'];
-					$magic_usage	= $clear_result['magic_usage'];
+                    $clear_result	= self::clearBattleField($battle, $battle_field, $users_data, $magic_usage, $gain_cards_count);
+                    $battle_field	= $clear_result['battle_field'];
+                    $users_data		= $clear_result['users_data'];
+                    $magic_usage	= $clear_result['magic_usage'];
 
-					$battle->round_count	= $battle->round_count +1;
-					$battle->round_status	= serialize($round_status);
-					$battle->battle_field	= serialize($battle_field);
-					$battle->magic_usage	= serialize($magic_usage);
-					$battle->undead_cards	= serialize($clear_result['deadless_cards']);
-					$battle->pass_count		= 0;
-					$battle->save();
+                    $battle->round_count	= $battle->round_count +1;
+                    $battle->round_status	= serialize($round_status);
+                    $battle->battle_field	= serialize($battle_field);
+                    $battle->magic_usage	= serialize($magic_usage);
+                    $battle->undead_cards	= serialize($clear_result['deadless_cards']);
+                    $battle->pass_count		= 0;
+                    $battle->save();
 
-					if((count($round_status['p1']) >= 2) || (count($round_status['p2']) >= 2)){
-						$battle->fight_status = 3;
-						$battle->save();
+                    if((count($round_status['p1']) >= 2) || (count($round_status['p2']) >= 2)){
+                        $battle->fight_status = 3;
+                        $battle->save();
 
-						if(count($round_status['p1']) > count($round_status['p2'])){
-							$game_result = 'Игру выграл '.$users_data['p1']['login'];
-							$winner = $users_data['p1']['id'];
-							$to_self = self::saveGameResults($users_data['p1']['id'], $battle, 'win');
-							$to_enemy = self::saveGameResults($users_data['p2']['id'], $battle, 'loose');
-						}
+                        if(count($round_status['p1']) > count($round_status['p2'])){
+                            $game_result = 'Игру выграл '.$users_data['p1']['login'];
+                            $winner = $users_data['p1']['id'];
+                            $to_self = self::saveGameResults($users_data['p1']['id'], $battle, 'win');
+                            $to_enemy = self::saveGameResults($users_data['p2']['id'], $battle, 'loose');
+                        }
 
-						if(count($round_status['p1']) < count($round_status['p2'])){
-							$game_result = 'Игру выграл '.$users_data['p2']['login'];
-							$winner = $users_data['p2']['id'];
-							$to_self = self::saveGameResults($users_data['p2']['id'], $battle, 'win');
-							$to_enemy = self::saveGameResults($users_data['p1']['id'], $battle, 'loose');
-						}
+                        if(count($round_status['p1']) < count($round_status['p2'])){
+                            $game_result = 'Игру выграл '.$users_data['p2']['login'];
+                            $winner = $users_data['p2']['id'];
+                            $to_self = self::saveGameResults($users_data['p2']['id'], $battle, 'win');
+                            $to_enemy = self::saveGameResults($users_data['p1']['id'], $battle, 'loose');
+                        }
 
-						if(count($round_status['p1']) == count($round_status['p2'])){
-							if( ( ($users_data['user']['current_deck'] == 'undead') || ($users_data['opponent']['current_deck'] == 'undead') ) && ($users_data['user']['current_deck'] != $users_data['opponent']['current_deck']) ){
-								if($users_data['user']['current_deck'] == 'undead'){
-									$game_result = 'Игру выграл '.$users_data['user']['login'];
-									$winner = $users_data['user']['id'];
-									$to_self = self::saveGameResults($users_data['user']['id'], $battle, 'win');
-									$to_enemy = self::saveGameResults($users_data['opponent']['id'], $battle, 'loose');
-								}else{
-									$game_result = 'Игру выграл '.$users_data['opponent']['login'];
-									$winner = $users_data['opponent']['id'];
-									$to_self = self::saveGameResults($users_data['opponent']['id'], $battle, 'win');
-									$to_enemy = self::saveGameResults($users_data['user']['id'], $battle, 'loose');
-								}
-							}else{
-								$game_result = 'Игра сыграна в ничью';
-								$winner = '';
-								$to_self = self::saveGameResults($users_data['user']['id'], $battle, 'draw');
-								$to_enemy = self::saveGameResults($users_data['opponent']['id'], $battle, 'draw');
-							}
-						}
+                        if(count($round_status['p1']) == count($round_status['p2'])){
+                            if( ( ($users_data['user']['current_deck'] == 'undead') || ($users_data['opponent']['current_deck'] == 'undead') ) && ($users_data['user']['current_deck'] != $users_data['opponent']['current_deck']) ){
+                                if($users_data['user']['current_deck'] == 'undead'){
+                                    $game_result = 'Игру выграл '.$users_data['user']['login'];
+                                    $winner = $users_data['user']['id'];
+                                    $to_self = self::saveGameResults($users_data['user']['id'], $battle, 'win');
+                                    $to_enemy = self::saveGameResults($users_data['opponent']['id'], $battle, 'loose');
+                                }else{
+                                    $game_result = 'Игру выграл '.$users_data['opponent']['login'];
+                                    $winner = $users_data['opponent']['id'];
+                                    $to_self = self::saveGameResults($users_data['opponent']['id'], $battle, 'win');
+                                    $to_enemy = self::saveGameResults($users_data['user']['id'], $battle, 'loose');
+                                }
+                            }else{
+                                $game_result = 'Игра сыграна в ничью';
+                                $winner = '';
+                                $to_self = self::saveGameResults($users_data['user']['id'], $battle, 'draw');
+                                $to_enemy = self::saveGameResults($users_data['opponent']['id'], $battle, 'draw');
+                            }
+                        }
 
-						\DB::table('users')->where('login', '=', $users_data['user']['login'])->update(['user_busy' => 0]);
-						\DB::table('users')->where('login', '=', $users_data['opponent']['login'])->update(['user_busy' => 0]);
+                        \DB::table('users')->where('login', '=', $users_data['user']['login'])->update(['user_busy' => 0]);
+                        \DB::table('users')->where('login', '=', $users_data['opponent']['login'])->update(['user_busy' => 0]);
 
-						$result = ['message' => 'gameEnds', 'gameResult' => $game_result, 'battleInfo' => $msg->ident->battleId];
+                        $result = ['message' => 'gameEnds', 'gameResult' => $game_result, 'battleInfo' => $msg->ident->battleId];
 
-						if(($winner == '') || ($winner == $msg->ident->userId)){
-							$result['resources'] = $to_self;
-							self::sendMessageToSelf($from, $result);
-							$result['resources'] = $to_enemy;
-							self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
-						}else{
-							$result['resources'] = $to_enemy;
-							self::sendMessageToSelf($from, $result);
-							$result['resources'] = $to_self;
-							self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
-						}
+                        if(($winner == '') || ($winner == $msg->ident->userId)){
+                            $result['resources'] = $to_self;
+                            self::sendMessageToSelf($from, $result);
+                            $result['resources'] = $to_enemy;
+                            self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
+                        }else{
+                            $result['resources'] = $to_enemy;
+                            self::sendMessageToSelf($from, $result);
+                            $result['resources'] = $to_self;
+                            self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
+                        }
 
-					}else{
-						if($users_data['user']['id'] == $battle->first_turn_user_id){
-							$user_turn_id = $users_data['opponent']['id'];
-							$user_turn = $users_data['opponent']['login'];
-						}else{
-							$user_turn_id = $users_data['user']['id'];
-							$user_turn = $users_data['user']['login'];
-						}
-						$users_data = self::sortDecksByStrength($users_data);
-						$battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+                    }else{
+                        if($users_data['user']['id'] == $battle->first_turn_user_id){
+                            $user_turn_id = $users_data['opponent']['id'];
+                            $user_turn = $users_data['opponent']['login'];
+                        }else{
+                            $user_turn_id = $users_data['user']['id'];
+                            $user_turn = $users_data['user']['login'];
+                        }
+                        $users_data = self::sortDecksByStrength($users_data);
+                        $battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
 
-						//timing
-						foreach($users_data as $type => $user_data){
-							if(($type == 'user') || ($type == 'opponent')){
-								$timing = $users_data[$type]['turn_expire'] + $timing_settings['first_step_r'.$battle->round_count] - $users_data[$type]['time_shift'];// - $timing_settings['additional_time']
-								if($timing > $timing_settings['max_step_time']){
-									$timing = $timing_settings['max_step_time'];
-								}
-								\DB::table('tbl_battle_members')
-									->where('id','=',$users_data[$type]['battle_member_id'])
-									->update([
-										'turn_expire' => $timing
-									]);
-							}
-						}
+                        //timing
+                        foreach($users_data as $type => $user_data){
+                            if(($type == 'user') || ($type == 'opponent')){
+                                $timing = $users_data[$type]['turn_expire'] + $timing_settings['first_step_r'.$battle->round_count] - $users_data[$type]['time_shift'];// - $timing_settings['additional_time']
+                                if($timing > $timing_settings['max_step_time']){
+                                    $timing = $timing_settings['max_step_time'];
+                                }
+                                \DB::table('tbl_battle_members')
+                                    ->where('id','=',$users_data[$type]['battle_member_id'])
+                                    ->update([
+                                        'turn_expire' => $timing
+                                    ]);
+                            }
+                        }
 
-						$battle->first_turn_user_id = $user_turn_id;
-						$battle->user_id_turn = $user_turn_id;
-						$battle->battle_field = serialize($battle_field);
-						$battle->save();
+                        $battle->first_turn_user_id = $user_turn_id;
+                        $battle->user_id_turn = $user_turn_id;
+                        $battle->battle_field = serialize($battle_field);
+                        $battle->save();
 
-						foreach($users_data as $user_type => $user){
-							if(($user_type == 'user') || ($user_type == 'opponent')){
-								$battle_data = BattleMembers::find($users_data[$user_type]['battle_member_id']);
-									$battle_data['user_deck']	= serialize($users_data[$user_type]['deck']);
-									$battle_data['user_hand']	= serialize($users_data[$user_type]['hand']);
-									$battle_data['user_discard']= serialize($users_data[$user_type]['discard']);
-									$battle_data['card_source']	= 'hand';
-									$battle_data['round_passed']= '0';
-									$battle_data['card_to_play']= 'a:0:{}';
-									$battle_data['addition_data']= 'a:0:{}';
-									$battle_data['player_source']= $users_data[$user_type]['player'];
-								$battle_data->save();
-							  }
-						}
+                        foreach($users_data as $user_type => $user){
+                            if(($user_type == 'user') || ($user_type == 'opponent')){
+                                $battle_data = BattleMembers::find($users_data[$user_type]['battle_member_id']);
+                                $battle_data['user_deck']	= serialize($users_data[$user_type]['deck']);
+                                $battle_data['user_hand']	= serialize($users_data[$user_type]['hand']);
+                                $battle_data['user_discard']= serialize($users_data[$user_type]['discard']);
+                                $battle_data['card_source']	= 'hand';
+                                $battle_data['round_passed']= '0';
+                                $battle_data['card_to_play']= 'a:0:{}';
+                                $battle_data['addition_data']= 'a:0:{}';
+                                $battle_data['player_source']= $users_data[$user_type]['player'];
+                                $battle_data->save();
+                            }
+                        }
 
-						$cursed_players = [];
-						if($users_data['p1']['current_deck'] == 'cursed'){
-							$cursed_players[] = $users_data['user']['player'];
-							$player = 'p1';
-						}
-						if($users_data['p2']['current_deck'] == 'cursed'){
-							$cursed_players[] = $users_data['opponent']['player'];
-							$player = 'p2';
-						}
-						$data_to_user = '';
-						if(count($cursed_players) == 1){
-							$addition_data = ['action' => 'activate_turn_choise'];
-							$user_turn = $users_data[$player]['login'];
-							$user_turn_id = $users_data[$player]['id'];
+                        $cursed_players = [];
+                        if($users_data['p1']['current_deck'] == 'cursed'){
+                            $cursed_players[] = $users_data['user']['player'];
+                            $player = 'p1';
+                        }
+                        if($users_data['p2']['current_deck'] == 'cursed'){
+                            $cursed_players[] = $users_data['opponent']['player'];
+                            $player = 'p2';
+                        }
+                        $data_to_user = '';
+                        if(count($cursed_players) == 1){
+                            $addition_data = ['action' => 'activate_turn_choise'];
+                            $user_turn = $users_data[$player]['login'];
+                            $user_turn_id = $users_data[$player]['id'];
 
-							$battle->user_id_turn = $user_turn_id;
-							$battle->save();
+                            $battle->user_id_turn = $user_turn_id;
+                            $battle->save();
 
-							$users_battle_data = BattleMembers::find($users_data[$player]['battle_member_id']);
-							$users_battle_data['addition_data'] = serialize($addition_data);
-							$users_battle_data->save();
-							$data_to_user = $player;
-						}
-						self::sendUserMadeActionData($msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $user_turn, $addition_data, $battle->round_count, $data_to_user);
-					}
-				}
-			break;
+                            $users_battle_data = BattleMembers::find($users_data[$player]['battle_member_id']);
+                            $users_battle_data['addition_data'] = serialize($addition_data);
+                            $users_battle_data->save();
+                            $data_to_user = $player;
+                        }
+                        self::sendUserMadeActionData($this->step_status, $msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $user_turn, $addition_data, $battle->round_count, $data_to_user);
+                    }
+                }
+            break;
 
-			case 'cursedWantToChangeTurn':
-				$player = ($users_data['p1']['login'] == $msg->user)? 'p1': 'p2';
+            case 'cursedWantToChangeTurn':
+                $player = ($users_data['p1']['login'] == $msg->user)? 'p1': 'p2';
 
-				$user_turn_id = $users_data[$player]['id'];
+                $user_turn_id = $users_data[$player]['id'];
 
-				$turn_expire = $msg->time;// - $users_data[$player]['time_shift'];
-				if($turn_expire > $timing_settings['max_step_time']){
-					$turn_expire = $timing_settings['max_step_time'];
-				}
+                $turn_expire = $msg->time;// - $users_data[$player]['time_shift'];
+                if($turn_expire > $timing_settings['max_step_time']){
+                    $turn_expire = $timing_settings['max_step_time'];
+                }
 
-				$battle->user_id_turn = $user_turn_id;
-				$battle->turn_expire = $turn_expire+time();
-				$battle->save();
+                $battle->user_id_turn = $user_turn_id;
+                $battle->turn_expire = $turn_expire+time();
+                $battle->save();
 
-				$battle_field = unserialize($battle->battle_field);
-				$magic_usage = unserialize($battle->magic_usage);
+                $battle_field = unserialize($battle->battle_field);
+                $magic_usage = unserialize($battle->magic_usage);
 
-				$addition_data = [];
+                $addition_data = [];
 
-				\DB::table('tbl_battle_members')
-					->where('id', '=', $users_data[$msg->ident->userId]['battle_member_id'])
-					->update([
-						'addition_data' => serialize([]),
-						'round_passed'  => '0',
-						'turn_expire'   => $turn_expire
-					]);
-				//$showTimerOfUser = $users_data[$user_turn_id]['player'];
+                \DB::table('tbl_battle_members')
+                    ->where('id', '=', $users_data[$msg->ident->userId]['battle_member_id'])
+                    ->update([
+                        'addition_data' => serialize([]),
+                        'round_passed'  => '0',
+                        'turn_expire'   => $turn_expire
+                    ]);
+                //$showTimerOfUser = $users_data[$user_turn_id]['player'];
 
-				self::sendUserMadeActionData($msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $msg->user, $addition_data, $battle->round_count, '', $users_data[$user_turn_id]['player']);
-			break;
+                self::sendUserMadeActionData($this->step_status, $msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $msg->user, $addition_data, $battle->round_count, '', $users_data[$user_turn_id]['player']);
+            break;
 
-			case 'userGivesUp':
-				$battle->fight_status = 3;
-				$battle->save();
-				$game_result = 'Игру выграл '.$users_data['opponent']['login'];
-				$winner = $users_data['opponent']['id'];
-				$to_self = self::saveGameResults($users_data['opponent']['id'], $battle, 'win');
-				$to_enemy = self::saveGameResults($users_data['user']['id'], $battle, 'loose');
+            case 'userGivesUp':
+                $battle->fight_status = 3;
+                $battle->save();
+                $game_result = 'Игру выграл '.$users_data['opponent']['login'];
+                $winner = $users_data['opponent']['id'];
+                $to_self = self::saveGameResults($users_data['opponent']['id'], $battle, 'win');
+                $to_enemy = self::saveGameResults($users_data['user']['id'], $battle, 'loose');
 
-				$result = ['message' => 'gameEnds', 'gameResult' => $game_result, 'battleInfo' => $msg->ident->battleId];
+                $result = ['message' => 'gameEnds', 'gameResult' => $game_result, 'battleInfo' => $msg->ident->battleId];
 
-				if( ($winner == '') || ($winner == $msg->ident->userId) ){
-					$result['resources'] = $to_self;
-					self::sendMessageToSelf($from, $result);
-					$result['resources'] = $to_enemy;
-					self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
-				}else{
-					$result['resources'] = $to_enemy;
-					self::sendMessageToSelf($from, $result);
-					$result['resources'] = $to_self;
-					self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
-				}
-			break;
-		}
-	}
-
-	//Socket actions
-	public function onClose(ConnectionInterface $conn){
-		$battle = Battle::find($this->battle_id);
-
-		if($battle->fight_status < 3){
-			if($battle->disconected_count <= 2){
-				$battle->disconected_count++;
-				$battle->save();
-			}
-
-			if($battle->disconected_count == 2){
-				self::waitForRoundEnds($this, $conn);
-			}
-		}else{
-			$this->clients->detach($conn);
-			echo 'Connection '.$conn->resourceId.' has disconnected'."\n";
-		}
+                if( ($winner == '') || ($winner == $msg->ident->userId) ){
+                    $result['resources'] = $to_self;
+                    self::sendMessageToSelf($from, $result);
+                    $result['resources'] = $to_enemy;
+                    self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
+                }else{
+                    $result['resources'] = $to_enemy;
+                    self::sendMessageToSelf($from, $result);
+                    $result['resources'] = $to_self;
+                    self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
+                }
+            break;
+        }
 	}
 
 	protected static function calcStrByPlayers($battle_field){
@@ -998,7 +1113,7 @@ class GwentSocket extends BaseSocket
 
 
 	protected static function waitForRoundEnds($_this, $conn){
-		$battle = Battle::find($_this->battle_id);
+	    $battle = Battle::find($_this->battle_id);
 
 		$round_status = unserialize($battle->round_status);
 		if( (count($round_status['p1']) == 2) || (count($round_status['p2']) == 2) ){
@@ -1043,7 +1158,7 @@ class GwentSocket extends BaseSocket
 				$current_turn_member = \DB::table('tbl_battle_members')->select('battle_id','user_id','turn_expire')
 					->where('battle_id','=',$_this->battle_id)
 					->where('user_id','=',$battle->user_id_turn)
-					->get();
+					->first();
 				if($current_turn_member != false){
 					\DB::table('tbl_battle_members')
 						->where('battle_id','=',$_this->battle_id)
@@ -1061,10 +1176,10 @@ class GwentSocket extends BaseSocket
 					->select('battle_id','user_id','turn_expire')
 					->where('battle_id','=',$_this->battle_id)
 					->where('user_id','=', $user_turn_id)
-					->get();
+					->count();
 
-				if($next_turn_member != false){
-					$turn_expire = $current_turn_member[0]->turn_expire;
+				if($next_turn_member > 0){
+					$turn_expire = $current_turn_member->turn_expire;
 				}else{
 					$turn_expire = 0;
 				}
@@ -1144,20 +1259,6 @@ class GwentSocket extends BaseSocket
 		}
 	}
 
-	protected static function sendMessageToOthers($from, $result, $battles){
-		foreach ($battles as $client) {
-			if ($client->resourceId != $from->resourceId) {
-				$client->send(json_encode($result));
-			}
-		}
-	}
-
-	protected static function sendMessageToSelf($from, $message){
-		$from->send(json_encode($message));
-	}
-	//Socket actions end
-
-
 	protected static function userGainCards($array, $card_to_gain=1){
 		if(count($array['deck']) < $card_to_gain) $card_to_gain = count($array['deck']);
 		for($i=0; $i<$card_to_gain; $i++) {
@@ -1198,9 +1299,8 @@ class GwentSocket extends BaseSocket
 		return $card_to_left;
 	}
 
-
-
-	public static function actionProcessing($input_action, $battle_field, $users_data, $addition_data, $user_turn_id, $user_turn, $msg, $magic_usage){
+	public static function actionProcessing($input_action, $battle_field, $users_data, $addition_data, $user_turn_id, $user_turn, $msg, $magic_usage, $step_status){
+	    $step_status['actions'][] = $input_action->action;
 		switch($input_action->action){
 			//БKЛОКИРОВКА МАГИИ
 			case '1':
@@ -1209,9 +1309,13 @@ class GwentSocket extends BaseSocket
 				$magic_usage[$users_data['opponent']['player']][2] = ['id' => $msg->magic, 'allow'=>'0'];
 			break;
 			//END БЛОКИРОВКА МАГИИ
-
 			//ИСЦЕЛЕНИЕ
 			case '6':
+			    foreach($battle_field['mid'] as $card_iter => $card_data){
+			        $user_type = ($users_data['user']['login'] == $card_data['login'])? 'user': 'opponent';
+			        $users_data[$user_type]['discard'][] = $card_data['card'];
+                    $step_status['dropped_cards'][$user_type]['mid'][] = $card_data['card'];
+                }
 				$battle_field['mid'] = [];
 			break;
 			//END OF ИСЦЕЛЕНИЕ
@@ -1229,7 +1333,7 @@ class GwentSocket extends BaseSocket
 				if(isset($input_action->healer_type_group))		$action_data['type_group'] = $input_action->healer_type_group;
 
 				$heal_result = self::makeHealOrSummon($users_data, $action_data, 'discard', $user_turn_id, $user_turn);
-
+//card activates after user action
 				$users_data		= $heal_result['users_data'];
 				$user_turn_id	= $heal_result['user_turn_id'];
 				$user_turn		= $heal_result['user_turn'];
@@ -1297,6 +1401,10 @@ class GwentSocket extends BaseSocket
 								'strength'	=> $card_data['card']['strength'],
 								'login'		=> $users_data['user']['login']
 							];
+                            $step_status['added_cards'][$users_data['opponent']['player']][$cards_to_obscure[$i]['row']][] = [
+                                'card'		=> $card_data['card'],
+                                'strength'	=> $card_data['card']['strength']
+                            ];
 
 							unset($battle_field[$users_data['opponent']['player']][$cards_to_obscure[$i]['row']]['warrior'][$j]);
 							$battle_field[$users_data['opponent']['player']][$cards_to_obscure[$i]['row']]['warrior'] = array_values($battle_field[$users_data['opponent']['player']][$cards_to_obscure[$i]['row']]['warrior']);
@@ -1325,6 +1433,7 @@ class GwentSocket extends BaseSocket
 						}
 					}
 				}
+				//card activates after user action
 				if(count($users_data['user']['cards_to_play']) > 0){
 					$user_turn_id	= $users_data['user']['id'];
 					$user_turn		= $users_data['user']['login'];
@@ -1351,6 +1460,8 @@ class GwentSocket extends BaseSocket
 				}
 
 				foreach($players as $player_iter => $player){
+				    $users_data[$player]['discard'][] = $battle_field[$player][$row]['special']['card'];
+				    $step_status['dropped_cards'][$player][$row][] = $battle_field[$player][$row]['special']['card'];
 					$battle_field[$player][$row]['special'] = '';
 				}
 			break;
@@ -1402,13 +1513,16 @@ class GwentSocket extends BaseSocket
 									}else{
 										$action_row = $card_to_summon['action_row'][0];
 									}
-
 									//Move card to battle_field
 									$battle_field[$users_data['user']['player']][$action_row]['warrior'][] = [
 										'card'		=> $card_to_summon,
 										'strength'	=> $card_to_summon['strength'],
 										'login'		=> $users_data['user']['login']
 									];
+									$step_status['added_cards'][$users_data['user']['player']][$action_row][] = [
+                                        'card'		=> $card_to_summon,
+                                        'strength'	=> $card_to_summon['strength']
+                                    ];
 
 									unset($users_data['user'][$destignation][$card_to_summon_iter]);
 								}
@@ -1421,6 +1535,7 @@ class GwentSocket extends BaseSocket
 						if (!empty($cards)) {
 							foreach($users_data['user'][$destignation] as $card_to_summon_iter => $card_to_summon){
 								if(Crypt::decrypt($card_to_summon['id']) == $cards[0]){
+                                    //card activates after user action
 									$users_data['user']['cards_to_play'][] = $card_to_summon;
 									$user_turn_id = $users_data['user']['id'];
 									$user_turn = $users_data['user']['login'];
@@ -1462,7 +1577,7 @@ class GwentSocket extends BaseSocket
 				if(isset($input_action->summon_type_group))		$action_data['type_group'] = $input_action->summon_type_group;
 
 				$summon_result = self::makeHealOrSummon($users_data, $action_data, 'deck', $user_turn_id, $user_turn);
-
+//card activates after user action
 				$users_data		= $summon_result['users_data'];
 				$user_turn_id	= $summon_result['user_turn_id'];
 				$user_turn		= $summon_result['user_turn'];
@@ -1591,8 +1706,8 @@ class GwentSocket extends BaseSocket
 						foreach($cards as $card_to_kill_iter => $card_to_kill_data){
 							foreach($battle_field[$player][$row]['warrior'] as $card_iter => $card_data){
 								if($card_to_kill_data['id'] == $card_data['card']['id']){
-
 									$users_data[$player]['discard'][] = $card_data['card'];
+                                    $step_status['dropped_cards'][$player][$row][] = $card_data['card'];
 
 									unset($battle_field[$player][$row]['warrior'][$card_iter]);
 									$battle_field[$player][$row]['warrior'] = array_values($battle_field[$player][$row]['warrior']);
@@ -1610,11 +1725,14 @@ class GwentSocket extends BaseSocket
 			case '20':
 				$deck_card_count = count($users_data['user']['deck']);
 
+                $step_status['played_card']['move_to']['player'] = ($step_status['played_card']['move_to']['player'] == 'p1')? 'p2' :'p1';
 				$n = ($deck_card_count >= $input_action->spy_getCardsCount) ? $input_action->spy_getCardsCount : $deck_card_count;
 				for($i=0; $i<$n; $i++){
 					$rand_item = mt_rand(0, $deck_card_count-1);
 					$random_card = $users_data['user']['deck'][$rand_item];
 					$users_data['user']['hand'][] = $random_card;
+
+                    $step_status['added_cards'][$users_data['user']['player']]['hand'][] = $random_card;
 
 					unset($users_data['user']['deck'][$rand_item]);
 
@@ -1630,7 +1748,8 @@ class GwentSocket extends BaseSocket
 			'addition_data'	=> $addition_data,
 			'user_turn_id'	=> $user_turn_id,
 			'user_turn'		=> $user_turn,
-			'magic_usage'	=> $magic_usage
+			'magic_usage'	=> $magic_usage,
+            'step_status'   => $step_status
 		];
 	}
 
@@ -1731,7 +1850,7 @@ class GwentSocket extends BaseSocket
 
 		foreach($users_data[$user][$deck] as $card_iter => $card_data){
 			if(in_array(Crypt::decrypt($card_data['id']), $cards_to_play)){
-				$users_data['user']['cards_to_play'][] = $card_data;
+				$users_data['user']['cards_to_play'][] = $card_data;//Карты приходят в попап выбора карт
 			}
 		}
 
@@ -2197,23 +2316,6 @@ class GwentSocket extends BaseSocket
 		return $battle_field;
 	}
 
-	protected static function strRowToInt($field){
-		switch($field){ //Порядковый номер поля
-			case 'meele':		$field_row = 0; break;
-			case 'range':		$field_row = 1; break;
-			case 'superRange':	$field_row = 2; break;
-			case 'sortable-cards-field-more':$field_row = 3; break;
-		}
-		return $field_row;
-	}
-
-	public static function transformObjToArr($card){
-		if(!is_array($card)){
-			$card = get_object_vars($card);
-		}
-		return $card;
-	}
-
 	protected static function dropCardFromDeck($deck, $card){
 		$deck = array_values($deck);
 		//Количество карт в входящей колоде
@@ -2255,25 +2357,7 @@ class GwentSocket extends BaseSocket
 		return $allow_to_use;
 	}
 
-	protected static function sortingDeck(&$deck){
-		usort($deck, function($a, $b){
-			$r = ($b['strength']  - $a['strength']);
-			if($r !== 0) return $r;
-			return strnatcasecmp($a['title'], $b['title']);
-		});
-	}
-
-	protected static function sortDecksByStrength($users_data){
-		self::sortingDeck($users_data['user']['deck']);
-		self::sortingDeck($users_data['user']['discard']);
-		self::sortingDeck($users_data['user']['hand']);
-		self::sortingDeck($users_data['opponent']['deck']);
-		self::sortingDeck($users_data['opponent']['discard']);
-		self::sortingDeck($users_data['opponent']['hand']);
-		return $users_data;
-	}
-
-	public static function sendUserMadeActionData($msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $user_turn, $addition_data, $round_count, $data_to_user = '', $showTimerOfUser='opponent'){
+	public static function sendUserMadeActionData($step_status, $msg, $SplBattleObj, $from, $battle_field, $magic_usage, $users_data, $user_turn, $addition_data, $round_count, $data_to_user = '', $showTimerOfUser='opponent'){
 		$user_discard_count = count($users_data['user']['discard']);
 		$user_deck_count = count($users_data['user']['deck']);
 
@@ -2285,6 +2369,7 @@ class GwentSocket extends BaseSocket
 
 		$oponent_discard_count = count($users_data['opponent']['discard']);
 		$oponent_deck_count = count($users_data['opponent']['deck']);
+        //var_dump($step_status);
 
 		$result = [
 			'message'		=> 'userMadeAction',
@@ -2296,6 +2381,7 @@ class GwentSocket extends BaseSocket
 			'battleInfo'	=> $msg->ident->battleId,
 			'magicUsage'	=> $magic_usage,
 			'login'			=> $user_turn,
+            'step_status'   => $step_status,
 			'field_data'	=> $battle_field,
 			'round'			=> $round_count,
 			'deck_slug'		=> $users_data['user']['current_deck'],
@@ -2333,6 +2419,7 @@ class GwentSocket extends BaseSocket
 			'battleInfo'	=> $msg->ident->battleId,
 			'magicUsage'	=> $magic_usage,
 			'login'			=> $user_turn,
+            'step_status'   => $step_status,
 			'field_data'	=> $battle_field,
 			'round'			=> $round_count,
 			'deck_slug'		=> $users_data['opponent']['current_deck'],
@@ -2380,35 +2467,35 @@ class GwentSocket extends BaseSocket
 		$user = \DB::table('users')
 			->select('id', 'login', 'premium_activated', 'premium_expire_date', 'user_gold', 'user_silver', 'user_rating')
 			->where('id', '=', $user_id)
-			->get();
+			->first();
 
-		$league = League::where('title', '=', $battle->league)->get();
+		$league = League::where('title', '=', $battle->league)->first();
 
-		$user_rating = unserialize($user[0]->user_rating);
+		$user_rating = unserialize($user->user_rating);
 
-		$games_count = $user_rating[$league[0]['slug']]['games_count'] + 1;
+		$games_count = $user_rating[$league['slug']]['games_count'] + 1;
 
-		$gold = $user[0]->user_gold;
-		$silver = $user[0]->user_silver;
+		$gold = $user->user_gold;
+		$silver = $user->user_silver;
 
-		$win_count = $user_rating[$league[0]['slug']]['win_count'];
+		$win_count = $user_rating[$league['slug']]['win_count'];
 
-		$expire_date = strtotime(substr($user[0]->premium_expire_date, 0, -9));
+		$expire_date = strtotime(substr($user->premium_expire_date, 0, -9));
 		$current_date = strtotime(date('Y-m-d'));
 
-		if ((($expire_date - $current_date) > 0) && ($user[0]->premium_activated > 0)) {//if user is premium
+		if ((($expire_date - $current_date) > 0) && ($user->premium_activated > 0)) {//if user is premium
 			$resources = [
-				'gold_per_win'	=> $league[0]->prem_gold_per_win,
-				'gold_per_loose'=> $league[0]->prem_gold_per_loose,
-				'silver_per_win'=> $league[0]->prem_silver_per_win,
-				'silver_per_loose'=> $league[0]->prem_silver_per_loose,
+				'gold_per_win'	=> $league->prem_gold_per_win,
+				'gold_per_loose'=> $league->prem_gold_per_loose,
+				'silver_per_win'=> $league->prem_silver_per_win,
+				'silver_per_loose'=> $league->prem_silver_per_loose,
 			];
 		} else {
 			$resources = [
-				'gold_per_win'	=> $league[0]->gold_per_win,
-				'gold_per_loose'=> $league[0]->gold_per_loose,
-				'silver_per_win'=> $league[0]->silver_per_win,
-				'silver_per_loose'=> $league[0]->silver_per_loose,
+				'gold_per_win'	=> $league->gold_per_win,
+				'gold_per_loose'=> $league->gold_per_loose,
+				'silver_per_win'=> $league->silver_per_win,
+				'silver_per_loose'=> $league->silver_per_loose,
 			];
 		}
 
@@ -2420,36 +2507,36 @@ class GwentSocket extends BaseSocket
 		];
 		switch ($game_result) {
 			case 'win':
-				$gold = $user[0]->user_gold + $resources['gold_per_win'];
-				$silver = $user[0]->user_silver + $resources['silver_per_win'];
-				$rating = $user_rating[$league[0]['slug']]['user_rating'] + $league[0]->rating_per_win;
-				$win_count = $user_rating[$league[0]['slug']]['win_count'] + 1;
+				$gold = $user->user_gold + $resources['gold_per_win'];
+				$silver = $user->user_silver + $resources['silver_per_win'];
+				$rating = $user_rating[$league['slug']]['user_rating'] + $league->rating_per_win;
+				$win_count = $user_rating[$league['slug']]['win_count'] + 1;
 				$result['gold'] = $resources['gold_per_win'];
 				$result['silver'] = $resources['silver_per_win'];
-				$result['user_rating'] = $league[0]->rating_per_win;
+				$result['user_rating'] = $league->rating_per_win;
 			break;
 			case 'loose':
-				$gold = $user[0]->user_gold + $resources['gold_per_loose'];
-				$silver = $user[0]->user_silver + $resources['silver_per_loose'];
-				$rating = $user_rating[$league[0]['slug']]['user_rating'] + $league[0]->rating_per_loose;
+				$gold = $user->user_gold + $resources['gold_per_loose'];
+				$silver = $user->user_silver + $resources['silver_per_loose'];
+				$rating = $user_rating[$league['slug']]['user_rating'] + $league->rating_per_loose;
 				if($gold < 0) $gold = 0;
-				if($silver < 0) $silver = $league[0]->min_amount;
+				if($silver < 0) $silver = $league->min_amount;
 				$result['gold'] = $resources['gold_per_loose'];
 				$result['silver'] = $resources['silver_per_loose'];
-				$result['user_rating'] = abs($league[0]->rating_per_loose);
+				$result['user_rating'] = abs($league->rating_per_loose);
 			break;
 			case 'draw':
-				$rating = $user_rating[$league[0]['slug']]['user_rating'];
+				$rating = $user_rating[$league['slug']]['user_rating'];
 			break;
 		}
 
-		$user_rating[$league[0]['slug']] = [
+		$user_rating[$league['slug']] = [
 			'user_rating'	=> $rating,
 			'win_count'		=> $win_count,
 			'games_count'	=> $games_count
 		];
 
-		\DB::table('users')->where('id', '=', $user[0]->id)->update([
+		\DB::table('users')->where('id', '=', $user->id)->update([
 			'user_gold'		=> $gold,
 			'user_silver'	=> $silver,
 			'user_rating'	=> serialize($user_rating)
