@@ -189,7 +189,8 @@ class GwentSocket extends BaseSocket
                 'card' => '',
                 'move_to' => [
                         'player'=> '',
-                        'row'   => ''
+                        'row'   => '',
+                        'user'  => ''
                     ],
                 'strength' => ''
             ],
@@ -514,7 +515,8 @@ class GwentSocket extends BaseSocket
                             'card' => $card,
                             'move_to' => [
                                 'player'=> $users_data['user']['player'],
-                                'row'   => $card_row
+                                'row'   => $card_row,
+                                'user'  => $users_data['user']['login']
                             ],
                             'strength' => $card['strength']
                         ];
@@ -812,10 +814,11 @@ class GwentSocket extends BaseSocket
                     ];
                     self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
 
-                    $clear_result	= self::clearBattleField($battle, $battle_field, $users_data, $magic_usage, $gain_cards_count);
+                    $clear_result	= self::clearBattleField($battle, $battle_field, $users_data, $magic_usage, $gain_cards_count, $this->step_status);
                     $battle_field	= $clear_result['battle_field'];
                     $users_data		= $clear_result['users_data'];
                     $magic_usage	= $clear_result['magic_usage'];
+                    $this->step_status = $clear_result['step_status'];
 
                     $battle->round_count	= $battle->round_count +1;
                     $battle->round_status	= serialize($round_status);
@@ -1026,12 +1029,17 @@ class GwentSocket extends BaseSocket
 		return $total_str;
 	}
 
-	protected static function clearBattleField($battle, $battle_field, $users_data, $magic_usage, $gain_cards_count){
+	protected static function clearBattleField($battle, $battle_field, $users_data, $magic_usage, $gain_cards_count, $step_status){
 		$deadless_cards = unserialize($battle->undead_cards);
 
 		//Добавление по карте из колоды каждому игроку
-		$users_data['user'] = self::userGainCards($users_data['user'], $gain_cards_count['user']);
-		$users_data['opponent'] = self::userGainCards($users_data['opponent'], $gain_cards_count['opponent']);
+        $gain_cards_data = self::userGainCards($users_data['user'], $gain_cards_count['user'], $step_status);
+		$users_data['user'] = $gain_cards_data['array'];
+        $step_status = $gain_cards_data['step_status'];
+
+        $gain_cards_data = self::userGainCards($users_data['opponent'], $gain_cards_count['opponent'], $step_status);
+		$users_data['opponent'] = $gain_cards_data['array'];
+        $step_status = $gain_cards_data['step_status'];
 
 		//Очищение поля битвы от карт
 		foreach($battle_field as $player => $rows){
@@ -1075,16 +1083,16 @@ class GwentSocket extends BaseSocket
 
 				if(!empty($card_to_left)){
 					foreach($card_to_left as $key => $value){
-						$destignation = explode('_',$key);
-						$battle_field[$destignation[0]][$destignation[1]]['warrior'][] = [
+						$destination = explode('_',$key);
+						$battle_field[$destination[0]][$destination[1]]['warrior'][] = [
 							'card'		=> $value,
 							'strength'	=> $value['strength'],
-							'login'		=> $users_data[$destignation[0]]['login']
+							'login'		=> $users_data[$destination[0]]['login']
 						];
-						foreach($users_data[$destignation[0]]['discard'] as $discard_iter => $discard_card){
+						foreach($users_data[$destination[0]]['discard'] as $discard_iter => $discard_card){
 							if($discard_card['id'] == $value['id']){
-								unset($users_data[$destignation[0]]['discard'][$discard_iter]);
-								$users_data[$destignation[0]]['discard'] = array_values($users_data[$destignation[0]]['discard']);
+								unset($users_data[$destination[0]]['discard'][$discard_iter]);
+								$users_data[$destination[0]]['discard'] = array_values($users_data[$destination[0]]['discard']);
 							}
 						}
 					}
@@ -1107,7 +1115,8 @@ class GwentSocket extends BaseSocket
 			'battle_field'	=> $battle_field,
 			'users_data'	=> $users_data,
 			'deadless_cards'=> $deadless_cards,
-			'magic_usage'	=> $magic_usage
+			'magic_usage'	=> $magic_usage,
+            'step_status'   => $step_status
 		];
 	}
 
@@ -1234,10 +1243,11 @@ class GwentSocket extends BaseSocket
 						}
 					}
 
-					$clear_result = self::clearBattleField($battle, $battle_field, $_this->users_data, $_this->magic_usage, $gain_cards_count);
+					$clear_result = self::clearBattleField($battle, $battle_field, $_this->users_data, $_this->magic_usage, $gain_cards_count, $_this->step_status, $_this->step_status);
 					$battle_field = $clear_result['battle_field'];
 					$_this->users_data	= $clear_result['users_data'];
 					$_this->magic_usage	= $clear_result['magic_usage'];
+                    $_this->step_status = $clear_result['step_status'];
 
 					$battle->battle_field	= serialize($battle_field);
 					$battle->magic_usage	= serialize($_this->magic_usage);
@@ -1259,17 +1269,21 @@ class GwentSocket extends BaseSocket
 		}
 	}
 
-	protected static function userGainCards($array, $card_to_gain=1){
+	protected static function userGainCards($array, $card_to_gain=1, $step_status){
 		if(count($array['deck']) < $card_to_gain) $card_to_gain = count($array['deck']);
 		for($i=0; $i<$card_to_gain; $i++) {
 			if (!empty($array['deck'])) {
 				$rand = mt_rand(0, count($array['deck']) - 1);
 				$array['hand'][] = $array['deck'][$rand];
+                $step_status['added_cards'][$array['player']]['hand'][] = $array['deck'][$rand];
 				unset($array['deck'][$rand]);
 				$array['deck'] = array_values($array['deck']);
 			}
 		}
-		return $array;
+		return [
+		    'array' => $array,
+            'step_status' => $step_status
+        ];
 	}
 
 	protected static function cardsToLeft($battle_field, $player){
@@ -1471,15 +1485,15 @@ class GwentSocket extends BaseSocket
 				$addition_data = [];
 				$cards_can_be_added = [];
 
-				foreach($input_action->master_cardSource as $destignation_iter => $destignation){
-					foreach($users_data['user'][$destignation] as $card_iter => $card_data){
+				foreach($input_action->master_cardSource as $destination_iter => $destination){
+					foreach($users_data['user'][$destination] as $card_iter => $card_data){
 						if(!empty($card_data['groups'])){
 							if(!empty(array_intersect($input_action->master_group, $card_data['groups']))){
 								if($card_data['strength'] <= $input_action->master_maxCardsStrenght){
 									$cards_can_be_added[] = [
 										'card_id'	=> Crypt::decrypt($card_data['id']),
 										'strength'	=> $card_data['strength'],
-										'source_deck'=> $destignation
+										'source_deck'=> $destination
 									];
 								}
 							}
@@ -1503,9 +1517,9 @@ class GwentSocket extends BaseSocket
 				}
 
 				if($n > 1){
-					foreach($cards_to_add as $destignation => $cards){
+					foreach($cards_to_add as $destination => $cards){
 						if(!empty($cards)){
-							foreach($users_data['user'][$destignation] as $card_to_summon_iter => $card_to_summon){
+							foreach($users_data['user'][$destination] as $card_to_summon_iter => $card_to_summon){
 								if(in_array(Crypt::decrypt($card_to_summon['id']), $cards)){
 									if(count($card_to_summon['action_row']) > 1){
 										$rand = mt_rand(0, count($card_to_summon['action_row'])-1);
@@ -1521,30 +1535,31 @@ class GwentSocket extends BaseSocket
 									];
 									$step_status['added_cards'][$users_data['user']['player']][$action_row][] = [
                                         'card'		=> $card_to_summon,
-                                        'strength'	=> $card_to_summon['strength']
+                                        'strength'	=> $card_to_summon['strength'],
+                                        'destination' => $destination
                                     ];
 
-									unset($users_data['user'][$destignation][$card_to_summon_iter]);
+									unset($users_data['user'][$destination][$card_to_summon_iter]);
 								}
 							}
-							$users_data['user'][$destignation] = array_values($users_data['user'][$destignation]);
+							$users_data['user'][$destination] = array_values($users_data['user'][$destination]);
 						}
 					}
 				}else{
-					foreach($cards_to_add as $destignation => $cards) {
+					foreach($cards_to_add as $destination => $cards) {
 						if (!empty($cards)) {
-							foreach($users_data['user'][$destignation] as $card_to_summon_iter => $card_to_summon){
+							foreach($users_data['user'][$destination] as $card_to_summon_iter => $card_to_summon){
 								if(Crypt::decrypt($card_to_summon['id']) == $cards[0]){
                                     //card activates after user action
 									$users_data['user']['cards_to_play'][] = $card_to_summon;
 									$user_turn_id = $users_data['user']['id'];
 									$user_turn = $users_data['user']['login'];
 									$addition_data = ['action' => 'activate_choise'];
-									unset($users_data['user'][$destignation][$card_to_summon_iter]);
+									unset($users_data['user'][$destination][$card_to_summon_iter]);
 									break;
 								}
 							}
-							$users_data['user'][$destignation] = array_values($users_data['user'][$destignation]);
+							$users_data['user'][$destination] = array_values($users_data['user'][$destination]);
 						}
 					}
 				}
@@ -2076,8 +2091,8 @@ class GwentSocket extends BaseSocket
 					}
 
 					if(($allow_fury_by_row) || ($allow_fury_by_race) || ($allow_fury_by_magic) || ($allow_fury_by_group)){
-						$card_destignation = explode('_',$card_id);
-						$battle_field[$card_destignation[0]][$card_destignation[1]]['warrior'][$card_destignation[2]]['strength'] += $action->fury_strenghtVal;
+						$card_destination = explode('_',$card_id);
+						$battle_field[$card_destination[0]][$card_destination[1]]['warrior'][$card_destination[2]]['strength'] += $action->fury_strenghtVal;
 					}
 				}
 			}
@@ -2408,6 +2423,15 @@ class GwentSocket extends BaseSocket
 		}
 
 		self::sendMessageToSelf($from, $result); //Отправляем результат отправителю
+
+        //"Прячем" от противника руку полльзователя
+        foreach($step_status['added_cards'] as $player => $field){
+            foreach($field as $field_type => $field_data){
+                if($field_data == 'hand'){
+                    unset($step_status['added_cards'][$player]['hand']);
+                }
+            }
+        }
 
 		$result = [
 			'message'		=> 'userMadeAction',
