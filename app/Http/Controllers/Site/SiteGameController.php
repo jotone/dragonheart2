@@ -163,7 +163,7 @@ class SiteGameController extends BaseController
 		$result_array = [];
 		foreach($deck as $key => $card_income){
 			if(strlen($card_income['id']) > 11){
-				$card_income['id'] = Crypt::decrypt($card_income['id']);
+				$card_income['id'] = $card_income['id'];
 			}
 			if(count(array_keys($card_income) < 5)){
 				$card_data = \DB::table('tbl_cards')
@@ -178,7 +178,7 @@ class SiteGameController extends BaseController
 					$fraction = ($card_data[0]->card_type == 'race')? $card_data[0]->card_race: $card_data[0]->card_type;
 
 					$result_array[] = [
-						'id'        => Crypt::encrypt($card_data[0]->id),
+						'id'        => $card_data[0]->id,
 						'title'     => $card_data[0]->title,
 						'is_leader' => $card_data[0]->is_leader,
 						'type'      => $card_data[0]->card_type,
@@ -253,7 +253,7 @@ class SiteGameController extends BaseController
 
 				if(isset($magic_effect_data[0])){
 					$user_magic_effect_data[] = [
-						'id'            => base64_encode(base64_encode($id)),
+						'id'            => $id,
 						'title'         => $magic_effect_data[0]->title,
 						'slug'          => $magic_effect_data[0]->slug,
 						'img_url'       => $magic_effect_data[0]->img_url,
@@ -441,9 +441,6 @@ class SiteGameController extends BaseController
 	}
 
 	public static function getCardData($id){
-		if(strlen($id) > 11){
-			$id = Crypt::decrypt($id);
-		}
 		if($id<=0) return '';
 		$card_data = \DB::table('tbl_cards')
 			->select('id','title','slug','card_type','card_race','is_leader','card_strong','card_groups','img_url','short_description','allowed_rows','card_actions')
@@ -456,8 +453,9 @@ class SiteGameController extends BaseController
 
 		$fraction = ($card_data[0]->card_type == 'race')? $card_data[0]->card_race: $card_data[0]->card_type;
 
+
 		return json_encode([
-			'id'        => Crypt::encrypt($card_data[0]->id),
+			'id'        => $id,
 			'title'     => $card_data[0]->title,
 			'type'      => $card_data[0]->card_type,
 			'fraction'  => $fraction,
@@ -480,9 +478,6 @@ class SiteGameController extends BaseController
 	}
 
 	public static function getMagicData($id){
-		if(strlen($id) > 6){
-			$id = base64_decode(base64_decode($id));
-		}
 		if($id<=0) return '';
 
 		$magic = \DB::table('tbl_magic_effect')
@@ -493,7 +488,7 @@ class SiteGameController extends BaseController
 		if(!$magic) return '';
 
 		return json_encode([
-			'id'        => Crypt::encrypt($magic[0]->id),
+			'id'        => $magic[0]->id,
 			'title'     => $magic[0]->title,
 			'img_url'   => $magic[0]->img_url,
 			'descript'  => $magic[0]->description,

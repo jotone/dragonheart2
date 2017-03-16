@@ -519,8 +519,7 @@ foreach($battle_members as $key => $value){
 							@else
 								<div class="nothinh-for-swap"></div>
 							@endif
-						</li>
-					</ul>
+ 					</ul>
 					<!--END OF Колода и отбой игрока-->
 				</div>
 			</div>
@@ -577,7 +576,7 @@ foreach($battle_members as $key => $value){
 							@foreach($magic_usage[$opponent_field_identificator] as $activated_in_round => $magic_id)
 								@if($magic_id != 0)
 									<?php
-									if( ($value->id == base64_decode(base64_decode($magic_id['id'])) ) || ($battle_data->round_count == $activated_in_round) ){
+									if( ($value->id == $magic_id['id'] ) || ($battle_data->round_count == $activated_in_round) ){
 										$disactive = 'disactive';
 									}
 									?>
@@ -585,7 +584,7 @@ foreach($battle_members as $key => $value){
 									<?php $disactive = 'disactive'; ?>
 								@endif
 							@endforeach
-							<li data-cardid="{{ base64_encode(base64_encode($value->id)) }}" class="{{ $disable_by_over }} {{ $disactive }}">
+							<li data-cardid="{{ $value->id }}" class="{{ $disable_by_over }} {{ $disactive }}">
 								<img src="/img/card_images/{{ $value->img_url }}" alt="{{ $value->slug }}" title="{{ $value->title }}">
 								<div class="magic-description">{{ $value ->description }}</div>
 								<div class="info-img">
@@ -742,16 +741,16 @@ foreach($battle_members as $key => $value){
 							@foreach($magic_usage[$user_field_identificator] as $activated_in_round => $magic_id)
 								@if($magic_id != 0)
 									<?php
-									if( ($value->id == base64_decode(base64_decode($magic_id['id'])) ) || ($battle_data->round_count == $activated_in_round) ){
+									if( ($value->id == $magic_id['id'] ) || ($battle_data->round_count == $activated_in_round) ){
 										$disactive = 'disactive';
 									}
-									$used = ($value->id == base64_decode(base64_decode($magic_id['id'])))? 'used': '';
+									$used = ($value->id == $magic_id['id'])? 'used': '';
 									?>
 								@else
 									<?php $disactive = 'disactive'; ?>
 								@endif
 							@endforeach
-							<li data-cardid="{{ base64_encode(base64_encode($value->id)) }}" class="{{ $disable_by_over }} {{ $disactive }} {{ $used }}">
+							<li data-cardid="{{ $value->id }}" class="{{ $disable_by_over }} {{ $disactive }} {{ $used }}">
 								<img src="/img/card_images/{{ $value->img_url }}" alt="{{ $value->slug }}" title="{{ $value->title }}">
 								<div class="magic-description">{{ $value ->description }}</div>
 								<div class="info-img">
