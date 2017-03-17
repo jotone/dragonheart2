@@ -632,7 +632,6 @@ class GwentSocket extends BaseSocket
             break;
 
             case 'dropCard':
-                var_dump($msg->player != $users_data['user']['player']);
                 if($msg->player != $users_data['user']['player']){
                     $position = -1;
                     foreach($users_data[$msg->player][$msg->deck] as $card_iter => $card_data){
@@ -642,7 +641,6 @@ class GwentSocket extends BaseSocket
                         }
                     }
                     if($position >= 0){
-                        var_dump($users_data[$msg->player][$msg->deck][$position]); echo __LINE__."\n";
                         $this->step_status['dropped_cards'][$msg->player][$msg->deck][] = $users_data[$msg->player][$msg->deck][$position];
                         unset($users_data[$msg->player][$msg->deck][$position]);
                         $users_data[$msg->player][$msg->deck] = array_values($users_data[$msg->player][$msg->deck]);
@@ -1724,9 +1722,6 @@ class GwentSocket extends BaseSocket
 				}
 
 				$card_to_kill = [];
-
-				var_dump($card_strength_to_kill);
-				var_dump($cards_to_destroy);
 
 				foreach($cards_to_destroy as $player => $rows){
 					foreach($rows as $row => $cards){
