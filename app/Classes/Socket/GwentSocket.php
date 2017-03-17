@@ -199,7 +199,7 @@ class GwentSocket extends BaseSocket
             'actions'       => []
         ];
 		if(isset($msg->timing)) $users_data['user']['turn_expire'] = $msg->timing - $users_data['user']['time_shift'];
-        var_dump($msg);
+
         switch($msg->action){
             //Пользователь присоединился
             case 'userJoinedToRoom':
@@ -284,7 +284,6 @@ class GwentSocket extends BaseSocket
                         'card_to_hand'	=> $card_to_add,
                         'card_to_drop'	=> $msg->card,
                         'can_change_cards'=> $users_battle_data['available_to_change'],
-                        'pos'           => $msg->pos
                     ];
 
                     self::sendMessageToSelf($from, $result);
@@ -1572,7 +1571,7 @@ class GwentSocket extends BaseSocket
 								if($card_to_summon['id'] == $cards[0]){
                                     //card activates after user action
 									$users_data['user']['cards_to_play'][] = $card_to_summon;
-									var_dump($card_to_summon);
+
                                     $step_status['dropped_cards'][$users_data['user']['player']][$destination][] = [
                                         'id' => $card_to_summon['id'],
                                         'type' =>  $card_to_summon['type']
@@ -1667,19 +1666,22 @@ class GwentSocket extends BaseSocket
 							if(!empty($groups)){
 								foreach($card_data['card']['groups'] as $groups_ident => $group_id){
 									if(in_array($group_id, $groups)){
+									    $title = \DB::table('tbl_cards')->select('title','id')->find($card_data['card']['id']);
 										$cards_to_destroy[$player][$row][] = [
 											'id' => $card_data['card']['id'],
-											'strength' => $card_data['strength']
+                                            'title' => $title->title,
+											'strength' => $card_data['strength'],
+                                            'pos' => $card_iter,
 										];
 
 										if($card_data['strength'] < $strenght_limit_to_kill){
 											if($player == $users_data['opponent']['player']){
-												$max_strenght = ($max_strenght < $card_data['strength'])
-													? $card_data['strength']
-													: $max_strenght;// максимальная сила карты
-												$min_strenght = ($min_strenght > $card_data['strength'])
-													? $card_data['strength']
-													: $min_strenght;// минимальная сила карты
+											    if($max_strenght < $card_data['strength']){
+                                                    $max_strenght = $card_data['strength'];// максимальная сила карты
+                                                }
+                                                if($min_strenght > $card_data['strength']){
+                                                    $min_strenght = $card_data['strength'];// минимальная сила карты
+                                                }
 												$card_strength_set[] = $card_data['strength'];
 											}
 										}
@@ -1688,20 +1690,25 @@ class GwentSocket extends BaseSocket
 							}else{
 								$allow_by_immune = self::checkForSimpleImmune($input_action->killer_ignoreKillImmunity, $card_data['card']['actions']);
 								if($allow_by_immune){
-									$cards_to_destroy[$player][$row][] = [
-										'id' => $card_data['card']['id'],
-										'strength' => $card_data['strength']
-									];
+                                    $title = \DB::table('tbl_cards')->select('title','id')->find($card_data['card']['id']);
+                                    $cards_to_destroy[$player][$row][] = [
+                                        'id' => $card_data['card']['id'],
+                                        'title' => $title->title,
+                                        'strength' => $card_data['strength'],
+                                        'pos' => $card_iter,
+                                    ];
 
-									if($card_data['strength'] < $strenght_limit_to_kill){
-										$max_strenght = ($max_strenght < $card_data['strength'])
-											? $card_data['strength']
-											: $max_strenght;// максимальная сила карты
-										$min_strenght = ($min_strenght > $card_data['strength'])
-											? $card_data['strength']
-											: $min_strenght;// минимальная сила карты
-										$card_strength_set[] = $card_data['strength'];
-									}
+                                    if($card_data['strength'] < $strenght_limit_to_kill){
+                                        if($player == $users_data['opponent']['player']){
+                                            if($max_strenght < $card_data['strength']){
+                                                $max_strenght = $card_data['strength'];// максимальная сила карты
+                                            }
+                                            if($min_strenght > $card_data['strength']){
+                                                $min_strenght = $card_data['strength'];// минимальная сила карты
+                                            }
+                                            $card_strength_set[] = $card_data['strength'];
+                                        }
+                                    }
 								}
 							}
 						}
@@ -1717,6 +1724,9 @@ class GwentSocket extends BaseSocket
 				}
 
 				$card_to_kill = [];
+
+				var_dump($card_strength_to_kill);
+				var_dump($cards_to_destroy);
 
 				foreach($cards_to_destroy as $player => $rows){
 					foreach($rows as $row => $cards){
@@ -1751,7 +1761,8 @@ class GwentSocket extends BaseSocket
 						foreach($cards as $card_to_kill_iter => $card_to_kill_data){
 							foreach($battle_field[$player][$row]['warrior'] as $card_iter => $card_data){
 								if($card_to_kill_data['id'] == $card_data['card']['id']){
-									$users_data[$player]['discard'][] = $card_data['card'];
+								    $users_data[$player]['discard'][] = $card_data['card'];
+
                                     $step_status['dropped_cards'][$player][$row][] = [
                                         'id' => $card_data['card']['id'],
                                         'type' => $card_data['card']['type']
@@ -2419,7 +2430,6 @@ class GwentSocket extends BaseSocket
 
 		$oponent_discard_count = count($users_data['opponent']['discard']);
 		$oponent_deck_count = count($users_data['opponent']['deck']);
-        //var_dump($step_status);
 
 		$result = [
 			'message'		=> 'userMadeAction',

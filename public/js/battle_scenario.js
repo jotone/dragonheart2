@@ -130,13 +130,11 @@ function userWantsChangeCard(){
 	$(document).on('click', '#selecthandCardsPopup #handCards .change-card', function(){
 		showPreloader();
 		var card = $(this).parent().attr('data-cardid');
-		var pos = $(this).closest('.content-card-item').index();
 		conn.send(
 			 JSON.stringify({
 				 action: 'changeCardInHand',
 				 ident: ident,
 				 card: card,
-				 pos: pos
 			 })
 		);
 	});
@@ -1086,9 +1084,9 @@ function startBattle() {
 
 			case 'changeCardInHand':
 				hidePreloader();
-				$('#selecthandCardsPopup #handCards li[data-cardid="'+result.card_to_drop+'"]:eq('+result.pos+')').addClass('animator-out');
+				$('#selecthandCardsPopup #handCards li[data-cardid="'+result.card_to_drop+'"]').addClass('animator-out');
 				setTimeout(function(){
-					$('#selecthandCardsPopup #handCards li[data-cardid="'+result.card_to_drop+'"]').remove();
+					$('#selecthandCardsPopup #handCards li[data-cardid="'+result.card_to_drop+'"] .disactive').closest('.content-card-item').remove();
 					$('#selecthandCardsPopup h5 span').text(result.can_change_cards);
 					$('#selecthandCardsPopup #handCards').append(createFieldCardView(result.card_to_hand, result.card_to_hand['strength'], true));
 					$('#selecthandCardsPopup #handCards li:last-child').addClass('animator-in');
