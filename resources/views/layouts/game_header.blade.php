@@ -51,8 +51,6 @@ $user = Auth::user();
     <script type="text/javascript" src="{{ URL::asset('js/jquery.jscrollpane.min.js') }}"></script>
 
 
-
-    <script type="text/javascript" src="{{ URL::asset('js/battle_scenario.js') }}"></script>
     <!-- endbuild -->
 
 <!-- <script src="@{{ URL::asset('js/validate_script.js') }}"></script>-->

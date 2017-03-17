@@ -130,11 +130,13 @@ function userWantsChangeCard(){
 	$(document).on('click', '#selecthandCardsPopup #handCards .change-card', function(){
 		showPreloader();
 		var card = $(this).parent().attr('data-cardid');
+		var pos = $(this).closest('.content-card-item').index();
 		conn.send(
 			 JSON.stringify({
 				 action: 'changeCardInHand',
 				 ident: ident,
-				 card: card
+				 card: card,
+				 pos: pos
 			 })
 		);
 	});
@@ -803,21 +805,24 @@ function fieldBuilding(step_status){
         }
 
         //удаление карт
-		if(typeof step_status['dropped_cards'] != "undefined"){
-        	for(var player in step_status['dropped_cards']){
-        		for(var row in step_status['dropped_cards'][player]){
-        			for(var i in step_status['dropped_cards'][player][row]){
-        				var card = step_status['dropped_cards'][player][row][i];
+		if(typeof step_status.dropped_cards != "undefined"){
+        	for(var player in step_status.dropped_cards){
+        		for(var row in step_status.dropped_cards[player]){
+        			if(row == 'mid'){
+                        $('.mezhdyblock #sortable-cards-field-more').empty();
+					}
+        			for(var i in step_status.dropped_cards[player][row]){
+        				var card = step_status.dropped_cards[player][row][i];
                         switch(row) {
                             case 'hand':
                                 var targetPlayer = $('.convert-cards[data-user=' + $('.user-describer').attr('id') + ']').attr('id');
                                 if(targetPlayer == player){
                                 	$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').remove();
                                 }
-                                break;
+							break;
                             case 'mid':
                                 $('.mezhdyblock #sortable-cards-field-more').empty();
-                                break;
+							break;
                             default:
                                 var rowId = intRowToField(row);
                                 if(card['type'] == 'special'){
@@ -1081,7 +1086,7 @@ function startBattle() {
 
 			case 'changeCardInHand':
 				hidePreloader();
-				$('#selecthandCardsPopup #handCards li[data-cardid="'+result.card_to_drop+'"]').addClass('animator-out');
+				$('#selecthandCardsPopup #handCards li[data-cardid="'+result.card_to_drop+'"]:eq('+result.pos+')').addClass('animator-out');
 				setTimeout(function(){
 					$('#selecthandCardsPopup #handCards li[data-cardid="'+result.card_to_drop+'"]').remove();
 					$('#selecthandCardsPopup h5 span').text(result.can_change_cards);
@@ -1114,7 +1119,7 @@ function startBattle() {
 			//Пользователь сделал действие
 			case 'userMadeAction':
 				if(currentRound != result['round']){
-					$('.convert-cards .content-card-item').addClass('transition');
+					/*$('.convert-cards .content-card-item').addClass('transition');
 					$('.field-for-cards').addClass('visible');
 					var timeout1=0;
 					var timeout2=0;
@@ -1134,15 +1139,13 @@ function startBattle() {
 							k.addClass('user-animate');
 						},timeout2);
 						timeout2+=50;
-					});
+					});*/
 					setTimeout(function () {
 						$('.field-for-cards').removeClass('visible');
 						$('.convert-cards .content-card-item').removeClass('transition');
 						if(typeof result.turnDescript != "undefined") turnDescript = result.turnDescript;
 						changeTurnIndicator(result.login);//смена индикатора хода
-						//buildBattleField(result.field_data);//Отображение поля битвы
 
-						//
                         fieldBuilding(result.step_status);
 
 						recalculateDecks(result);//Пересчет колод пользователя и противника
@@ -1166,13 +1169,11 @@ function startBattle() {
 						clearRowSelection();//Очистка активированых рядов действий карт
 					},1000)
 				}else{
-					console.log('NOW');
 					if(typeof result.turnDescript != "undefined") turnDescript = result.turnDescript;
 
 					changeTurnIndicator(result.login);//смена индикатора хода
 
-					//buildBattleField(result.field_data);//Отображение поля битвы
-                    //
+
                     fieldBuilding(result.step_status);
 
 					recalculateDecks(result);//Пересчет колод пользователя и противника
@@ -1188,8 +1189,7 @@ function startBattle() {
 			//Пользователь использовал карты с возможностью призыва карт
 			case 'dropCard':
 				if(typeof result.field_data != "undefined"){
-					//buildBattleField(result.field_data);//Если возыращаются данные о поле битвы - перестраиваем его
-                    //
+
                     fieldBuilding(result.step_status);
                 }
 				recalculateDecks(result);//Пересчет колод пользователя и противника
@@ -1223,8 +1223,6 @@ function startBattle() {
                 $('.mezhdyblock #sortable-cards-field-more, .convert-battle-front .cards-row-wrap, .convert-battle-front .image-inside-line').empty();
                 if(typeof result.field_data != "undefined"){
                     buildBattleField(result.field_data);
-					//
-                    //fieldBuilding(result.step_status)
 				}
 				resultPopupShow(result.roundResult + '! Подождите, идет подготовка нового раунда.');
 				allowToAction = false;

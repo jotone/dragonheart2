@@ -283,7 +283,8 @@ class GwentSocket extends BaseSocket
                         'user_deck'		=> $users_data['user']['deck'],
                         'card_to_hand'	=> $card_to_add,
                         'card_to_drop'	=> $msg->card,
-                        'can_change_cards'=> $users_battle_data['available_to_change']
+                        'can_change_cards'=> $users_battle_data['available_to_change'],
+                        'pos'           => $msg->pos
                     ];
 
                     self::sendMessageToSelf($from, $result);
@@ -778,10 +779,26 @@ class GwentSocket extends BaseSocket
                         $users_data['p1']['login'] => $round_status['p1'],
                         $users_data['p2']['login'] => $round_status['p2']
                     ];
+
+                    $clear_result	= self::clearBattleField($battle, $battle_field, $users_data, $magic_usage, $gain_cards_count, $this->step_status);
+                    $battle_field	= $clear_result['battle_field'];
+                    $users_data		= $clear_result['users_data'];
+                    $magic_usage	= $clear_result['magic_usage'];
+                    $this->step_status = $clear_result['step_status'];
+
+                    $battle->round_count	= $battle->round_count +1;
+                    $battle->round_status	= serialize($round_status);
+                    $battle->battle_field	= serialize($battle_field);
+                    $battle->magic_usage	= serialize($magic_usage);
+                    $battle->undead_cards	= serialize($clear_result['deadless_cards']);
+                    $battle->pass_count		= 0;
+                    $battle->save();
+
                     //Отпарвка результатов пользователям
                     $result = [
                         'message'		=> 'roundEnds',
                         'battleInfo'	=> $msg->ident->battleId,
+                        'field_data'    => $battle_field,
                         'roundResult'	=> $round_result,
                         'roundStatus'	=> $wins_status,
                         'user_hand'		=> $users_data['user']['hand'],
@@ -803,6 +820,7 @@ class GwentSocket extends BaseSocket
                     $result = [
                         'message'		=> 'roundEnds',
                         'battleInfo'	=> $msg->ident->battleId,
+                        'field_data'    => $battle_field,
                         'roundResult'	=> $round_result,
                         'roundStatus'	=> $wins_status,
                         'user_hand'		=> $users_data['opponent']['hand'],
@@ -821,20 +839,6 @@ class GwentSocket extends BaseSocket
                         ],
                     ];
                     self::sendMessageToOthers($from, $result, $this->battles[$msg->ident->battleId]);
-
-                    $clear_result	= self::clearBattleField($battle, $battle_field, $users_data, $magic_usage, $gain_cards_count, $this->step_status);
-                    $battle_field	= $clear_result['battle_field'];
-                    $users_data		= $clear_result['users_data'];
-                    $magic_usage	= $clear_result['magic_usage'];
-                    $this->step_status = $clear_result['step_status'];
-
-                    $battle->round_count	= $battle->round_count +1;
-                    $battle->round_status	= serialize($round_status);
-                    $battle->battle_field	= serialize($battle_field);
-                    $battle->magic_usage	= serialize($magic_usage);
-                    $battle->undead_cards	= serialize($clear_result['deadless_cards']);
-                    $battle->pass_count		= 0;
-                    $battle->save();
 
                     if((count($round_status['p1']) >= 2) || (count($round_status['p2']) >= 2)){
                         $battle->fight_status = 3;
@@ -1336,7 +1340,7 @@ class GwentSocket extends BaseSocket
 			    foreach($battle_field['mid'] as $card_iter => $card_data){
 			        $user_type = ($users_data['user']['login'] == $card_data['login'])? 'user': 'opponent';
 			        $users_data[$user_type]['discard'][] = $card_data['card'];
-                    $step_status['dropped_cards'][$user_type]['mid'] = '';
+                    $step_status['dropped_cards'][$users_data[$user_type]['player']]['mid'] = '';
                 }
 				$battle_field['mid'] = [];
 			break;
@@ -1485,12 +1489,14 @@ class GwentSocket extends BaseSocket
 				}
 
 				foreach($players as $player_iter => $player){
-				    $users_data[$player]['discard'][] = $battle_field[$player][$row]['special']['card'];
-				    $step_status['dropped_cards'][$player][$row][] = [
-                        'id' => $battle_field[$player][$row]['special']['card']['id'],
-                        'type' => $battle_field[$player][$row]['special']['card']['type']
-                    ];
-					$battle_field[$player][$row]['special'] = '';
+				    if(!empty($battle_field[$player][$row]['special'])){
+                        $users_data[$player]['discard'][] = $battle_field[$player][$row]['special']['card'];
+                        $step_status['dropped_cards'][$player][$row][] = [
+                            'id' => $battle_field[$player][$row]['special']['card']['id'],
+                            'type' => 'special'
+                        ];
+                        $battle_field[$player][$row]['special'] = '';
+                    }
 				}
 			break;
 			//END OF ПЕЧАЛЬ
@@ -1766,8 +1772,10 @@ class GwentSocket extends BaseSocket
 			//ШПИЙОН
 			case '20':
 				$deck_card_count = count($users_data['user']['deck']);
+                if($input_action->spy_fieldChoise == 1){
+                    $step_status['played_card']['move_to']['player'] = ($step_status['played_card']['move_to']['player'] == 'p1')? 'p2' :'p1';
+                }
 
-                $step_status['played_card']['move_to']['player'] = ($step_status['played_card']['move_to']['player'] == 'p1')? 'p2' :'p1';
 				$n = ($deck_card_count >= $input_action->spy_getCardsCount) ? $input_action->spy_getCardsCount : $deck_card_count;
 				for($i=0; $i<$n; $i++){
 					$rand_item = mt_rand(0, $deck_card_count-1);
