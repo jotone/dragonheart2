@@ -767,7 +767,7 @@ foreach($battle_members as $key => $value){
 		<div class="info-block-with-timer">
 
 				<div class="timer-for-play cfix">
-					<div class="title-timer">ход противника:</div>
+					<div class="title-timer"><span>ход противника:</span></div>
 					<div class="timer-tic-tac-convert">
 						<div class="tic-tac">
 							<div class="tic-tac-wrap">

@@ -302,7 +302,7 @@ function createCardDescriptionView(cardData, strength, titleView){
 	if(cardData['action_txt'].length>0){
 		for (var i = 0; i < cardData['action_txt'].length; i++) {
 			result = result + '<span class="card-action"><img src="' + cardData['action_txt'][i].img+'" alt=""><span class="card-action-description">'+cardData['action_txt'][i].title+'</span></span>';
-  
+
 		}
 	}
 	result = result + '</div>' +
@@ -1154,10 +1154,10 @@ function startBattle() {
 						}
 						currentRound = result['round'];
 						if(result.login == $('.user-describer').attr('id')){
-							$('.info-block-with-timer .title-timer').text('Ваш ход').addClass('user-turn-green');
+							$('.info-block-with-timer .title-timer').find('span').text('Ваш ход').end().addClass('user-turn-green');
 							allowToAction = true;
 						}else{
-							$('.info-block-with-timer .title-timer').text('ход противника:').removeClass('user-turn-green');
+							$('.info-block-with-timer .title-timer').find('span').text('ход противника:').end().removeClass('user-turn-green');
 							allowToAction = false;
 						}
 						animateHandCard();
@@ -1402,10 +1402,10 @@ function startBattle() {
 			}
 
 			if(result.login == $('.user-describer').attr('id')){
-				$('.info-block-with-timer .title-timer').text('Ваш ход').addClass('user-turn-green');
+				$('.info-block-with-timer .title-timer').find('span').text('Ваш ход').end().addClass('user-turn-green');
 				allowToAction = true;
 			}else{
-				$('.info-block-with-timer .title-timer').text('ход противника:').removeClass('user-turn-green');
+				$('.info-block-with-timer .title-timer').find('span').text('ход противника:').end().removeClass('user-turn-green');
 				allowToAction = false;
 			}
 
