@@ -70,7 +70,7 @@ $user = Auth::user();
 <body>
 <div class="hidden-block">
     <!-- Окно выбора карт -->
-    
+
 </div>
 
 <div class="new-popups-block disable-select">
@@ -113,7 +113,7 @@ $user = Auth::user();
 
         </div>
     </div>
-    
+
     <div class="troll-popup hand-select-popup" id="selecthandCardsPopup">
 
         <div class="popup-content-wrap">
@@ -177,12 +177,15 @@ $user = Auth::user();
     </div>
 
 
-    <div class="troll-popup" id="card-info">
+    <div class="troll-popup card-info" id="card-info">
         <div class="close-this"></div>
-
-
         <div class="content-card-info"></div>
     </div>
+
+    <div class="troll-popup card-start-step" id="card-start-step">
+        <div class="content-card-info"></div>
+    </div>
+
     <!-- Окно ошибки -->
     <div class="market-buy-popup troll-popup" id="buyingCardOrmagic">
         <input name="_token" type="hidden" value="{{ csrf_token() }}">

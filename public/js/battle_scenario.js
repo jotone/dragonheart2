@@ -305,12 +305,18 @@ function createCardDescriptionView(cardData, strength, titleView){
 
 		}
 	}
+
+	var cardDescription = '<div class="card-description-hidden"><div class="jsp-cont-descr">' +
+			  				//'<p class="txt">'+cardData['descript']+'</p></div></div> '+
+							cardData['descript']+'</div></div> ';
+
+	if ( titleView == 'without-description'){
+		cardDescription = '';
+	}
+
 	result = result + '</div>' +
 		'</div>' +
-		'<div class="card-name-property"><p>'+cardData['title']+'</p></div>' +
-		'<div class="card-description-hidden"><div class="jsp-cont-descr">' +
-			  //'<p class="txt">'+cardData['descript']+'</p></div></div> '+
-			  cardData['descript']+'</div></div> '+
+		'<div class="card-name-property"><p>'+cardData['title']+'</p></div>' + cardDescription +
 		'</div>' +
 		'</div>' +
 		'</div>';
@@ -933,6 +939,28 @@ $('.market-buy-popup .close-popup').click(function(){
 
 recalculateBattleField();
 
+//Показ попапа с картой которой ходит игрок( открываеться при начале хода )
+function detailCardPopupOnStartStep(card, strength) {
+	var holder = $('#card-start-step');
+	holder.find('.content-card-info').empty();
+	var popContent = createCardDescriptionView(card, strength, 'without-description');
+
+	holder.find('.content-card-info').append(popContent);
+	openSecondTrollPopup(holder);
+
+	setTimeout(function(){
+		closeSecondTrollPopup(holder);
+	},4000)
+}
+
+function openSecondTrollPopup(id) {
+	id.addClass('show');
+	$('.new-popups-block').addClass('show-second');
+}
+function closeSecondTrollPopup(id) {
+	id.removeClass('show');
+	$('.new-popups-block').removeClass('show-second');
+}
 
 //Отображение Колоды или Отбоя
 $('.convert-left-info .cards-bet #card-give-more-user').on('click', '.card-my-init', function(){
@@ -1168,6 +1196,8 @@ function startBattle() {
 					},1000)
 				}else{
 					if(typeof result.turnDescript != "undefined") turnDescript = result.turnDescript;
+
+					console.log('result',result);
 
 					changeTurnIndicator(result.login);//смена индикатора хода
 
