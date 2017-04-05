@@ -624,7 +624,7 @@
 	height:100%; }
 .convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards ul li .content-card-item-main .hovered-items .card-game-status span{
 	width:11px;
-	height:11px; }
+	height:11px;}
 .convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards .image-inside-line{
 	background-image:url(../images/lcimg.png);
 	height:100px;
@@ -3329,17 +3329,27 @@ div.troll-popup#card-info{ padding:20px; width:590px; height:920px; z-index:1010
 }
 /* END settings page ---------------------------------------------------------------------------    */
 
-.cards-row-wrap .content-card-item{ width:74px; display:inline-block;}
-/*.cards-row-wrap .content-card-item{ width:74px; display:inline-block;transition: all ease .3s;transform: scale(0.8);opacity: 0;}*/
+/*.cards-row-wrap .content-card-item{ width:74px; display:inline-block;}*/
+.cards-row-wrap .content-card-item{ width:74px; display:inline-block;transition: all ease .3s;transform: scale(0.8);opacity: 0;}
 .cards-row-wrap .content-card-item.show{transform: none;opacity: 1;}
-.cards-row-wrap .content-card-item-main{ width:100%; height:100px; }
+.cards-row-wrap .content-card-item-main{ width:100%; height:100px;overflow: visible; }
 .cards-row-wrap .content-card-item-main .card-action-description{ display:none; }
 .cards-row-wrap .content-card-item-main .hovered-items .card-game-status{ bottom:0; }
 .cards-row-wrap .content-card-item-main .hovered-items .card-game-status .card-game-status-role{ display:none; }
 .cards-row-wrap .content-card-item-main .hovered-items .card-name-property{ display:none; }
 .cards-row-wrap .content-card-item-main .info-img{ width:15px; height:15px; }
-.cards-row-wrap .content-card-item-main .label-power-card{ height:32px; font-size:12px; padding-top:7px; width:23px; left:0px; }
-.cards-row-wrap .content-card-item-main .leader-flag{ width:23px; height:85px; left:0px; }
+.cards-row-wrap .content-card-item-main .label-power-card{ height:32px; font-size:12px; padding-top:7px; width:23px; left:0px;border-top-left-radius: 5px;}
+.cards-row-wrap .content-card-item-main .leader-flag{ width:23px; height:85px; left:0px;border-top-left-radius: 5px; }
+
+.cards-row-wrap .content-card-item.show.animation .card-game-status .card-action{animation-name: cardGameStatusScale;animation-duration:1s;animation-iteration-count: 2;display: -webkit-flex;display: -moz-flex;display: -ms-flex;display: -o-flex;display: flex;-ms-align-items: center;align-items: center;justify-content: center;will-change: transform;
+    backface-visibility: hidden;}
+.cards-row-wrap .content-card-item.show.animation .card-game-status .card-action img{display: block;transform: translateZ(0px);}
+@keyframes cardGameStatusScale {
+	0% {transform: scale(1) translateZ(0px);}
+	50% {transform: scale(3) translateZ(0px);}
+	100% {transform: scale(1) translateZ(0px);}
+}
+
 #sortable-cards-field-more{ text-align:center; }
 #sortable-cards-field-more .content-card-item-main .label-power-card{ height:32px; font-size:12px; padding-top:7px; width:23px; left:0px; }
 #sortable-cards-field-more .content-card-item-main .leader-flag{ width:23px; height:85px; left:0px; }
@@ -3527,8 +3537,7 @@ div.troll-popup#card-info{ padding:20px; width:590px; height:920px; z-index:1010
 
 /* card start step styles*/
 div.troll-popup.card-start-step{width: auto;padding: 0px;position: fixed;min-height: 250px;}
-.card-start-step .content-card-item-main {height: 75vh;width: 51vh;background-position: 50% top;background-size: 100%;overflow: visible;min-height: 270px;
-    min-width: 195px;}
+.card-start-step .content-card-item-main {height: 75vh;width: 51vh;background-position: 50% top;background-size: 100%;overflow: visible;min-height: 270px;min-width: 195px;}
 .card-start-step .info-img{display: none;}
 .card-start-step .leader-flag{width: 57px;height: 215px;display: block;left: 14px;}
 .card-start-step .content-card-item-main .label-power-card{background-size: 65px 92px;width: 65px;height: 92px;font-size: 24px;padding-top: 25px;}

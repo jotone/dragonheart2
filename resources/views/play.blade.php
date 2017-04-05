@@ -39,7 +39,7 @@ function cardView($card){
 	}
 
 	$card_view = '
-	<li class="content-card-item disable-select" data-cardid="'.$card_data['id'].'" data-relative="'.$card_data['type'].'">
+	<li class="content-card-item disable-select show" data-cardid="'.$card_data['id'].'" data-relative="'.$card_data['type'].'">
 		<div class="content-card-item-main '.$race_class.' '.$leader_class.' '.$special_class.'" style="background-image: url('.URL::asset('/img/card_images/'.$card_data['img_url']).')" data-leader="'.$card_data['is_leader'].'" data-type="'.$card_data['type'].'">
 			<div class="card-load-info card-popup">
 				<div class="info-img">

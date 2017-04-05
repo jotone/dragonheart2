@@ -246,7 +246,7 @@ function createUserMagicFieldCards(userLogin, magicData){
 //Создание отображения карты в списке
 function createFieldCardView(cardData, strength, titleView){
 	return '' +
-		'<li class="content-card-item disable-select" data-cardid="'+cardData['id']+'" data-relative="'+cardData['type']+'">'+
+		'<li class="content-card-item disable-select loading animation" data-cardid="'+cardData['id']+'" data-relative="'+cardData['type']+'">'+
 		createCardDescriptionView(cardData, strength, titleView)+
 		'</li>';
 }
@@ -301,7 +301,7 @@ function createCardDescriptionView(cardData, strength, titleView){
 	result += '</div><div class="card-game-status-wrap">';
 	if(cardData['action_txt'].length>0){
 		for (var i = 0; i < cardData['action_txt'].length; i++) {
-			result = result + '<span class="card-action"><img src="' + cardData['action_txt'][i].img+'" alt=""><span class="card-action-description">'+cardData['action_txt'][i].title+'</span></span>';
+			result = result + '<span class="card-action" style="animation-delay: '+ (i + 0.5) +'s;"><img src="' + cardData['action_txt'][i].img+'" alt=""><span class="card-action-description">'+cardData['action_txt'][i].title+'</span></span>';
 
 		}
 	}
@@ -950,7 +950,10 @@ function detailCardPopupOnStartStep(card, strength) {
 
 	setTimeout(function(){
 		closeSecondTrollPopup(holder);
-	},4000)
+		setTimeout(function(){
+			showCardOnDesc();
+		},500)
+	},4000);
 }
 
 function openSecondTrollPopup(id) {
@@ -960,6 +963,10 @@ function openSecondTrollPopup(id) {
 function closeSecondTrollPopup(id) {
 	id.removeClass('show');
 	$('.new-popups-block').removeClass('show-second');
+}
+
+function showCardOnDesc() {
+	$('.content-card-item.loading').addClass('show').removeClass('loading');
 }
 
 //Отображение Колоды или Отбоя
@@ -1201,6 +1208,10 @@ function startBattle() {
 
 					changeTurnIndicator(result.login);//смена индикатора хода
 
+					//При ходе открытие попапа с деьальной инфой карты на 4с и закрытие его
+					if (result.step_status.played_card['card']){
+						detailCardPopupOnStartStep(result.step_status.played_card['card'], result.step_status.played_card['strength']);
+					}
 
                     fieldBuilding(result.step_status);
 
