@@ -940,6 +940,18 @@
       .content-card-item-main .hovered-items .card-game-status .card-game-status-wrap {
         position: absolute;
         right: 0; bottom: 0;
+        display: -webkit-flex;
+        display: -moz-flex;
+        display: -ms-flex;
+        display: -o-flex;
+        display: flex;
+        -webkit-flex-direction: column;
+        -moz-flex-direction: column;
+        -ms-flex-direction: column;
+        -o-flex-direction: column;
+        flex-direction: column;
+        -ms-align-items: flex-end;
+        align-items: flex-end;
       }
 
 
@@ -1883,7 +1895,7 @@ ul.user-hand-cards-wrap li{
 }
 
 .card-wrap .hovered-items .card-name-property:after, .card-wrap .hovered-items .card-name-property:before{
-    background: url("/images/plashka-for-name-border.png") repeat-x;   
+    background: url("/images/plashka-for-name-border.png") repeat-x;
     content: "";
     display: block;
     height: 3px;

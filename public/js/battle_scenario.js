@@ -953,7 +953,7 @@ function detailCardPopupOnStartStep(card, strength) {
 		setTimeout(function(){
 			showCardOnDesc();
 		},500)
-	},4000);
+	},2000);
 }
 
 function openSecondTrollPopup(id) {
