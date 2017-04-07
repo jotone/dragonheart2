@@ -818,13 +818,16 @@
 	justify-content:space-around;
 }
 .timer-for-play .title-timer{
-	color:#e90c01;
+	/*color:#e90c01;*/
+	color:#cc0204;
 	display:inline-block;
 	text-transform:uppercase;
 	font-size:14px;
 	font-family:'indisplay', sans-serif;
 	font-weight:700;
 	width:100px;
+	text-align: center;
+	text-shadow: 0px 0px 10px #000;
 }
 .timer-for-play .timer-tic-tac-convert{
 	width:133px;
@@ -2741,7 +2744,7 @@ html{ height:100%; }
 }
 div.troll-popup#allies-discard{ width:90%; max-height:90%; }
 div.troll-popup#enemy-discard{ width:90%; max-height:90%; }
-div.troll-popup#selectNewCardsPopup{ width:90%; max-height:90%; }
+div.troll-popup#selectNewCardsPopup{ min-width:700px; max-height:90%;max-width: 90vw !important; }
 div.troll-popup#allies-deck{ width:90%; max-height:90%; }
 div.troll-popup{
 	position:absolute;
@@ -3548,7 +3551,7 @@ div.troll-popup#card-info{ padding:20px; width:590px; height:920px; z-index:1010
 
 
 /* card start step styles*/
-div.troll-popup.card-start-step{width: auto;padding: 0px;position: fixed;min-height: 250px;}
+div.troll-popup.card-start-step{width: auto;padding: 0px;position: fixed;min-height: 250px;background-color: transparent;background-image:none;}
 .card-start-step .content-card-item-main {height: 75vh;width: 51vh;background-position: 50% top;background-size: 100%;overflow: visible;min-height: 270px;min-width: 195px;}
 .card-start-step .info-img{display: none;}
 .card-start-step .leader-flag{width: 57px;height: 215px;display: block;left: 14px;}
@@ -3562,3 +3565,11 @@ div.troll-popup.card-start-step{width: auto;padding: 0px;position: fixed;min-hei
 .card-start-step .content-card-item-main .hovered-items .card-game-status .card-game-status-role{width: 105px;}
 .card-start-step .content-card-item-main .hovered-items .card-game-status .card-game-status-wrap{right: 5px;}
 .card-start-step .card-action{width: 45px;margin:4px 2px;}
+
+/* card start step styles && overloading*/
+div.troll-popup.card-start-step.overloading{}
+.card-start-step.overloading .content-card-item-main{transition: opacity ease-in-out .8s;}
+.card-start-step.overloading .content-card-item-main:first-child{position: relative;z-index: -1;opacity: 0;}
+.card-start-step.overloading .content-card-item-main:last-child{position: absolute;left: 0;right: 0;top: 0;bottom: 0;z-index: 3;opacity: 1;}
+.card-start-step.overloading .overloading-animation .content-card-item-main:first-child{z-index: 3;opacity: 1;}
+.card-start-step.overloading .overloading-animation .content-card-item-main:last-child{z-index: -1;opacity: 0;}

@@ -261,6 +261,7 @@ function createMagicEffectView(magicData){
 }
 //Создание отображения карты
 function createCardDescriptionView(cardData, strength, titleView){
+
 	var result = '<div class="content-card-item-main';
 	if(cardData['type'] == 'special'){
 		result += ' special-type';}
@@ -969,6 +970,25 @@ function showCardOnDesc() {
 	$('.content-card-item.loading').addClass('show').removeClass('loading');
 }
 
+function detailCardPopupOnOverloading(cardDetailOverloadingMarkup,card,strength) {
+	var holder = $('#card-start-step');
+	holder.find('.content-card-info').empty().append(cardDetailOverloadingMarkup);
+	var popContent = createCardDescriptionView(card, strength, 'without-description');
+	holder.find('.content-card-info').addClass('overloading-animation').append(popContent).end().addClass('overloading');
+	openSecondTrollPopup(holder);
+
+	setTimeout(function(){
+		holder.find('.content-card-info').removeClass('overloading-animation');
+		setTimeout(function(){
+			closeSecondTrollPopup(holder);
+			setTimeout(function(){
+				holder.removeClass('overloading');
+			},1000)
+		},2000)
+	},2000)
+
+}
+
 //Отображение Колоды или Отбоя
 $('.convert-left-info .cards-bet #card-give-more-user').on('click', '.card-my-init', function(){
 	if($(this).css('pointer-events') != 'none'){
@@ -1204,14 +1224,61 @@ function startBattle() {
 				}else{
 					if(typeof result.turnDescript != "undefined") turnDescript = result.turnDescript;
 
-					console.log('result',result);
-
 					changeTurnIndicator(result.login);//смена индикатора хода
 
 					//При ходе открытие попапа с деьальной инфой карты на 4с и закрытие его
+					// if (result.step_status.played_card['card']){
+					// 	console.log("result.step_status.actions[0] != '10'",result.step_status.actions[0] != '10');
+					// 	console.log("result.login != $('.user-describer .name')",result.login != $('.user-describer .name').text() );
+
+					// 	if ( result.login != $('.user-describer .name').text()  ) {
+
+					// 		detailCardPopupOnStartStep(result.step_status.played_card['card'], result.step_status.played_card['strength']);
+
+					// 	} else {
+
+					// 		if ( result.step_status.actions[0] != '10' ) {
+
+					// 			detailCardPopupOnStartStep(result.step_status.played_card['card'], result.step_status.played_card['strength']);
+
+					// 		}
+
+					// 	}
+
+					// }
 					if (result.step_status.played_card['card']){
-						detailCardPopupOnStartStep(result.step_status.played_card['card'], result.step_status.played_card['strength']);
+						if( result.step_status.actions[0] != '10' ){
+
+							detailCardPopupOnStartStep(result.step_status.played_card['card'], result.step_status.played_card['strength']);
+
+						}else{
+							//фильтр, если перегрупировка
+							if ( result.login != $('.user-describer .name').text()  ) {
+								console.log('Перегрупировка противнику');
+								window.card_overloading = createCardDescriptionView(result.step_status.played_card['card'], result.step_status.played_card['strength'],'without-description');
+
+							}
+						}
 					}
+
+					//проверяю есть ли действие карты и существует ли переменная card_overloading
+					if( !result.step_status.actions.length && typeof window.hasOwnProperty('card_overloading') ){
+						//Проверяю есть ли карты для добавления пользователю и(!) список карт для удаления
+						if( !$.isEmptyObject(result.step_status.added_cards) && !$.isEmptyObject(result.step_status.dropped_cards) ){
+							//ПОказывать только противнику
+							if ( result.login == $('.user-describer .name').text()  ) {
+								console.log('Магия противнику widhto login');
+								detailCardPopupOnOverloading (
+									window.card_overloading,
+									result.step_status.added_cards[Object.keys(result.step_status.added_cards)[0]].hand[0],
+									result.step_status.added_cards[Object.keys(result.step_status.added_cards)[0]].hand[0].strength
+								);
+
+							}
+						}
+						delete window['card_overloading'];
+					}
+
 
                     fieldBuilding(result.step_status);
 
@@ -1347,9 +1414,18 @@ function startBattle() {
 							//если карт отыгрыша пришло больше 1й
 							if(result.turnDescript['cardToPlay'].length > 1){
 								//Вывод карт в список в popup-окне
+
+
+								var card_in_popup_count = 0;
 								for(var i in result.turnDescript['cardToPlay']){
-									$('#selectNewCardsPopup #handNewCards').append(createFieldCardView(result.turnDescript['cardToPlay'][i], result.turnDescript['cardToPlay'][i]['strength'], true));
+									$('#selectNewCardsPopup #handNewCards').append(
+										createFieldCardView(result.turnDescript['cardToPlay'][i],
+										result.turnDescript['cardToPlay'][i]['strength'],
+										true));
+									card_in_popup_count++;
 								}
+								setMinWidthInPop(card_in_popup_count,$('#selectNewCardsPopup'));
+
 								openTrollPopup($('#selectNewCardsPopup'));//Открытие popup-окна пользователю
 
 								$('#selectNewCardsPopup #handNewCards li, #selectNewCardsPopup .button-troll.acceptNewCards').unbind();
@@ -1402,9 +1478,13 @@ function startBattle() {
 
 							$('#selectNewCardsPopup #handNewCards').empty();//Очистка списка карт popup-окна
 							//Вывод карт в список в popup-окне
+							var card_in_popup_count = 0;
 							for(var i in result.turnDescript['cardToPlay']){
 								$('#selectNewCardsPopup #handNewCards').append(createFieldCardView(result.turnDescript['cardToPlay'][i], result.turnDescript['cardToPlay'][i]['strength'], true));
+								card_in_popup_count++;
 							}
+							setMinWidthInPop(card_in_popup_count,$('#selectNewCardsPopup'));
+
 							openTrollPopup($('#selectNewCardsPopup'));//Открытие popup-окна пользователю
 
 							//Закрытие popup-окна
@@ -1420,9 +1500,13 @@ function startBattle() {
 
 							$('#selectNewCardsPopup #handNewCards').empty();
 
+							var card_in_popup_count = 0;
 							for(var i in result.turnDescript['cardToPlay']){
 								$('#selectNewCardsPopup #handNewCards').append(createFieldCardView(result.turnDescript['cardToPlay'][i], result.turnDescript['cardToPlay'][i]['strength'], true));
+								card_in_popup_count++;
 							}
+
+							setMinWidthInPop(card_in_popup_count,$('#selectNewCardsPopup'));
 							openTrollPopup($('#selectNewCardsPopup'));
 
 							$('#selectNewCardsPopup #handNewCards li, #selectNewCardsPopup .button-troll.acceptRegroupCards').unbind();
@@ -1469,6 +1553,16 @@ function startBattle() {
 			}else{
 				return ;
 			}
+		});
+	}
+}
+
+function setMinWidthInPop(count,popup) {
+	if (count>0){
+		var holder = popup.find('.cards-select-wrap li');
+		var card_in_poup_min_width = ( holder.width() * count ) + 300;//300 - magic count
+		popup.css({
+			'width':card_in_poup_min_width+'px'
 		});
 	}
 }
