@@ -327,6 +327,7 @@ function createCardDescriptionView(cardData, strength, titleView){
 
 	return result;
 }
+//Информация о карте
 function infoCardStart() {
 	$(document).on('click', '.info-img',function () {
 		var popup = $('#card-info');
@@ -446,83 +447,118 @@ function cardCase(turnDescript, allowToAction){
 //END OF cardCase
 
 //Отображение активных полей действия карты
-function showCardActiveRow(card, type, conn, ident){
+function showCardActiveRow( card, type, conn, ident ) {
+
 	if(type == 'card'){
+
 		var url = '/game_get_card_data';
+
 	}else{
+
 		var url = '/game_get_magic_data';
+
 	}
+
 	$.ajax({
 		url:	url,
 		type:	'GET',
-		data:	{card:card},
+		data:	{ card: card },
 		success:function(data){
+
 			data = JSON.parse(data);
+
 			var dataType = ''; // Тип карты race или special
 			var dataStrength = ''; //Сила карты
-			if(type == 'card'){
+
+			if ( type == 'card' ) {
+
 				dataType = 'data-type="'+data['type']+'"';
 				dataStrength = '<div class="label-power-card"><span class="label-power-card-wrap"><span>'+data['strength']+'</span></span></div>';
-			}
-			clearRowSelection();//Очистить активные ряды действия карты
-			//Если карта
-			if(type == 'card'){
-				//Если тип карты определен
-				if(typeof data['type'] != "undefined"){
 
-					if(data['type'] == 'special'){
+			}
+
+			clearRowSelection();//Очистить активные ряды действия карты
+
+			//Если карта
+			if ( type == 'card' ) {
+				//Если тип карты определен
+				if ( typeof data['type'] != "undefined" ) {
+
+					if ( data['type'] == 'special' ) {
 						//Для "Специальных" карт
-						for(var i in data['actions']){
+						for ( var i in data['actions'] ) {
 							var action = ''+data['actions'][i]['action'];
 							//По порядку действия: 9 - "Одурманивание", 11 - "Печаль", 19 - "Убийца"
-							if( (action == '9') || (action == '11') || (action == '19') ) illuminateOpponent(); //Подсветить поле оппонента
+							if ( (action == '9') || (action == '11') || (action == '19') ) {
+								illuminateOpponent(); //Подсветить поле оппонента
+							}
 							//4 - "Воодушевление", 6 - "Исцеление", 7 - "Лекарь", 15 - "Призыв"
-							if( (action == '4') || (action == '6') || (action == '7') || (action == '15') ) illuminateCustom('.user', data['action_row']);//Подсветить поля указанные в действии карты
+							if ( (action == '4') || (action == '6') || (action == '7') || (action == '15') ) {
+								illuminateCustom('.user', data['action_row']);//Подсветить поля указанные в действии карты
+							}
 							//18 - "Страшный"
-							if(action == '18') illuminateAside(); //Подсветить среднее поле
+							if ( action == '18' ) {
+								illuminateAside(); //Подсветить среднее поле
+							}
 							//10 - "Перегруппировка"
-							if(action == '10') illuminateSelf();//Подсветить свое поле
+							if ( action == '10' ) {
+								illuminateSelf();//Подсветить свое поле
+							}
 						}
-					}else{//Для карт-воинов
+					} else {//Для карт-воинов
 						//Если есть у карты особые действия
-						if(data['actions'].length > 0){
-							for(var i in data['actions']){
+						if ( data['actions'].length > 0 ) {
+							for ( var i in data['actions'] ) {
 								var action = ''+data['actions'][i]['action'];
-								if(action == '20'){//Действие "Шпион"/"Разведчик"
+								if ( action == '20' ) {//Действие "Шпион"/"Разведчик"
 									//spy_fieldChoise = 0 - подсветка на своем поле; 1 - подсветка на поле оппонента
-									if(data['actions'][i]['spy_fieldChoise'] == '0'){
+									if ( data['actions'][i]['spy_fieldChoise'] == '0' ) {
 										var parent = '.user';
-									}else{
+									} else {
 										var parent = '.oponent';
 									}
-								}else{
+								} else if ( action == '18' ) {
+									console.log('Dmitry', 'light');
+								} else {
 									var parent = '.user';
 								}
 							}
-							illuminateCustom(parent, data['action_row']);//Подсветить поля указанные в действии карты с учетом поля spy_fieldChoise
-						}else{
-							illuminateCustom('.user', data['action_row']);//Подсветить поля указанные в действии карты
+							illuminateCustom( parent, data['action_row'] );//Подсветить поля указанные в действии карты с учетом поля spy_fieldChoise
+						} else {
+							illuminateCustom( '.user', data['action_row'] );//Подсветить поля указанные в действии карты
 						}
 					}
-				}else{
-					for(var i in data['actions']){
+				} else {
+					for ( var i in data['actions'] ) {
+
 						var action = ''+data['actions'][i]['action'];
-						if(action == '19'){//Действие "Убийца"
+
+						if(action == '19'){
+							//Действие "Убийца"
 							illuminateCustom('.oponent', data['action'][i]['killer_ActionRow']);
-						}else{
+
+						} else {
+
 							illuminateOpponent();
 							illuminateSelf();
+
 						}
 					}
 				}
 				//Активирован МЭ
-			}else{
-				if(action == '11'){
+			} else {
+
+				if ( action == '11' ) {
+
 					illuminateOpponent();
-				}else{
+
+				} else {
+
 					illuminateOpponent();
 					illuminateSelf();
+
 				}
+
 			}
 		}
 	});
@@ -603,10 +639,16 @@ function clearRowSelection(){
 }
 
 //Подсветка рядов действия карты
-function illuminateAside(){$('.mezhdyblock .bor-beutifull-box #sortable-cards-field-more').addClass('active');}//Средний блок
-function illuminateOpponent(){$('.oponent .convert-stuff .field-for-cards').addClass('active');}//Поле оппонента
-function illuminateSelf(){$('.user .convert-stuff .field-for-cards').addClass('active');}//Свое поле
-function illuminateCustom(parent, row){//Поле действия карты по-умолчанию
+function illuminateAside() {
+	$('.mezhdyblock .bor-beutifull-box #sortable-cards-field-more').addClass('active');
+}//Средний блок
+function illuminateOpponent() {
+	$('.oponent .convert-stuff .field-for-cards').addClass('active');
+}//Поле оппонента
+function illuminateSelf() {
+	$('.user .convert-stuff .field-for-cards').addClass('active');
+}//Свое поле
+function illuminateCustom(parent, row) {//Поле действия карты по-умолчанию
 	for(var i=0;i<row.length; i++){
 		var field = intRowToField(row[i]);
 		$('.convert-battle-front '+parent+' .convert-one-field '+field).addClass('active');
