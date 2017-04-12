@@ -183,6 +183,7 @@ $user = Auth::user();
     </div>
 
     <div class="troll-popup card-start-step" id="card-start-step">
+<!--         <div class="close-this"></div> -->
         <div class="content-card-info"></div>
     </div>
 
