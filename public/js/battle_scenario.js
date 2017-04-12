@@ -1129,8 +1129,9 @@ function buildBattleField(fieldData){
 
 	recalculateBattleField();//Пересчет значений силы
 }
+
 //Закрытие popup-окна
-$('.market-buy-popup .close-popup').click(function(){
+$('.market-buy-popup .close-popup').click(function() {
 	$(this).parents('.market-buy-popup').hide();
 });
 
@@ -1168,7 +1169,7 @@ function showCardOnDesc() {
 	$('.content-card-item.loading').addClass('show').removeClass('loading');
 }
 
-//Показать попап при перешрупировке
+//Показать попап при перегрупировке
 function detailCardPopupOnOverloading(cardDetailOverloadingMarkup,card,strength) {
 	var holder = $('#card-start-step');
 	holder.find('.content-card-info').empty().append(cardDetailOverloadingMarkup);
@@ -1276,8 +1277,11 @@ function magicReview(result){
 		}
 	}
 }
+
 var currentRound=1;
+
 function startBattle() {
+
 	conn = new WebSocket('ws://' + socketResult['dom'] + ':8080');//Создание сокет-соединения
 	console.log(conn);
 	//Создание сокет-соединения
@@ -1455,13 +1459,14 @@ function startBattle() {
 
 					// }
 					if (result.step_status.played_card['card']){
-						if( result.step_status.actions[0] != '10' ){
+
+						if ( result.step_status.actions[0] != '10' ) {
 
 							detailCardPopupOnStartStep(result.step_status.played_card['card'], result.step_status.played_card['strength']);
 
-						}else{
+						} else {
 							//фильтр, если перегрупировка
-							if ( result.login != $('.user-describer .name').text()  ) {
+							if ( result.login != $('.user-describer .name').text() ) {
 								console.log('Перегрупировка противнику');
 								window.card_overloading = createCardDescriptionView(result.step_status.played_card['card'], result.step_status.played_card['strength'],'without-description');
 
