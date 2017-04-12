@@ -15,16 +15,16 @@ function radioPseudo() {
 		}
 	});
 }
-function openTrollPopup(popup){
+function openTrollPopup(popup) {
 	popup.addClass('show');
 	$('.new-popups-block').addClass('show');
 }
 //попап результатов
-function resultPopupShow(message){
+function resultPopupShow(message) {
 	$('#successEvent').find('.result').text(message);
 	openTrollPopup($('#successEvent'));
 }
-function closeAllTrollPopup(){
+function closeAllTrollPopup() {
 	$('div.troll-popup').removeClass('show');
 	$('.new-popups-block').removeClass('show');
 
@@ -42,6 +42,7 @@ function showPreloader() {
 function hidePreloader() {
 	$('.afterloader').css({'opacity':'0', 'z-index':'-1'});
 }
+
 // ajax error message
 function ajaxErrorMsg(jqXHR, exception) {
 	var msg = '';
@@ -238,7 +239,7 @@ function animateHandCard() {
 }
 
 function createUserDescriber(userLogin, user_img, userRace) {
-	if(user_img != ''){
+	if ( user_img != '' ) {
 		$('.convert-right-info #'+userLogin+' .stash-about .image-oponent-ork').css({'background':'url(/img/user_images/'+user_img+') 50% 50% no-repeat'});
 	}
 	$('.convert-right-info #'+userLogin+' .stash-about .naming-oponent .name').text(userLogin);
@@ -460,11 +461,11 @@ function cardCase(turnDescript, allowToAction) {
 //Отображение активных полей действия карты
 function showCardActiveRow( card, type, conn, ident ) {
 
-	if(type == 'card'){
+	if ( type == 'card' ) {
 
 		var url = '/game_get_card_data';
 
-	}else{
+	} else {
 
 		var url = '/game_get_magic_data';
 
@@ -474,7 +475,7 @@ function showCardActiveRow( card, type, conn, ident ) {
 		url:	url,
 		type:	'GET',
 		data:	{ card: card },
-		success:function(data){
+		success: function(data) {
 
 			data = JSON.parse(data);
 
@@ -509,15 +510,15 @@ function showCardActiveRow( card, type, conn, ident ) {
 							}
 							//18 - "Страшный"
 							if ( action == '18' ) {
-								console.log('Dmitry','light, special card', data);
+
 								illuminateAside(); //Подсветить среднее поле
 
 								var actionObj = data['actions'][i];
 
 								var fieldDebuf = actionObj.fear_ActionRow;
 								var params = {
-									enemy: true,
-									row: fieldDebuf
+									debuff: true,
+									debuffRow: fieldDebuf
 								};
 
 								illuminateCustom(params); // подсветить поля дебафа
@@ -529,27 +530,48 @@ function showCardActiveRow( card, type, conn, ident ) {
 							}
 						}
 					} else {//Для карт-воинов
+
 						//Если есть у карты особые действия
 						if ( data['actions'].length > 0 ) {
+
 							for ( var i in data['actions'] ) {
+
+								var parent = '.user';
+								var params = {};
+
 								var action = ''+data['actions'][i]['action'];
+
 								if ( action == '20' ) {//Действие "Шпион"/"Разведчик"
+
 									//spy_fieldChoise = 0 - подсветка на своем поле; 1 - подсветка на поле оппонента
+
 									if ( data['actions'][i]['spy_fieldChoise'] == '0' ) {
-										var parent = '.user';
+										parent = '.user';
 									} else {
-										var parent = '.oponent';
+										parent = '.oponent';
 									}
+
 								} else if ( action == '18' ) {
-									console.log('Dmitry', 'light, unit debufing', data);
+
+									params['debuff'] = true;
+									params['debuffRow'] = data['actions'][i].fear_ActionRow;
+
 								} else {
-									var parent = '.user';
+									parent = '.user';
 								}
 							}
-							illuminateCustom({ parent: parent, row: data['action_row'] });//Подсветить поля указанные в действии карты с учетом поля spy_fieldChoise
+
+							params['parent'] = parent;
+							params['row'] = data['action_row'];
+
+							illuminateCustom(params);//Подсветить поля указанные в действии карты с учетом поля spy_fieldChoise
+
 						} else {
+
 							illuminateCustom({ parent: '.user', row: data['action_row'] });//Подсветить поля указанные в действии карты
+
 						}
+
 					}
 				} else {
 					for ( var i in data['actions'] ) {
@@ -589,7 +611,7 @@ function showCardActiveRow( card, type, conn, ident ) {
 //END OF showCardActiveRow
 
 //Функиця отправки выбраных карт для призыва на поле
-function incomeOneCardSelection(card){
+function incomeOneCardSelection(card) {
 	var content='<li class="content-card-item disable-select" data-cardid="'+card['id']+'" data-relative="'+card['type']+'">'+
 		createCardDescriptionView(card, card['strength'])+
 		'</li>';
@@ -598,7 +620,7 @@ function incomeOneCardSelection(card){
 		$('#summonWrap').html(content);
 		$('.summonCardPopup').addClass('show');
 }
-function incomeCardSelection(conn, ident, turnDescript){
+function incomeCardSelection(conn, ident, turnDescript) {
 	$('#selectNewCardsPopup .button-troll.acceptNewCards').click(function(e){
 		e.preventDefault();
 		if($('#selectNewCardsPopup #handNewCards .glow')){
@@ -633,7 +655,7 @@ function incomeCardSelection(conn, ident, turnDescript){
 }
 
 //Функиця отправки в руку карт для перегруппировки
-function cardReturnToHand(conn, ident){
+function cardReturnToHand(conn, ident) {
 	$('#selectNewCardsPopup .button-troll.acceptRegroupCards').click(function(e){
 		e.preventDefault();
 		if($('#selectNewCardsPopup #handNewCards .glow')){
@@ -653,12 +675,17 @@ function cardReturnToHand(conn, ident){
 
 
 //Отмена подсветки ряда действий карты
-function clearRowSelection(){
+function clearRowSelection() {
+
 	$('.mezhdyblock .bor-beutifull-box #sortable-cards-field-more').removeClass('active');
-	$('.convert-stuff .field-for-cards').each(function(){
-		$(this).removeClass('active')
+
+	$('.convert-stuff .field-for-cards').each(function() {
+
+		$(this).removeClass('active can-debuff');
 		$(this).children('.fields-for-cards-wrap').children('.cards-row-wrap').children('li').removeClass('glow');
+
 	});
+
 }
 
 //Подсветка рядов действия карты
@@ -675,12 +702,28 @@ function illuminateSelf() {
 function illuminateCustom(params) {//Поле действия карты по-умолчанию
 
 	var options = {};
-	$.extend(options, params);
+	$.extend( options, params );
 
-	for ( var i=0; i<options.row.length; i++ ) {
+	if ( options.hasOwnProperty('parent') ) {
 
-		var field = intRowToField(options.row[i]);
-		$('.convert-battle-front '+options.parent+' .convert-one-field '+field).addClass('active');
+		for ( var i = 0; i < options.row.length; i++ ) {
+
+			var field = intRowToField(options.row[i]);
+			$('.convert-battle-front ' + options.parent + ' .convert-one-field ' + field).addClass('active');
+
+		}
+
+	}
+
+	if ( options.hasOwnProperty('debuff') ) {
+
+		options.debuffRow.forEach(function(item) {
+
+			var field = intRowToField(item);
+			console.log(field);
+			$('.convert-battle-front .oponent .convert-one-field ' + field).addClass('can-debuff');
+
+		});
 
 	}
 
@@ -688,14 +731,20 @@ function illuminateCustom(params) {//Поле действия карты по-�
 
 //Перевод значения названия поля в id ряда
 function intRowToField(row) {
+
 	var field;
-	switch(row.toString()){
+
+	switch( row.toString() ) {
+
 		case '0': field = '#meele'; break;
 		case '1': field = '#range'; break;
 		case '2': field = '#superRange'; break;
-		case '3': field = '#sortable-cards-field-more'
+		case '3': field = '#sortable-cards-field-more';
+
 	}
+
 	return field;
+
 }
 
 //Пересчет Силы рядов
