@@ -1460,17 +1460,18 @@ function startBattle() {
 					// }
 					if (result.step_status.played_card['card']){
 
-						if ( result.step_status.actions[0] != '10' ) {
+						if ( result.step_status.actions[0] == '10' ) {
 
-							detailCardPopupOnStartStep(result.step_status.played_card['card'], result.step_status.played_card['strength']);
-
-						} else {
-							//фильтр, если перегрупировка
 							if ( result.login != $('.user-describer .name').text() ) {
-								console.log('Перегрупировка противнику');
+
 								window.card_overloading = createCardDescriptionView(result.step_status.played_card['card'], result.step_status.played_card['strength'],'without-description');
 
 							}
+
+						} else {
+
+							detailCardPopupOnStartStep(result.step_status.played_card['card'], result.step_status.played_card['strength']);
+
 						}
 					}
 
@@ -1479,7 +1480,7 @@ function startBattle() {
 						//Проверяю есть ли карты для добавления пользователю и(!) список карт для удаления
 						if( !$.isEmptyObject(result.step_status.added_cards) && !$.isEmptyObject(result.step_status.dropped_cards) ){
 							//ПОказывать только противнику
-							if ( result.login == $('.user-describer .name').text()  ) {
+							if ( result.login == $('.user-describer .name').text() ) {
 								detailCardPopupOnOverloading (
 									window.card_overloading,
 									result.step_status.added_cards[Object.keys(result.step_status.added_cards)[0]].hand[0],
