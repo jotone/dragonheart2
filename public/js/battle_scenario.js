@@ -505,11 +505,23 @@ function showCardActiveRow( card, type, conn, ident ) {
 							}
 							//4 - "Воодушевление", 6 - "Исцеление", 7 - "Лекарь", 15 - "Призыв"
 							if ( (action == '4') || (action == '6') || (action == '7') || (action == '15') ) {
-								illuminateCustom('.user', data['action_row']);//Подсветить поля указанные в действии карты
+								illuminateCustom({ parent: '.user', row: data['action_row'] });//Подсветить поля указанные в действии карты
 							}
 							//18 - "Страшный"
 							if ( action == '18' ) {
+								console.log('Dmitry','light, special card', data);
 								illuminateAside(); //Подсветить среднее поле
+
+								var actionObj = data['actions'][i];
+
+								var fieldDebuf = actionObj.fear_ActionRow;
+								var params = {
+									enemy: true,
+									row: fieldDebuf
+								};
+
+								illuminateCustom(params); // подсветить поля дебафа
+
 							}
 							//10 - "Перегруппировка"
 							if ( action == '10' ) {
@@ -529,14 +541,14 @@ function showCardActiveRow( card, type, conn, ident ) {
 										var parent = '.oponent';
 									}
 								} else if ( action == '18' ) {
-									console.log('Dmitry', 'light');
+									console.log('Dmitry', 'light, unit debufing', data);
 								} else {
 									var parent = '.user';
 								}
 							}
-							illuminateCustom( parent, data['action_row'] );//Подсветить поля указанные в действии карты с учетом поля spy_fieldChoise
+							illuminateCustom({ parent: parent, row: data['action_row'] });//Подсветить поля указанные в действии карты с учетом поля spy_fieldChoise
 						} else {
-							illuminateCustom( '.user', data['action_row'] );//Подсветить поля указанные в действии карты
+							illuminateCustom({ parent: '.user', row: data['action_row'] });//Подсветить поля указанные в действии карты
 						}
 					}
 				} else {
@@ -546,7 +558,7 @@ function showCardActiveRow( card, type, conn, ident ) {
 
 						if(action == '19'){
 							//Действие "Убийца"
-							illuminateCustom('.oponent', data['action'][i]['killer_ActionRow']);
+							illuminateCustom({ parent: '.oponent', row: data['action'][i]['killer_ActionRow'] });
 
 						} else {
 
@@ -659,15 +671,23 @@ function illuminateOpponent() {
 function illuminateSelf() {
 	$('.user .convert-stuff .field-for-cards').addClass('active');
 }//Свое поле
-function illuminateCustom(parent, row) {//Поле действия карты по-умолчанию
-	for(var i=0;i<row.length; i++){
-		var field = intRowToField(row[i]);
-		$('.convert-battle-front '+parent+' .convert-one-field '+field).addClass('active');
+
+function illuminateCustom(params) {//Поле действия карты по-умолчанию
+
+	var options = {};
+	$.extend(options, params);
+
+	for ( var i=0; i<options.row.length; i++ ) {
+
+		var field = intRowToField(options.row[i]);
+		$('.convert-battle-front '+options.parent+' .convert-one-field '+field).addClass('active');
+
 	}
+
 }
 
 //Перевод значения названия поля в id ряда
-function intRowToField(row){
+function intRowToField(row) {
 	var field;
 	switch(row.toString()){
 		case '0': field = '#meele'; break;
@@ -678,9 +698,8 @@ function intRowToField(row){
 	return field;
 }
 
-
 //Пересчет Силы рядов
-function recalculateBattleField(){
+function recalculateBattleField() {
 	var players ={
 		oponent:{
 			meele:0,
@@ -804,7 +823,7 @@ function recalculateDecks(result) {
 	hidePreloader();
 }
 
-function fieldBuilding(step_status){
+function fieldBuilding(step_status) {
 	//Рука игрока
 	if(typeof step_status != "undefined"){
 		//убрать карту из руки
