@@ -65,9 +65,9 @@ $errors = $errors->all();
                                         </div>
                                     </div>
                                 </div>
-                                <div class="reCaptcha-wrap">
+                                <!-- <div class="reCaptcha-wrap">
                                     <div class="g-recaptcha" data-sitekey="6LfWZyQTAAAAAP3EiGHuaUaTb1t3si4fOBv8E4YK"></div>
-                                </div>
+                                </div> -->
 
                                 <div class="agree-field">
                                     <input type="checkbox" name="check-agree" id="linka-check" value="false">
