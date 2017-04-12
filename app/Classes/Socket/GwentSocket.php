@@ -1708,7 +1708,6 @@ class GwentSocket extends BaseSocket
 						}
 					}
 				}
-				var_dump($cards_to_destroy);
 				switch($input_action->killer_killedQuality_Selector){
 					case '0':	$card_strength_to_kill = $min_strenght; break;//Самую слабую
 					case '1':	$card_strength_to_kill = $max_strenght; break;//Самую сильную
@@ -1758,8 +1757,6 @@ class GwentSocket extends BaseSocket
 						}
 					}
 				}
-				var_dump($card_to_kill);
-				var_dump($input_action);
 				foreach($card_to_kill as $player => $row_data){
 					foreach($row_data as $row_iter => $cards_to_kill){
 						foreach($cards_to_kill as $card_to_kill){
