@@ -215,9 +215,12 @@ function userChangeCards(){
 }
 function animateHandCard(){
 	var delay = 500;
-	$('#sortableUserCards li').addClass('transitiontime').css({
+	$('#sortableUserCards li').addClass('transitiontime').removeClass('tramsitioned').css({
 		'-webkit-animation-duration': delay+'ms',
-		'animation-duration': delay+'ms'
+		'animation-duration': delay+'ms',
+		'left':'0px',
+		'transform': 'none',
+		'transition-delay': '0s'
 	});
 	var timeout3 = 0;
 	$('#sortableUserCards li').each(function () {
@@ -612,11 +615,12 @@ function illuminateCustom(parent, row){//Поле действия карты п
 
 //Перевод значения названия поля в id ряда
 function intRowToField(row){
+	var field;
 	switch(row.toString()){
-		case '0': var field = '#meele'; break;
-		case '1': var field = '#range'; break;
-		case '2': var field = '#superRange'; break;
-		case '3': var field = '#sortable-cards-field-more'
+		case '0': field = '#meele'; break;
+		case '1': field = '#range'; break;
+		case '2': field = '#superRange'; break;
+		case '3': field = '#sortable-cards-field-more'
 	}
 	return field;
 }
@@ -814,26 +818,41 @@ function fieldBuilding(step_status){
         	for(var player in step_status.dropped_cards){
         		for(var row in step_status.dropped_cards[player]){
         			if(row == 'mid'){
-                        $('.mezhdyblock #sortable-cards-field-more').empty();
+                        $('.mezhdyblock #sortable-cards-field-more').children().fadeOut(500,function(){
+                        	$('.mezhdyblock #sortable-cards-field-more').empty();
+                        })
 					}
+					console.log('step_status.dropped_cards[player][row]',step_status.dropped_cards[player][row]);
         			for(var i in step_status.dropped_cards[player][row]){
         				var card = step_status.dropped_cards[player][row][i];
+        				console.log('card (step_status.dropped_cards[player][row][i])',card);
                         switch(row) {
                             case 'hand':
                                 var targetPlayer = $('.convert-cards[data-user=' + $('.user-describer').attr('id') + ']').attr('id');
                                 if(targetPlayer == player){
-                                	$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').remove();
+                                	$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').fadeOut(500,function(){
+	                                	$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').remove();
+	                                })
                                 }
 							break;
                             case 'mid':
-                                $('.mezhdyblock #sortable-cards-field-more').empty();
+                                $('.mezhdyblock #sortable-cards-field-more').children().fadeOut(500,function(){
+                                	$('.mezhdyblock #sortable-cards-field-more').empty();
+                                })
 							break;
                             default:
                                 var rowId = intRowToField(row);
+                                console.log('default rowId',rowId);
+
                                 if(card['type'] == 'special'){
                                     $('.convert-battle-front #'+player+'.convert-cards '+rowId+' .image-inside-line').empty();
+
 								}else{
-                                    $('.convert-battle-front #'+player+'.convert-cards '+rowId+' .cards-row-wrap li[data-cardid="'+card['id']+'"]:first').remove();
+
+									var currentCardDelate = $('.convert-battle-front #'+player+'.convert-cards '+rowId+' .cards-row-wrap li[data-cardid="'+card['id']+'"]:first');
+									console.log('currentCardDelate',currentCardDelate);
+									animationBurningCard( currentCardDelate );
+
 								}
                         }
 					}
@@ -876,15 +895,72 @@ function sortCards(){
         return b.strength >= a.strength;
 	});
 
-    $('#sortableUserCards').empty();
-    for (var i in arrayToSort.other) {
-        $('#sortableUserCards').append(arrayToSort.other[i].card);
-    }
-    for (var i in arrayToSort.special) {
-        $('#sortableUserCards').append(arrayToSort.special[i]);
-    }
-    calculateRightMarginCardHands();
+
+	$('#sortableUserCards').empty();
+
+	for (var i in arrayToSort.other) {
+	    $('#sortableUserCards').append(arrayToSort.other[i].card);
+	}
+	for (var i in arrayToSort.special) {
+	    $('#sortableUserCards').append(arrayToSort.special[i]);
+	}
+	calculateRightMarginCardHands();
+
 }
+
+//Анимация возвтращения своих карт в в колоду - работает вместе с animateHandCard()
+function animationCardReturnToOutage() {
+	var outageHolder = $('#card-give-more-user [data-field="discard"]');
+	var outageHolderLeft = outageHolder.offset().left;
+
+	var transitionDelay = 0;
+	var userCards = $('#sortableUserCards');
+	userCards.find('li').addClass('tramsitioned');
+	userCards.find('li').each(function(index,item){
+		var positionLeft = +($(item).offset().left).toFixed(0);
+		var shiftLeft = positionLeft - outageHolderLeft + 15;// 15 - корректировка на сдвиг скейлом
+		$(item).css({
+			'left':'-'+shiftLeft+'px',
+			'transform': 'scale3d(0.7,0.7,0.7)',
+			'transition-delay':transitionDelay+'s'
+		})
+		transitionDelay+=0.1;
+	});
+	var cardTransitionDuration = parseFloat(userCards.find('li').css('transition-duration'));
+	var timeout = (cardTransitionDuration + transitionDelay)*1000;
+
+	return timeout;
+}
+
+function animationBurningCard(card) {
+	console.log('animationBurningCard()=>card',card);
+	card.parents('.field-for-cards').css({
+		'overflow':'visible'
+	});
+	console.log('card.length',card.length);
+	//card.append('<span class="card-burning-item-main"><img src="/images/card-burning-item-main.gif" alt="" /></span');
+	card.children().css({'background':'red'})
+	// setTimeout(function(){
+	// 	card.addClass('card-burning');
+	// 	setTimeout(function(){
+	// 		card.find('.content-card-item-main').fadeOut(900,function(){
+	// 			setTimeout(function(){
+	// 				card.removeClass('card-burning');
+	// 				setTimeout(function(){
+	// 					card.parents('.field-for-cards').removeAttr('style');
+	// 					card.children().css({
+	// 						'background':'red'
+	// 					})
+	// 					//card.remove();
+	// 				},1000)
+	// 			},500)
+	// 		});
+	// 	},2500)
+	// },300)
+
+	return (300+2500+500+900);
+}
+//animationBurningCard($('.convert-cards .content-card-item[data-cardid="131"]'))
 
 //Смена идентификатора хода пользователя
 function changeTurnIndicator(login){
@@ -957,19 +1033,22 @@ function detailCardPopupOnStartStep(card, strength) {
 	},2000);
 }
 
+//открыть попап (даже если уже открыт еще однин)
 function openSecondTrollPopup(id) {
 	id.addClass('show');
 	$('.new-popups-block').addClass('show-second');
 }
+// закрыть попап по id
 function closeSecondTrollPopup(id) {
 	id.removeClass('show');
 	$('.new-popups-block').removeClass('show-second');
 }
-
+//показать карты анимированно на столе
 function showCardOnDesc() {
 	$('.content-card-item.loading').addClass('show').removeClass('loading');
 }
 
+//Показать попап при перешрупировке
 function detailCardPopupOnOverloading(cardDetailOverloadingMarkup,card,strength) {
 	var holder = $('#card-start-step');
 	holder.find('.content-card-info').empty().append(cardDetailOverloadingMarkup);
@@ -1207,6 +1286,7 @@ function startBattle() {
 						if(typeof result.magicUsage != "undefined"){
 							magicReview(result)
 						}
+
 						currentRound = result['round'];
 						if(result.login == $('.user-describer').attr('id')){
 							$('.info-block-with-timer .title-timer').find('span').text('Ваш ход').end().addClass('user-turn-green');
@@ -1215,11 +1295,19 @@ function startBattle() {
 							$('.info-block-with-timer .title-timer').find('span').text('ход противника:').end().removeClass('user-turn-green');
 							allowToAction = false;
 						}
-						animateHandCard();
 
-						cardCase(turnDescript, allowToAction);//Функция выбора карт
-						userMakeAction(conn, turnDescript, allowToAction);//Функция разрешает пользователю действие
-						clearRowSelection();//Очистка активированых рядов действий карт
+						var animateHandTime = animationCardReturnToOutage();
+
+						setTimeout(function(){
+
+							animateHandCard();
+
+							cardCase(turnDescript, allowToAction);//Функция выбора карт
+							userMakeAction(conn, turnDescript, allowToAction);//Функция разрешает пользователю действие
+							clearRowSelection();//Очистка активированых рядов действий карт
+
+						},animateHandTime);
+
 					},1000)
 				}else{
 					if(typeof result.turnDescript != "undefined") turnDescript = result.turnDescript;
@@ -1267,7 +1355,6 @@ function startBattle() {
 						if( !$.isEmptyObject(result.step_status.added_cards) && !$.isEmptyObject(result.step_status.dropped_cards) ){
 							//ПОказывать только противнику
 							if ( result.login == $('.user-describer .name').text()  ) {
-								console.log('Магия противнику widhto login');
 								detailCardPopupOnOverloading (
 									window.card_overloading,
 									result.step_status.added_cards[Object.keys(result.step_status.added_cards)[0]].hand[0],
@@ -1278,7 +1365,6 @@ function startBattle() {
 						}
 						delete window['card_overloading'];
 					}
-
 
                     fieldBuilding(result.step_status);
 
@@ -1319,6 +1405,7 @@ function startBattle() {
 				$('.rounds-counts.oponent .rounds-counts-count').text(win_status[1]);
 
 				recalculateDecks(result);
+
 				circleRoundIndicator();
 
 				if (typeof result.magicUsage != "undefined") {
@@ -1327,9 +1414,11 @@ function startBattle() {
 
                 //Очищение полей
                 $('.mezhdyblock #sortable-cards-field-more, .convert-battle-front .cards-row-wrap, .convert-battle-front .image-inside-line').empty();
+
                 if(typeof result.field_data != "undefined"){
                     buildBattleField(result.field_data);
 				}
+
 				resultPopupShow(result.roundResult + '! Подождите, идет подготовка нового раунда.');
 				allowToAction = false;
 				turnDescript = {"cardSource": "hand"};
@@ -1342,6 +1431,7 @@ function startBattle() {
 					}
 					hidePreloader();
 				}, 3000);
+
 			break;
 			//Игра закончена
 			case 'gameEnds':
@@ -1520,6 +1610,7 @@ function startBattle() {
 							});
 							//Функция отправки сообщения на соккет о перегруппировки выбраной карты
 							cardReturnToHand(conn, ident);
+							console.log('other func sortCards');
                             sortCards();
 						break;
 					}
