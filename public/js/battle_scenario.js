@@ -38,7 +38,6 @@ function clickCloseCross() { //закрыть попап
 }
 function showPreloader() {
 	$('.afterloader').css({'opacity':'1', 'z-index':'2222'});
-
 }
 function hidePreloader() {
 	$('.afterloader').css({'opacity':'0', 'z-index':'-1'});
@@ -65,7 +64,7 @@ function ajaxErrorMsg(jqXHR, exception) {
 }
 
 //Формирование стола по пользовательским данным
-function buildRoomPreview(userData){
+function buildRoomPreview(userData) {
 	//очищение списков поп-апа выбора карт
 	$('#selecthandCardsPopup #handCards').empty();
 
@@ -126,7 +125,8 @@ function buildRoomPreview(userData){
 		}
 	}
 }
-function userWantsChangeCard(){
+
+function userWantsChangeCard() {
 	$(document).on('click', '#selecthandCardsPopup #handCards .change-card', function(){
 		showPreloader();
 		var card = $(this).parent().attr('data-cardid');
@@ -139,7 +139,8 @@ function userWantsChangeCard(){
 		);
 	});
 }
-function userChangeDeck(can_change_cards){
+
+function userChangeDeck(can_change_cards) {
 	//Смена карт при старте игры
 	$(document).on('click', '#handCards li .content-card-item-main', function(event){
 		if((!$(event.target).hasClass('ignore')) && event.which==1){
@@ -173,7 +174,7 @@ function userChangeDeck(can_change_cards){
 	});
 }
 
-function userChangeCards(){
+function userChangeCards() {
 	showPreloader();
 
 	var token = $('.market-buy-popup input[name=_token]').val().trim();
@@ -213,7 +214,8 @@ function userChangeCards(){
 		}
 	});
 }
-function animateHandCard(){
+
+function animateHandCard() {
 	var delay = 500;
 	$('#sortableUserCards li').addClass('transitiontime').removeClass('tramsitioned').css({
 		'-webkit-animation-duration': delay+'ms',
@@ -234,27 +236,31 @@ function animateHandCard(){
 		timeout3+=100;
 	});
 }
-function createUserDescriber(userLogin, user_img, userRace){
+
+function createUserDescriber(userLogin, user_img, userRace) {
 	if(user_img != ''){
 		$('.convert-right-info #'+userLogin+' .stash-about .image-oponent-ork').css({'background':'url(/img/user_images/'+user_img+') 50% 50% no-repeat'});
 	}
 	$('.convert-right-info #'+userLogin+' .stash-about .naming-oponent .name').text(userLogin);
 	$('.convert-right-info #'+userLogin+' .stash-about .naming-oponent .rasa').text(userRace);
 }
-function createUserMagicFieldCards(userLogin, magicData){
+
+function createUserMagicFieldCards(userLogin, magicData) {
 	for(var i=0; i<magicData.length; i++){
 		$('.convert-right-info #' + userLogin ).find('.magic-effects-wrap').append(createMagicEffectView(magicData[i]));
 	}
 }
+
 //Создание отображения карты в списке
-function createFieldCardView(cardData, strength, titleView){
+function createFieldCardView(cardData, strength, titleView) {
 	return '' +
 		'<li class="content-card-item disable-select loading animation" data-cardid="'+cardData['id']+'" data-relative="'+cardData['type']+'">'+
 		createCardDescriptionView(cardData, strength, titleView)+
 		'</li>';
 }
+
 //Созднаие Отображения маг. еффекта
-function createMagicEffectView(magicData){
+function createMagicEffectView(magicData) {
 	return  '' +
 		'<li data-cardid="' + magicData['id'] + '">' +
 		'<img src="/img/card_images/' + magicData['img_url']+'" alt="' + magicData['slug'] +'" title="' + magicData['title'] +'">'+
@@ -262,8 +268,9 @@ function createMagicEffectView(magicData){
 		'<div class="info-img"><img class="ignore" src="/images/info-icon.png" alt=""><span class="card-action-description">Инфо о магии</span></div>'+
 		'</li>';
 }
+
 //Создание отображения карты
-function createCardDescriptionView(cardData, strength, titleView){
+function createCardDescriptionView(cardData, strength, titleView) {
 
 	var result = '<div class="content-card-item-main';
 	if(cardData['type'] == 'special'){
@@ -327,6 +334,7 @@ function createCardDescriptionView(cardData, strength, titleView){
 
 	return result;
 }
+
 //Информация о карте
 function infoCardStart() {
 	$(document).on('click', '.info-img',function () {
@@ -347,8 +355,9 @@ function infoCardStart() {
 		}
 	});
 }
+
 //Функция проведения действия картой / МЭ / Пас
-function userMakeAction(conn, turnDescript, allowToAction){
+function userMakeAction(conn, turnDescript, allowToAction) {
 	$('.convert-battle-front .convert-stuff, .mezhdyblock .bor-beutifull-box').unbind();
 	if(allowToAction){
 
@@ -404,7 +413,8 @@ function userMakeAction(conn, turnDescript, allowToAction){
 		});
 	}
 }
-function cardCase(turnDescript, allowToAction){
+
+function cardCase(turnDescript, allowToAction) {
 	hidePreloader();
 	$('#sortableUserCards li').unbind();
 
@@ -444,6 +454,7 @@ function cardCase(turnDescript, allowToAction){
 	}
 	calculateRightMarginCardHands();
 }
+
 //END OF cardCase
 
 //Отображение активных полей действия карты
