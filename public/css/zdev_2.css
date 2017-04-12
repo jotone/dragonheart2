@@ -1,4 +1,11 @@
 
+/* Dmitry write it */
+
+	.convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards { transition: all 300ms ease; }
+	.convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards.can-debuff { box-shadow: inset 0 0 50px 25px rgba(190, 0, 0, .75); }
+
+/* /Dmitry write it */
+
 .mbox{
 	-webkit-box-sizing:border-box;
 	-moz-box-sizing:border-box;

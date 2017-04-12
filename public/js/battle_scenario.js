@@ -15,16 +15,16 @@ function radioPseudo() {
 		}
 	});
 }
-function openTrollPopup(popup){
+function openTrollPopup(popup) {
 	popup.addClass('show');
 	$('.new-popups-block').addClass('show');
 }
 //попап результатов
-function resultPopupShow(message){
+function resultPopupShow(message) {
 	$('#successEvent').find('.result').text(message);
 	openTrollPopup($('#successEvent'));
 }
-function closeAllTrollPopup(){
+function closeAllTrollPopup() {
 	$('div.troll-popup').removeClass('show');
 	$('.new-popups-block').removeClass('show');
 
@@ -38,11 +38,11 @@ function clickCloseCross() { //закрыть попап
 }
 function showPreloader() {
 	$('.afterloader').css({'opacity':'1', 'z-index':'2222'});
-
 }
 function hidePreloader() {
 	$('.afterloader').css({'opacity':'0', 'z-index':'-1'});
 }
+
 // ajax error message
 function ajaxErrorMsg(jqXHR, exception) {
 	var msg = '';
@@ -65,7 +65,7 @@ function ajaxErrorMsg(jqXHR, exception) {
 }
 
 //Формирование стола по пользовательским данным
-function buildRoomPreview(userData){
+function buildRoomPreview(userData) {
 	//очищение списков поп-апа выбора карт
 	$('#selecthandCardsPopup #handCards').empty();
 
@@ -126,7 +126,8 @@ function buildRoomPreview(userData){
 		}
 	}
 }
-function userWantsChangeCard(){
+
+function userWantsChangeCard() {
 	$(document).on('click', '#selecthandCardsPopup #handCards .change-card', function(){
 		showPreloader();
 		var card = $(this).parent().attr('data-cardid');
@@ -139,7 +140,8 @@ function userWantsChangeCard(){
 		);
 	});
 }
-function userChangeDeck(can_change_cards){
+
+function userChangeDeck(can_change_cards) {
 	//Смена карт при старте игры
 	$(document).on('click', '#handCards li .content-card-item-main', function(event){
 		if((!$(event.target).hasClass('ignore')) && event.which==1){
@@ -173,7 +175,7 @@ function userChangeDeck(can_change_cards){
 	});
 }
 
-function userChangeCards(){
+function userChangeCards() {
 	showPreloader();
 
 	var token = $('.market-buy-popup input[name=_token]').val().trim();
@@ -213,7 +215,8 @@ function userChangeCards(){
 		}
 	});
 }
-function animateHandCard(){
+
+function animateHandCard() {
 	var delay = 500;
 	$('#sortableUserCards li').addClass('transitiontime').removeClass('tramsitioned').css({
 		'-webkit-animation-duration': delay+'ms',
@@ -234,27 +237,31 @@ function animateHandCard(){
 		timeout3+=100;
 	});
 }
-function createUserDescriber(userLogin, user_img, userRace){
-	if(user_img != ''){
+
+function createUserDescriber(userLogin, user_img, userRace) {
+	if ( user_img != '' ) {
 		$('.convert-right-info #'+userLogin+' .stash-about .image-oponent-ork').css({'background':'url(/img/user_images/'+user_img+') 50% 50% no-repeat'});
 	}
 	$('.convert-right-info #'+userLogin+' .stash-about .naming-oponent .name').text(userLogin);
 	$('.convert-right-info #'+userLogin+' .stash-about .naming-oponent .rasa').text(userRace);
 }
-function createUserMagicFieldCards(userLogin, magicData){
+
+function createUserMagicFieldCards(userLogin, magicData) {
 	for(var i=0; i<magicData.length; i++){
 		$('.convert-right-info #' + userLogin ).find('.magic-effects-wrap').append(createMagicEffectView(magicData[i]));
 	}
 }
+
 //Создание отображения карты в списке
-function createFieldCardView(cardData, strength, titleView){
+function createFieldCardView(cardData, strength, titleView) {
 	return '' +
 		'<li class="content-card-item disable-select loading animation" data-cardid="'+cardData['id']+'" data-relative="'+cardData['type']+'">'+
 		createCardDescriptionView(cardData, strength, titleView)+
 		'</li>';
 }
+
 //Созднаие Отображения маг. еффекта
-function createMagicEffectView(magicData){
+function createMagicEffectView(magicData) {
 	return  '' +
 		'<li data-cardid="' + magicData['id'] + '">' +
 		'<img src="/img/card_images/' + magicData['img_url']+'" alt="' + magicData['slug'] +'" title="' + magicData['title'] +'">'+
@@ -262,8 +269,9 @@ function createMagicEffectView(magicData){
 		'<div class="info-img"><img class="ignore" src="/images/info-icon.png" alt=""><span class="card-action-description">Инфо о магии</span></div>'+
 		'</li>';
 }
+
 //Создание отображения карты
-function createCardDescriptionView(cardData, strength, titleView){
+function createCardDescriptionView(cardData, strength, titleView) {
 
 	var result = '<div class="content-card-item-main';
 	if(cardData['type'] == 'special'){
@@ -327,6 +335,7 @@ function createCardDescriptionView(cardData, strength, titleView){
 
 	return result;
 }
+
 //Информация о карте
 function infoCardStart() {
 	$(document).on('click', '.info-img',function () {
@@ -347,8 +356,9 @@ function infoCardStart() {
 		}
 	});
 }
+
 //Функция проведения действия картой / МЭ / Пас
-function userMakeAction(conn, turnDescript, allowToAction){
+function userMakeAction(conn, turnDescript, allowToAction) {
 	$('.convert-battle-front .convert-stuff, .mezhdyblock .bor-beutifull-box').unbind();
 	if(allowToAction){
 
@@ -404,7 +414,8 @@ function userMakeAction(conn, turnDescript, allowToAction){
 		});
 	}
 }
-function cardCase(turnDescript, allowToAction){
+
+function cardCase(turnDescript, allowToAction) {
 	hidePreloader();
 	$('#sortableUserCards li').unbind();
 
@@ -444,16 +455,17 @@ function cardCase(turnDescript, allowToAction){
 	}
 	calculateRightMarginCardHands();
 }
+
 //END OF cardCase
 
 //Отображение активных полей действия карты
 function showCardActiveRow( card, type, conn, ident ) {
 
-	if(type == 'card'){
+	if ( type == 'card' ) {
 
 		var url = '/game_get_card_data';
 
-	}else{
+	} else {
 
 		var url = '/game_get_magic_data';
 
@@ -463,7 +475,7 @@ function showCardActiveRow( card, type, conn, ident ) {
 		url:	url,
 		type:	'GET',
 		data:	{ card: card },
-		success:function(data){
+		success: function(data) {
 
 			data = JSON.parse(data);
 
@@ -494,11 +506,23 @@ function showCardActiveRow( card, type, conn, ident ) {
 							}
 							//4 - "Воодушевление", 6 - "Исцеление", 7 - "Лекарь", 15 - "Призыв"
 							if ( (action == '4') || (action == '6') || (action == '7') || (action == '15') ) {
-								illuminateCustom('.user', data['action_row']);//Подсветить поля указанные в действии карты
+								illuminateCustom({ parent: '.user', row: data['action_row'] });//Подсветить поля указанные в действии карты
 							}
 							//18 - "Страшный"
 							if ( action == '18' ) {
+
 								illuminateAside(); //Подсветить среднее поле
+
+								var actionObj = data['actions'][i];
+
+								var fieldDebuf = actionObj.fear_ActionRow;
+								var params = {
+									debuff: true,
+									debuffRow: fieldDebuf
+								};
+
+								illuminateCustom(params); // подсветить поля дебафа
+
 							}
 							//10 - "Перегруппировка"
 							if ( action == '10' ) {
@@ -506,27 +530,48 @@ function showCardActiveRow( card, type, conn, ident ) {
 							}
 						}
 					} else {//Для карт-воинов
+
 						//Если есть у карты особые действия
 						if ( data['actions'].length > 0 ) {
+
 							for ( var i in data['actions'] ) {
+
+								var parent = '.user';
+								var params = {};
+
 								var action = ''+data['actions'][i]['action'];
+
 								if ( action == '20' ) {//Действие "Шпион"/"Разведчик"
+
 									//spy_fieldChoise = 0 - подсветка на своем поле; 1 - подсветка на поле оппонента
+
 									if ( data['actions'][i]['spy_fieldChoise'] == '0' ) {
-										var parent = '.user';
+										parent = '.user';
 									} else {
-										var parent = '.oponent';
+										parent = '.oponent';
 									}
+
 								} else if ( action == '18' ) {
-									console.log('Dmitry', 'light');
+
+									params['debuff'] = true;
+									params['debuffRow'] = data['actions'][i].fear_ActionRow;
+
 								} else {
-									var parent = '.user';
+									parent = '.user';
 								}
 							}
-							illuminateCustom( parent, data['action_row'] );//Подсветить поля указанные в действии карты с учетом поля spy_fieldChoise
+
+							params['parent'] = parent;
+							params['row'] = data['action_row'];
+
+							illuminateCustom(params);//Подсветить поля указанные в действии карты с учетом поля spy_fieldChoise
+
 						} else {
-							illuminateCustom( '.user', data['action_row'] );//Подсветить поля указанные в действии карты
+
+							illuminateCustom({ parent: '.user', row: data['action_row'] });//Подсветить поля указанные в действии карты
+
 						}
+
 					}
 				} else {
 					for ( var i in data['actions'] ) {
@@ -535,7 +580,7 @@ function showCardActiveRow( card, type, conn, ident ) {
 
 						if(action == '19'){
 							//Действие "Убийца"
-							illuminateCustom('.oponent', data['action'][i]['killer_ActionRow']);
+							illuminateCustom({ parent: '.oponent', row: data['action'][i]['killer_ActionRow'] });
 
 						} else {
 
@@ -566,7 +611,7 @@ function showCardActiveRow( card, type, conn, ident ) {
 //END OF showCardActiveRow
 
 //Функиця отправки выбраных карт для призыва на поле
-function incomeOneCardSelection(card){
+function incomeOneCardSelection(card) {
 	var content='<li class="content-card-item disable-select" data-cardid="'+card['id']+'" data-relative="'+card['type']+'">'+
 		createCardDescriptionView(card, card['strength'])+
 		'</li>';
@@ -575,7 +620,7 @@ function incomeOneCardSelection(card){
 		$('#summonWrap').html(content);
 		$('.summonCardPopup').addClass('show');
 }
-function incomeCardSelection(conn, ident, turnDescript){
+function incomeCardSelection(conn, ident, turnDescript) {
 	$('#selectNewCardsPopup .button-troll.acceptNewCards').click(function(e){
 		e.preventDefault();
 		if($('#selectNewCardsPopup #handNewCards .glow')){
@@ -610,7 +655,7 @@ function incomeCardSelection(conn, ident, turnDescript){
 }
 
 //Функиця отправки в руку карт для перегруппировки
-function cardReturnToHand(conn, ident){
+function cardReturnToHand(conn, ident) {
 	$('#selectNewCardsPopup .button-troll.acceptRegroupCards').click(function(e){
 		e.preventDefault();
 		if($('#selectNewCardsPopup #handNewCards .glow')){
@@ -630,12 +675,17 @@ function cardReturnToHand(conn, ident){
 
 
 //Отмена подсветки ряда действий карты
-function clearRowSelection(){
+function clearRowSelection() {
+
 	$('.mezhdyblock .bor-beutifull-box #sortable-cards-field-more').removeClass('active');
-	$('.convert-stuff .field-for-cards').each(function(){
-		$(this).removeClass('active')
+
+	$('.convert-stuff .field-for-cards').each(function() {
+
+		$(this).removeClass('active can-debuff');
 		$(this).children('.fields-for-cards-wrap').children('.cards-row-wrap').children('li').removeClass('glow');
+
 	});
+
 }
 
 //Подсветка рядов действия карты
@@ -648,28 +698,57 @@ function illuminateOpponent() {
 function illuminateSelf() {
 	$('.user .convert-stuff .field-for-cards').addClass('active');
 }//Свое поле
-function illuminateCustom(parent, row) {//Поле действия карты по-умолчанию
-	for(var i=0;i<row.length; i++){
-		var field = intRowToField(row[i]);
-		$('.convert-battle-front '+parent+' .convert-one-field '+field).addClass('active');
+
+function illuminateCustom(params) {//Поле действия карты по-умолчанию
+
+	var options = {};
+	$.extend( options, params );
+
+	if ( options.hasOwnProperty('parent') ) {
+
+		for ( var i = 0; i < options.row.length; i++ ) {
+
+			var field = intRowToField(options.row[i]);
+			$('.convert-battle-front ' + options.parent + ' .convert-one-field ' + field).addClass('active');
+
+		}
+
 	}
+
+	if ( options.hasOwnProperty('debuff') ) {
+
+		options.debuffRow.forEach(function(item) {
+
+			var field = intRowToField(item);
+			console.log(field);
+			$('.convert-battle-front .oponent .convert-one-field ' + field).addClass('can-debuff');
+
+		});
+
+	}
+
 }
 
 //Перевод значения названия поля в id ряда
-function intRowToField(row){
+function intRowToField(row) {
+
 	var field;
-	switch(row.toString()){
+
+	switch( row.toString() ) {
+
 		case '0': field = '#meele'; break;
 		case '1': field = '#range'; break;
 		case '2': field = '#superRange'; break;
-		case '3': field = '#sortable-cards-field-more'
+		case '3': field = '#sortable-cards-field-more';
+
 	}
+
 	return field;
+
 }
 
-
 //Пересчет Силы рядов
-function recalculateBattleField(){
+function recalculateBattleField() {
 	var players ={
 		oponent:{
 			meele:0,
@@ -793,7 +872,7 @@ function recalculateDecks(result) {
 	hidePreloader();
 }
 
-function fieldBuilding(step_status){
+function fieldBuilding(step_status) {
 	//Рука игрока
 	if(typeof step_status != "undefined"){
 		//убрать карту из руки
