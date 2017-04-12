@@ -720,7 +720,6 @@ function illuminateCustom(params) {//Поле действия карты по-�
 		options.debuffRow.forEach(function(item) {
 
 			var field = intRowToField(item);
-			console.log(field);
 			$('.convert-battle-front .oponent .convert-one-field ' + field).addClass('can-debuff');
 
 		});
@@ -1374,7 +1373,7 @@ function startBattle() {
 
 			//Пользователь сделал действие
 			case 'userMadeAction':
-				if(currentRound != result['round']){
+				if( currentRound != result['round'] ) {
 					/*$('.convert-cards .content-card-item').addClass('transition');
 					$('.field-for-cards').addClass('visible');
 					var timeout1=0;
@@ -1433,7 +1432,9 @@ function startBattle() {
 						},animateHandTime);
 
 					},1000)
-				}else{
+
+				} else {
+
 					if(typeof result.turnDescript != "undefined") turnDescript = result.turnDescript;
 
 					changeTurnIndicator(result.login);//смена индикатора хода
@@ -1458,7 +1459,39 @@ function startBattle() {
 					// 	}
 
 					// }
-					if (result.step_status.played_card['card']){
+
+					var actions = result.step_status.actions;
+					var actionsArray = ['10', '18'];
+
+					if ( result.step_status.played_card['card'] ) {
+						/* Dmitry checkpoint */
+						// actions.forEach(function(item) {
+						//
+						// 	var actionIndex = actionsArray.indexOf(item);
+						//
+						// 	if ( actionIndex != (-1) ) {
+						//
+						// 		if ( actionsArray[actionIndex] == '10' ) {
+						//
+						// 			if ( result.login != $('.user-describer .name').text() ) {
+						//
+						// 				window.card_overloading = createCardDescriptionView( result.step_status.played_card['card'],  result.step_status.played_card['strength'], 'without-description' );
+						//
+						// 			}
+						//
+						// 		} else if ( actionsArray[actionIndex] == '18' ) {
+						//
+						// 			console.log('Dmitry', 'ep... it 18 event');
+						//
+						// 		}
+						//
+						// 	} else {
+						//
+						// 		detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+						//
+						// 	}
+						//
+						// });
 
 						if ( result.step_status.actions[0] == '10' ) {
 
@@ -1468,11 +1501,16 @@ function startBattle() {
 
 							}
 
+						} else if ( result.step_status.actions[0] == '18' ) {
+
+							console.log('Dmitry', result);
+
 						} else {
 
 							detailCardPopupOnStartStep(result.step_status.played_card['card'], result.step_status.played_card['strength']);
 
 						}
+
 					}
 
 					//проверяю есть ли действие карты и существует ли переменная card_overloading
@@ -1499,7 +1537,7 @@ function startBattle() {
 
 					//Обработка Маг. Эффектов (МЭ)
 					if(typeof result.magicUsage != "undefined"){
-						magicReview(result)
+						magicReview(result);
 					}
 				}
 			break;
