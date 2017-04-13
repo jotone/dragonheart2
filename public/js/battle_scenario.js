@@ -1460,65 +1460,50 @@ function startBattle() {
 
 					// }
 
-					var actions = result.step_status.actions;
-					var actionsArray = ['10', '18'];
+
 
 					if ( result.step_status.played_card['card'] ) {
 						/* Dmitry checkpoint */
-						// actions.forEach(function(item) {
-						//
-						// 	var actionIndex = actionsArray.indexOf(item);
-						//
-						// 	if ( actionIndex != (-1) ) {
-						//
-						// 		if ( actionsArray[actionIndex] == '10' ) {
-						//
-						// 			if ( result.login != $('.user-describer .name').text() ) {
-						//
-						// 				window.card_overloading = createCardDescriptionView( result.step_status.played_card['card'],  result.step_status.played_card['strength'], 'without-description' );
-						//
-						// 			}
-						//
-						// 		} else if ( actionsArray[actionIndex] == '18' ) {
-						//
-						// 			console.log('Dmitry', 'ep... it 18 event');
-						//
-						// 		}
-						//
-						// 	} else {
-						//
-						// 		detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
-						//
-						// 	}
-						//
-						// });
+						var actions = result.step_status.actions;
 
-						if ( result.step_status.actions[0] == '10' ) {
+						if (actions.length) {
 
-							if ( result.login != $('.user-describer .name').text() ) {
+							actions.forEach(function(item) {
 
-								window.card_overloading = createCardDescriptionView(result.step_status.played_card['card'], result.step_status.played_card['strength'],'without-description');
+								if ( item == '10' ) {
 
-							}
+									if ( result.login != $('.user-describer .name').text() ) {
 
-						} else if ( result.step_status.actions[0] == '18' ) {
+										window.card_overloading = createCardDescriptionView( result.step_status.played_card['card'],  result.step_status.played_card['strength'], 'without-description' );
 
-							var resultLogin  = result.login;
-							var thisUser = $('.user-describer .name').text();
+									}
 
-							if ( resultLogin == thisUser ) {
+								} else if ( item == '18' ) {
 
-								console.log('enemy turn', result);
-								
-							} else {
+									var resultLogin  = result.login;
+									var thisUser = $('.user-describer .name').text();
 
-								console.log('your turn', result);
+									if ( resultLogin == thisUser ) {
 
-							}
+										console.log('enemy turn', result);
+
+									} else {
+
+										console.log('your turn', result);
+
+									}
+
+								} else {
+
+									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+
+								}
+
+							});
 
 						} else {
 
-							detailCardPopupOnStartStep(result.step_status.played_card['card'], result.step_status.played_card['strength']);
+							detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
 
 						}
 
