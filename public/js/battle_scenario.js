@@ -1503,7 +1503,18 @@ function startBattle() {
 
 						} else if ( result.step_status.actions[0] == '18' ) {
 
-							console.log('Dmitry', result);
+							var resultLogin  = result.login;
+							var thisUser = $('.user-describer .name').text();
+
+							if ( resultLogin == thisUser ) {
+
+								console.log('enemy turn', result);
+								
+							} else {
+
+								console.log('your turn', result);
+
+							}
 
 						} else {
 
