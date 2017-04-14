@@ -942,10 +942,9 @@ function fieldBuilding(step_status) {
                         	$('.mezhdyblock #sortable-cards-field-more').empty();
                         })
 					}
-					console.log('step_status.dropped_cards[player][row]',step_status.dropped_cards[player][row]);
+
         			for(var i in step_status.dropped_cards[player][row]){
         				var card = step_status.dropped_cards[player][row][i];
-        				console.log('card (step_status.dropped_cards[player][row][i])',card);
                         switch(row) {
                             case 'hand':
                                 var targetPlayer = $('.convert-cards[data-user=' + $('.user-describer').attr('id') + ']').attr('id');
@@ -962,22 +961,26 @@ function fieldBuilding(step_status) {
 							break;
                             default:
                                 var rowId = intRowToField(row);
-                                console.log('default rowId',rowId);
 
                                 if(card['type'] == 'special'){
                                     $('.convert-battle-front #'+player+'.convert-cards '+rowId+' .image-inside-line').empty();
 
 								}else{
 
-									var currentCardDelate = $('.convert-battle-front #'+player+'.convert-cards '+rowId+' .cards-row-wrap li[data-cardid="'+card['id']+'"]:first');
-									console.log('currentCardDelate',currentCardDelate);
-									animationBurningCard( currentCardDelate );
+									var currentCardDelate = $('.convert-battle-front #'+player+'.convert-cards '+rowId+' .cards-row-wrap li[data-cardid="'+card['id']+'"]');
+									currentCardDelate.each(function(index,item){
+										$(item).addClass('ready-to-die');
+									})
+									//console.log('currentCardDelate',currentCardDelate);
+									//animationBurningCard( currentCardDelate );
 
 								}
 						}
 					}
 				}
 			}
+			animationBurningCardEndDeleting();
+
 		}
 
 		//Обновление силы карт
@@ -1051,33 +1054,39 @@ function animationCardReturnToOutage() {
 	return timeout;
 }
 
-function animationBurningCard(card) {
-	console.log('animationBurningCard()=>card',card);
-	card.parents('.field-for-cards').css({
-		'overflow':'visible'
-	});
-	console.log('card.length',card.length);
-	//card.append('<span class="card-burning-item-main"><img src="/images/card-burning-item-main.gif" alt="" /></span');
-	card.children().css({'background':'red'})
-	// setTimeout(function(){
-	// 	card.addClass('card-burning');
-	// 	setTimeout(function(){
-	// 		card.find('.content-card-item-main').fadeOut(900,function(){
-	// 			setTimeout(function(){
-	// 				card.removeClass('card-burning');
-	// 				setTimeout(function(){
-	// 					card.parents('.field-for-cards').removeAttr('style');
-	// 					card.children().css({
-	// 						'background':'red'
-	// 					})
-	// 					//card.remove();
-	// 				},1000)
-	// 			},500)
-	// 		});
-	// 	},2500)
-	// },300)
+function animationBurningCardEndDeleting() {
+	var cardAll = $('.content-card-item.ready-to-die');
 
-	return (300+2500+500+900);
+	cardAll.each(function(index,elemet){
+		var card = $(elemet);
+		if (card.parents('.field-for-cards').css('overflow') == 'hidden' ) {
+			card.parents('.field-for-cards').css({
+				'overflow':'visible',
+				'position': 'relative',
+    			'z-index': '4'
+			});
+		}
+		card.append('<span class="card-burning-item-main"><img src="/images/card-burning-item-main.gif" alt="" /></span');
+		setTimeout(function(){
+			card.addClass('card-burning');
+			setTimeout(function(){
+				card.find('.content-card-item-main').fadeOut(900,function(){
+					setTimeout(function(){
+						card.removeClass('card-burning');
+						setTimeout(function(){
+
+							if ( (cardAll - 1) == index ){
+								card.parents('.field-for-cards').removeAttr('style');
+							}
+
+							card.remove();
+
+						},1000)
+					},500)
+				});
+			},2500)
+		},300)
+	})
 }
 //animationBurningCard($('.convert-cards .content-card-item[data-cardid="131"]'))
 
@@ -1155,18 +1164,27 @@ function detailCardPopupOnStartStep(card, strength) {
 
 //открыть попап (даже если уже открыт еще однин)
 function openSecondTrollPopup(id) {
-	id.addClass('show');
+	id.addClass('show troll-popup-custom');
 	$('.new-popups-block').addClass('show-second');
 }
 // закрыть попап по id
 function closeSecondTrollPopup(id) {
-	id.removeClass('show');
+	id.removeClass('show troll-popup-custom');
 	$('.new-popups-block').removeClass('show-second');
 }
 //показать карты анимированно на столе
 function showCardOnDesc() {
 	$('.content-card-item.loading').addClass('show').removeClass('loading');
 }
+
+// При открытом попапе если мы нажимаем на любую область документа - попап закрываеться
+$(document).on('click',function(){
+	if ( $('.troll-popup').hasClass('troll-popup-custom') ){
+		var id = $('.troll-popup.troll-popup-custom').attr('id');
+		console.log(id);
+		closeSecondTrollPopup($('#'+id));
+	}
+});
 
 //Показать попап при перегрупировке
 function detailCardPopupOnOverloading(cardDetailOverloadingMarkup,card,strength) {
