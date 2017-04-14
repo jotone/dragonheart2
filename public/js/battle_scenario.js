@@ -720,7 +720,6 @@ function illuminateCustom(params) {//Поле действия карты по-�
 		options.debuffRow.forEach(function(item) {
 
 			var field = intRowToField(item);
-			console.log(field);
 			$('.convert-battle-front .oponent .convert-one-field ' + field).addClass('can-debuff');
 
 		});
@@ -1392,7 +1391,7 @@ function startBattle() {
 
 			//Пользователь сделал действие
 			case 'userMadeAction':
-				if(currentRound != result['round']){
+				if( currentRound != result['round'] ) {
 					/*$('.convert-cards .content-card-item').addClass('transition');
 					$('.field-for-cards').addClass('visible');
 					var timeout1=0;
@@ -1451,7 +1450,9 @@ function startBattle() {
 						},animateHandTime);
 
 					},1000)
-				}else{
+
+				} else {
+
 					if(typeof result.turnDescript != "undefined") turnDescript = result.turnDescript;
 
 					changeTurnIndicator(result.login);//смена индикатора хода
@@ -1476,20 +1477,54 @@ function startBattle() {
 					// 	}
 
 					// }
-					if (result.step_status.played_card['card']){
 
-						if ( result.step_status.actions[0] != '10' ) {
 
-							detailCardPopupOnStartStep(result.step_status.played_card['card'], result.step_status.played_card['strength']);
+
+					if ( result.step_status.played_card['card'] ) {
+						/* Dmitry checkpoint */
+						var actions = result.step_status.actions;
+
+						if (actions.length) {
+
+							actions.forEach(function(item) {
+
+								if ( item == '10' ) {
+
+									if ( result.login != $('.user-describer .name').text() ) {
+
+										window.card_overloading = createCardDescriptionView( result.step_status.played_card['card'],  result.step_status.played_card['strength'], 'without-description' );
+
+									}
+
+								} else if ( item == '18' ) {
+
+									var resultLogin  = result.login;
+									var thisUser = $('.user-describer .name').text();
+
+									if ( resultLogin == thisUser ) {
+
+										console.log('enemy turn', result);
+
+									} else {
+
+										console.log('your turn', result);
+
+									}
+
+								} else {
+
+									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+
+								}
+
+							});
 
 						} else {
-							//фильтр, если перегрупировка
-							if ( result.login != $('.user-describer .name').text() ) {
-								console.log('Перегрупировка противнику');
-								window.card_overloading = createCardDescriptionView(result.step_status.played_card['card'], result.step_status.played_card['strength'],'without-description');
 
-							}
+							detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+
 						}
+
 					}
 
 					//проверяю есть ли действие карты и существует ли переменная card_overloading
@@ -1497,7 +1532,7 @@ function startBattle() {
 						//Проверяю есть ли карты для добавления пользователю и(!) список карт для удаления
 						if( !$.isEmptyObject(result.step_status.added_cards) && !$.isEmptyObject(result.step_status.dropped_cards) ){
 							//ПОказывать только противнику
-							if ( result.login == $('.user-describer .name').text()  ) {
+							if ( result.login == $('.user-describer .name').text() ) {
 								detailCardPopupOnOverloading (
 									window.card_overloading,
 									result.step_status.added_cards[Object.keys(result.step_status.added_cards)[0]].hand[0],
@@ -1516,7 +1551,7 @@ function startBattle() {
 
 					//Обработка Маг. Эффектов (МЭ)
 					if(typeof result.magicUsage != "undefined"){
-						magicReview(result)
+						magicReview(result);
 					}
 				}
 			break;
