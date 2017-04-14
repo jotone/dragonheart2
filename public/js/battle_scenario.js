@@ -1100,7 +1100,7 @@ function changeTurnIndicator(login){
 }
 
 //Создание отображения колоды
-function createDeckCardPreview(count, is_user, deck, user_type){
+function createDeckCardPreview(count, is_user, deck, user_type) {
 	var divClass = (is_user) ? 'card-my-init cards-take-more' : 'card-init';
 	var deckBG = (is_user) ? 'user' : 'opponent';
 	var deckBG = 'style="background-image: url(/img/fractions_images/'+window.userImgData[deckBG]+') !important"';
@@ -1116,7 +1116,7 @@ function createDeckCardPreview(count, is_user, deck, user_type){
 	return cardList;
 }
 
-function buildBattleField(fieldData){
+function buildBattleField(fieldData) {
 	for(var fieldType in fieldData){
 		if(fieldType == 'mid'){
 			for(var i=0; i<fieldData['mid'].length; i++){
@@ -1217,7 +1217,7 @@ $('.convert-left-info .cards-bet #card-give-more-user').on('click', '.card-my-in
 	}
 });
 
-function convertTimeToStr(seconds){
+function convertTimeToStr(seconds) {
 	if(seconds > timeOut){
 		seconds = timeOut;
 	}
@@ -1232,7 +1232,7 @@ function convertTimeToStr(seconds){
 }
 
 var TimerInterval;
-function startTimer(login){
+function startTimer(login) {
 	TimerInterval = setInterval(function () {
 		var time = {'m':0, 's':0};
 		time['m'] = parseInt($('.info-block-with-timer span[data-time=minute]').text());
@@ -1487,7 +1487,8 @@ function startBattle() {
 					if ( result.step_status.played_card['card'] ) {
 						/* Dmitry checkpoint */
 						var actions = result.step_status.actions;
-
+						var playedCard = result.step_status.played_card.card;
+						console.log(result);
 						if (actions.length) {
 
 							actions.forEach(function(item) {
@@ -1504,16 +1505,28 @@ function startBattle() {
 
 									var resultLogin  = result.login;
 									var thisUser = $('.user-describer .name').text();
+									var debuffRows = [];
+
+									for ( var i = 0; i < playedCard.actions.length; i++ ) {
+
+										if ( playedCard.actions[i].action == item ) {
+											debuffRows = playedCard.actions[i].fear_ActionRow;
+											/* here must be also debuff value */
+										}
+
+									}
 
 									if ( resultLogin == thisUser ) {
 
+										buffingDebuffingAnimOnRows( 'user', debuffRows, 'debuff', 'terrify' );
 										console.log('enemy turn', result);
-
 									} else {
 
+										buffingDebuffingAnimOnRows( 'oponent', debuffRows, 'debuff', 'terrify' );
 										console.log('your turn', result);
-
 									}
+
+									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
 
 								} else {
 
@@ -1831,6 +1844,41 @@ function startBattle() {
 	}
 }
 
+/* Dmitry scripts */
+
+
+	/*
+	* buffing or debuffing row animation
+	* side - oponent or user
+	* rows - array of rows
+	* type - 'buff' or 'debuff'
+	* effectName - any effect class that gona be added to .convert-one-field
+	* (you must write it animation in scss or js)
+	*/
+	function buffingDebuffingAnimOnRows( side, rows, type, effectName ) {
+
+		rows.forEach(function( item ) {
+			var rowId = intRowToField(item);
+			var row = $('.' + side + ' .field-for-cards' + rowId);
+			var parent = row.parents('.convert-stuff');
+			parent.addClass(type);
+			parent.addClass(effectName + '-' + type);
+			var effectMarkup = '<div class="debuff-or-buff-anim"></div>';
+			row.append(effectMarkup);
+			var effectObjects = row.find('.debuff-or-buff-anim');
+			var effectObjectAdded = row.find('.debuff-or-buff-anim:not(active)');
+			effectObjectAdded.addClass('active');
+			if ( effectObjects.length > 1 ) {
+				setTimeout(function() {
+					effectObjects.not(':first-child').remove();
+				},1000)
+			}
+		});
+
+	}
+
+/* /Dmitry scripts */
+
 function setMinWidthInPop(count,popup) {
 	if (count>0){
 		var holder = popup.find('.cards-select-wrap li');
@@ -1841,7 +1889,7 @@ function setMinWidthInPop(count,popup) {
 	}
 }
 
-function circleRoundIndicator(){
+function circleRoundIndicator() {
 	var opon = parseInt($('.rounds-counts.oponent .rounds-counts-count').text());
 	var user = parseInt($('.rounds-counts.user .rounds-counts-count').text());
 	if(user > 0){$('#svg #bar-oponent').css('stroke-dashoffset', '205px');}else{$('#svg #bar-oponent').css('stroke-dashoffset', '0');}

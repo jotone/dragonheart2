@@ -4,6 +4,26 @@
 	.convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards { transition: all 300ms ease; }
 	.convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards.can-debuff { box-shadow: inset 0 0 50px 25px rgba(190, 0, 0, .75); }
 
+	/* debuff anim */
+
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards { position: relative; }
+
+		.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff .field-for-sum { transition: all 300ms ease; }
+		.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.debuff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff .field-for-sum { color: #b40000; box-shadow: inset 0 0 10px 2px rgba(180, 0, 0, .4); }
+		.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.buff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff .field-for-sum { color: #50c800; box-shadow: inset 0 0 10px 2px rgba(80, 200, 0, .4); }
+		.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.buff.debuff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff.debuff .field-for-sum { color: #00aad2; box-shadow: inset 0 0 10px 2px rgba(0, 170, 210, .4); }
+
+		.debuff-or-buff-anim { position: absolute; }
+
+		/* terrify anim */
+
+			.convert-battle-front .convert-cards .convert-card-box .convert-stuff.terrify-debuff .debuff-or-buff-anim { right: 100%; top: -15%; height: 130%; width: 100%; box-shadow: inset -20px 0 150px 0px rgba(180, 0, 0, 1), inset 0 0 200px 10px rgba(0, 0, 0, 1); transition: right 1000ms ease 500ms, box-shadow 300ms ease 1500ms, top 300ms ease 1500ms, heigth 300ms ease 1500ms; }
+			.convert-battle-front .convert-cards .convert-card-box .convert-stuff.terrify-debuff .debuff-or-buff-anim.active { right: 0; top: 0; height: 100%; box-shadow: inset 0 0 50px 0px rgba(180, 0, 0, .75), inset 0 0 200px 10px rgba(0, 0, 0, 1); }
+
+		/* /terrify anim */
+
+	/* /debuff anim */
+
 /* /Dmitry write it */
 
 .mbox{
@@ -658,7 +678,10 @@
 	-webkit-box-shadow:inset 0px 0px 8px 4px rgba(0, 0, 0, 0.75);
 	-moz-box-shadow:inset 0px 0px 8px 4px rgba(0, 0, 0, 0.75);
 	box-shadow:inset 0px 0px 8px 4px rgba(0, 0, 0, 0.75);
-	float:left; }
+	float:left;
+	position: relative;
+	z-index: 1;
+}
 .convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards .fields-for-cards-wrap{
 	display:inline-block;
 	width:-webkit-calc(100% - 80px);
