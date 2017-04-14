@@ -272,7 +272,7 @@ function createMagicEffectView(magicData) {
 
 //Создание отображения карты
 function createCardDescriptionView(cardData, strength, titleView) {
-
+	/* Dmitry checkpoinit  */
 	var result = '<div class="content-card-item-main';
 	if(cardData['type'] == 'special'){
 		result += ' special-type';}
@@ -1874,10 +1874,15 @@ function startBattle() {
 					var cards = row.find('.content-card-item');
 
 					setTimeout(function() {
-						pointsSum.addClass('pulsed');
-						setTimeout(function() {
-							pointsSum.removeClass('pulsed');
-						}, 500);
+						if (
+							( type == 'debuff' && !card.is('[data-immune=true]') && !card.is('[full-immune=true]') ) ||
+							( type == 'buff' && !card.is('.full-immune') )
+						) {
+							pointsSum.addClass('pulsed');
+							setTimeout(function() {
+								pointsSum.removeClass('pulsed');
+							}, 500);
+						}
 					}, 0);
 
 					cards.each(function() {
