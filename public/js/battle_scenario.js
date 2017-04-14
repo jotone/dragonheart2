@@ -1181,7 +1181,6 @@ function showCardOnDesc() {
 $(document).on('click',function(){
 	if ( $('.troll-popup').hasClass('troll-popup-custom') ){
 		var id = $('.troll-popup.troll-popup-custom').attr('id');
-		console.log(id);
 		closeSecondTrollPopup($('#'+id));
 	}
 });
@@ -1205,6 +1204,11 @@ function detailCardPopupOnOverloading(cardDetailOverloadingMarkup,card,strength)
 	},2000)
 
 }
+
+function secondTrollPopupCustomImgAndTitle(text,imgSrc) {
+
+}
+
 
 //Отображение Колоды или Отбоя
 $('.convert-left-info .cards-bet #card-give-more-user').on('click', '.card-my-init', function(){
