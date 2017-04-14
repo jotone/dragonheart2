@@ -254,8 +254,24 @@ function createUserMagicFieldCards(userLogin, magicData) {
 
 //Создание отображения карты в списке
 function createFieldCardView(cardData, strength, titleView) {
+
+	var immune=false;
+	var full_immune = false;
+	console.log('Dmitry checkpoint', cardData);
+	cardData.actions.forEach(function(item) {
+		if ( item.hasOwnProperty('immumity_type') ) {
+
+			if ( item.immunity_type == "1" ) {
+				full_immune = true;
+			} else {
+				immune = true;
+			}
+
+		}
+	});
+
 	return '' +
-		'<li class="content-card-item disable-select loading animation" data-cardid="'+cardData['id']+'" data-relative="'+cardData['type']+'">'+
+		'<li class="content-card-item disable-select loading animation" data-cardid="'+cardData['id']+'" data-relative="'+cardData['type']+'" data-immune=' + immune + ' data-full-immune=' + full_immune + ' >'+
 		createCardDescriptionView(cardData, strength, titleView)+
 		'</li>';
 }
@@ -272,12 +288,14 @@ function createMagicEffectView(magicData) {
 
 //Создание отображения карты
 function createCardDescriptionView(cardData, strength, titleView) {
-	/* Dmitry checkpoinit  */
+
 	var result = '<div class="content-card-item-main';
 	if(cardData['type'] == 'special'){
-		result += ' special-type';}
+		result += ' special-type';
+	}
 	if(cardData['is_leader'] == 1){
-		result += ' leader-type';}
+		result += ' leader-type';
+	}
 
 	switch (cardData['fraction']) {
 		case 'highlander':	result += ' highlander-race'; break;
@@ -322,7 +340,7 @@ function createCardDescriptionView(cardData, strength, titleView) {
 							//'<p class="txt">'+cardData['descript']+'</p></div></div> '+
 							cardData['descript']+'</div></div> ';
 
-	if ( titleView == 'without-description'){
+	if ( titleView == 'without-description' ) {
 		cardDescription = '';
 	}
 
@@ -1874,25 +1892,25 @@ function startBattle() {
 					var cards = row.find('.content-card-item');
 
 					setTimeout(function() {
-						if (
-							( type == 'debuff' && !card.is('[data-immune=true]') && !card.is('[full-immune=true]') ) ||
-							( type == 'buff' && !card.is('.full-immune') )
-						) {
-							pointsSum.addClass('pulsed');
-							setTimeout(function() {
-								pointsSum.removeClass('pulsed');
-							}, 500);
-						}
+						pointsSum.addClass('pulsed');
+						setTimeout(function() {
+							pointsSum.removeClass('pulsed');
+						}, 500);
 					}, 0);
 
 					cards.each(function() {
 						var card = $(this);
-						setTimeout(function() {
-							card.addClass('pulsed');
+						if (
+							( type == 'debuff' && !card.is('[data-immune=true]') && !card.is('[data-full-immune=true]') ) ||
+							( type == 'buff' && !card.is('.full-immune') )
+						) {
 							setTimeout(function() {
-								card.removeClass('pulsed');
-							},500);
-						}, 300);
+								card.addClass('pulsed');
+								setTimeout(function() {
+									card.removeClass('pulsed');
+								},500);
+							}, 300);
+						}
 					});
 
 					parent.addClass(type);
@@ -1902,7 +1920,11 @@ function startBattle() {
 			}, 500);
 			if ( effectObjects.length > 1 ) {
 				setTimeout(function() {
-					effectObjects.not(':first-child').remove();
+					effectObjects.each(function(index) {
+						if (index != 0) {
+							$(this).remove();
+						}
+					});
 				},1000)
 			}
 		});
