@@ -18,9 +18,9 @@
 
 		.cards-row-wrap .content-card-item.pulsed .label-power-card { animation-name: pulseAnim; animation-duration: 500ms; animation-timing-function: ease; }
 		.label-power-card-wrap { transition: all 300ms ease; }
-		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff .cards-row-wrap .content-card-item:not(.immune):not(.full-immune) .label-power-card-wrap { color: #b40000; }
-		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff .cards-row-wrap .content-card-item:not(.full-immune) .label-power-card-wrap { color: #50c800; }
-		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff.buff .cards-row-wrap .content-card-item:not(.immune):not(.full-immune) .label-power-card-wrap { color: #00aad2; }
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff .cards-row-wrap .content-card-item:not([data-immune='true']):not([data-full-immune='true']) .label-power-card-wrap { color: #b40000; }
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff .cards-row-wrap .content-card-item:not([data-full-immune]) .label-power-card-wrap { color: #50c800; }
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff.buff .cards-row-wrap .content-card-item:not([data-immune]):not([data-full-immune]) .label-power-card-wrap { color: #00aad2; }
 
 		/* terrify anim */
 
