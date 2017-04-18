@@ -967,18 +967,18 @@ function fieldBuilding(step_status) {
 
 								}else{
 
+									// Узнаю какие карты нужно удалить и даю им класс ready-to-die
 									var currentCardDelate = $('.convert-battle-front #'+player+'.convert-cards '+rowId+' .cards-row-wrap li[data-cardid="'+card['id']+'"]');
 									currentCardDelate.each(function(index,item){
 										$(item).addClass('ready-to-die');
 									})
-									//console.log('currentCardDelate',currentCardDelate);
-									//animationBurningCard( currentCardDelate );
 
 								}
 						}
 					}
 				}
 			}
+			// После всех циклов запускаю функцию
 			animationBurningCardEndDeleting();
 
 		}
@@ -1152,10 +1152,10 @@ function detailCardPopupOnStartStep(card, strength) {
 	var popContent = createCardDescriptionView(card, strength, 'without-description');
 
 	holder.find('.content-card-info').append(popContent);
-	openSecondTrollPopup(holder);
+	openSecondTrollPopup(holder,null);
 
 	setTimeout(function(){
-		closeSecondTrollPopup(holder);
+		closeSecondTrollPopup(holder,null);
 		setTimeout(function(){
 			showCardOnDesc();
 		},500)
@@ -1163,13 +1163,19 @@ function detailCardPopupOnStartStep(card, strength) {
 }
 
 //открыть попап (даже если уже открыт еще однин)
-function openSecondTrollPopup(id) {
+function openSecondTrollPopup(id,customClass) {
 	id.addClass('show troll-popup-custom');
+	if(customClass.length){
+		id.addClass(customClass);
+	}
 	$('.new-popups-block').addClass('show-second');
 }
 // закрыть попап по id
-function closeSecondTrollPopup(id) {
+function closeSecondTrollPopup(id,customClass) {
 	id.removeClass('show troll-popup-custom');
+	if(customClass.length){
+		id.removeClass(customClass);
+	}
 	$('.new-popups-block').removeClass('show-second');
 }
 //показать карты анимированно на столе
@@ -1191,22 +1197,30 @@ function detailCardPopupOnOverloading(cardDetailOverloadingMarkup,card,strength)
 	holder.find('.content-card-info').empty().append(cardDetailOverloadingMarkup);
 	var popContent = createCardDescriptionView(card, strength, 'without-description');
 	holder.find('.content-card-info').addClass('overloading-animation').append(popContent).end().addClass('overloading');
-	openSecondTrollPopup(holder);
+	openSecondTrollPopup(holder,null);
 
 	setTimeout(function(){
 		holder.find('.content-card-info').removeClass('overloading-animation');
 		setTimeout(function(){
-			closeSecondTrollPopup(holder);
+			closeSecondTrollPopup(holder,null);
 			setTimeout(function(){
 				holder.removeClass('overloading');
 			},1000)
 		},2000)
 	},2000)
-
 }
 
 function secondTrollPopupCustomImgAndTitle(text,imgSrc) {
+	var holder = $('#card-start-step');
+	holder.find('.content-card-info').empty();
+	holder.append('<div class=""></div>')
 
+
+	openSecondTrollPopup(holder);
+	setTimeout(function(){
+		closeSecondTrollPopup(holder);
+
+	},2000);
 }
 
 
@@ -1492,7 +1506,7 @@ function startBattle() {
 						if (actions.length) {
 
 							actions.forEach(function(item) {
-
+								//Анимация и функционал перегрупировки
 								if ( item == '10' ) {
 
 									if ( result.login != $('.user-describer .name').text() ) {
@@ -1527,6 +1541,9 @@ function startBattle() {
 									}
 
 									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+
+								} else if ( item == '7' ) {
+									//Анимация лекаря
 
 								} else {
 
