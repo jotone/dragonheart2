@@ -254,8 +254,24 @@ function createUserMagicFieldCards(userLogin, magicData) {
 
 //Создание отображения карты в списке
 function createFieldCardView(cardData, strength, titleView) {
+
+	var immune=false;
+	var full_immune = false;
+	console.log('Dmitry checkpoint', cardData);
+	cardData.actions.forEach(function(item) {
+		if ( item.hasOwnProperty('immumity_type') ) {
+
+			if ( item.immunity_type == "1" ) {
+				full_immune = true;
+			} else {
+				immune = true;
+			}
+
+		}
+	});
+
 	return '' +
-		'<li class="content-card-item disable-select loading animation" data-cardid="'+cardData['id']+'" data-relative="'+cardData['type']+'">'+
+		'<li class="content-card-item disable-select loading animation" data-cardid="'+cardData['id']+'" data-relative="'+cardData['type']+'" data-immune=' + immune + ' data-full-immune=' + full_immune + ' >'+
 		createCardDescriptionView(cardData, strength, titleView)+
 		'</li>';
 }
@@ -275,9 +291,11 @@ function createCardDescriptionView(cardData, strength, titleView) {
 
 	var result = '<div class="content-card-item-main';
 	if(cardData['type'] == 'special'){
-		result += ' special-type';}
+		result += ' special-type';
+	}
 	if(cardData['is_leader'] == 1){
-		result += ' leader-type';}
+		result += ' leader-type';
+	}
 
 	switch (cardData['fraction']) {
 		case 'highlander':	result += ' highlander-race'; break;
@@ -322,7 +340,7 @@ function createCardDescriptionView(cardData, strength, titleView) {
 							//'<p class="txt">'+cardData['descript']+'</p></div></div> '+
 							cardData['descript']+'</div></div> ';
 
-	if ( titleView == 'without-description'){
+	if ( titleView == 'without-description' ) {
 		cardDescription = '';
 	}
 
@@ -1863,7 +1881,6 @@ function startBattle() {
 
 /* Dmitry scripts */
 
-
 	/*
 	* buffing or debuffing row animation
 	* side - oponent or user
@@ -1878,16 +1895,53 @@ function startBattle() {
 			var rowId = intRowToField(item);
 			var row = $('.' + side + ' .field-for-cards' + rowId);
 			var parent = row.parents('.convert-stuff');
-			parent.addClass(type);
+			var pointsSum = parent.find('.field-for-sum');
 			parent.addClass(effectName + '-' + type);
 			var effectMarkup = '<div class="debuff-or-buff-anim"></div>';
 			row.append(effectMarkup);
 			var effectObjects = row.find('.debuff-or-buff-anim');
 			var effectObjectAdded = row.find('.debuff-or-buff-anim:not(active)');
-			effectObjectAdded.addClass('active');
+
+			var timer = setInterval(function() {
+				if ( !$('.troll-popup.show').length ) {
+
+					effectObjectAdded.addClass('active');
+					var cards = row.find('.content-card-item');
+
+					setTimeout(function() {
+						pointsSum.addClass('pulsed');
+						setTimeout(function() {
+							pointsSum.removeClass('pulsed');
+						}, 500);
+					}, 0);
+
+					cards.each(function() {
+						var card = $(this);
+						if (
+							( type == 'debuff' && !card.is('[data-immune=true]') && !card.is('[data-full-immune=true]') ) ||
+							( type == 'buff' && !card.is('.full-immune') )
+						) {
+							setTimeout(function() {
+								card.addClass('pulsed');
+								setTimeout(function() {
+									card.removeClass('pulsed');
+								},500);
+							}, 300);
+						}
+					});
+
+					parent.addClass(type);
+					clearInterval(timer);
+
+				}
+			}, 500);
 			if ( effectObjects.length > 1 ) {
 				setTimeout(function() {
-					effectObjects.not(':first-child').remove();
+					effectObjects.each(function(index) {
+						if (index != 0) {
+							$(this).remove();
+						}
+					});
 				},1000)
 			}
 		});

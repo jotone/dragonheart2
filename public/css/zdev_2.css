@@ -8,19 +8,32 @@
 
 		.convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards { position: relative; }
 
-		.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff .field-for-sum { transition: all 300ms ease; }
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff .field-for-sum { transition: all 300ms ease; }
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff .field-for-sum.pulsed { animation-name: pulseAnim; animation-duration: 500ms; animation-timing-function: ease; }
 		.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.debuff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff .field-for-sum { color: #b40000; box-shadow: inset 0 0 10px 2px rgba(180, 0, 0, .4); }
 		.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.buff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff .field-for-sum { color: #50c800; box-shadow: inset 0 0 10px 2px rgba(80, 200, 0, .4); }
 		.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.buff.debuff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff.debuff .field-for-sum { color: #00aad2; box-shadow: inset 0 0 10px 2px rgba(0, 170, 210, .4); }
 
 		.debuff-or-buff-anim { position: absolute; }
 
+		.cards-row-wrap .content-card-item.pulsed .label-power-card { animation-name: pulseAnim; animation-duration: 500ms; animation-timing-function: ease; }
+		.label-power-card-wrap { transition: all 300ms ease; }
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff .cards-row-wrap .content-card-item:not([data-immune='true']):not([data-full-immune='true']) .label-power-card-wrap { color: #b40000; }
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff .cards-row-wrap .content-card-item:not([data-full-immune]) .label-power-card-wrap { color: #50c800; }
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff.buff .cards-row-wrap .content-card-item:not([data-immune]):not([data-full-immune]) .label-power-card-wrap { color: #00aad2; }
+
 		/* terrify anim */
 
-			.convert-battle-front .convert-cards .convert-card-box .convert-stuff.terrify-debuff .debuff-or-buff-anim { right: 100%; top: -15%; height: 130%; width: 100%; box-shadow: inset -20px 0 150px 0px rgba(180, 0, 0, 1), inset 0 0 200px 10px rgba(0, 0, 0, 1); transition: right 1000ms ease 500ms, box-shadow 300ms ease 1500ms, top 300ms ease 1500ms, heigth 300ms ease 1500ms; }
-			.convert-battle-front .convert-cards .convert-card-box .convert-stuff.terrify-debuff .debuff-or-buff-anim.active { right: 0; top: 0; height: 100%; box-shadow: inset 0 0 50px 0px rgba(180, 0, 0, .75), inset 0 0 200px 10px rgba(0, 0, 0, 1); }
+			.convert-battle-front .convert-cards .convert-card-box .convert-stuff.terrify-debuff .debuff-or-buff-anim { left: calc(100% + 70px); top: 0; height: 100%; width: 100%; box-shadow: inset 30px 0 50px 0px rgba(180, 0, 0, 1), -10px 0 50px 20px rgba(180, 0, 0, 1); transition: left 2000ms ease, box-shadow 1000ms ease 2000ms, background-color 1000ms ease 2000ms; }
+			.convert-battle-front .convert-cards .convert-card-box .convert-stuff.terrify-debuff .debuff-or-buff-anim.active { left: 0; box-shadow: inset 0 0 50px 0px rgba(180, 0, 0, .75), -10px 0 50px 20px rgba(180, 0, 0, .0); background-color: rgba(0, 0, 0, .75); }
 
 		/* /terrify anim */
+
+		@keyframes pulseAnim {
+			0% { transform: scale(1) translate(0, 0px) translateZ(0px); }
+			50% { transform: scale(1.25) translate(0, 3px) translateZ(0px); }
+			100% { transform: scale(1) translate(0, 0px) translateZ(0px); }
+		}
 
 	/* /debuff anim */
 
@@ -738,7 +751,9 @@
 	font-size:32px;
 	color:white;
 	vertical-align:top;
-	line-height:60px; }
+	line-height:60px;
+	transition: all 300ms ease;
+}
 .convert-battle-front .convert-cards .convert-card-box .convert-stuff:before{
 	content:'';
 	position:absolute;
