@@ -2769,6 +2769,9 @@ html{ height:100%; }
 	-o-transition:opacity 0.5s;
 	transition:opacity 0.5s;
 	opacity:0;
+	will-change: transform;
+	backface-visibility: hidden;
+	transform:translateZ(0);
 }
 .new-popups-block .tyman:after{ background-image:url("../images/fog2.png"); }
 .show.new-popups-block .tyman:after,
@@ -2782,11 +2785,11 @@ html{ height:100%; }
 	animation-iteration-count:infinite; }
 .show.new-popups-block .tyman:after,.show-second.new-popups-block .tyman:after{ animation-direction:reverse; }
 @keyframes fog1{
-	0%{ transform:translateY(0); }
-	25%{ transform:translateY(-50px); }
-	50%{ transform:translateY(0); }
-	75%{ transform:translateY(50px); }
-	100%{ transform:translateY(0); }
+	0%{ transform:translateY(0) translateZ(0); }
+	25%{ transform:translateY(-50px) translateZ(0); }
+	50%{ transform:translateY(0) translateZ(0); }
+	75%{ transform:translateY(50px) translateZ(0); }
+	100%{ transform:translateY(0) translateZ(0); }
 
 }
 .buttons-block-play.pass{
@@ -2813,24 +2816,25 @@ div.troll-popup{
 	-o-transition:all 0.2s;
 	transition:all 0.2s;
 	left:50%;
-	-webkit-transform:translate(-50%, -50%) scale(0);
-	-ms-transform:translate(-50%, -50%) scale(0);
-	-moz-transform:translate(-50%, -50%) scale(0);
-	-o-transform:translate(-50%, -50%) scale(0);
-	transform:translate(-50%, -50%) scale(0);
+	-webkit-transform:translate(-50%, -50%) scale(0) translateZ(0);
+	-ms-transform:translate(-50%, -50%) scale(0) translateZ(0);
+	-moz-transform:translate(-50%, -50%) scale(0) translateZ(0);
+	-o-transform:translate(-50%, -50%) scale(0) translateZ(0);
+	transform:translate(-50%, -50%) scale(0) translateZ(0);
 	z-index:999;
 	display:block;
 	pointer-events:all;
+	backface-visibility: hidden;
 }
 div.troll-popup#buyingCardOrmagic{ z-index:2222; }
 div.troll-popup#successEvent{ z-index:2222; padding-bottom:30px; width:400px; }
 div.troll-popup#selecthandCardsPopup{ width:1140px; }
 div.troll-popup.show{
-	-webkit-transform:translate(-50%, -50%) scale(1);
-	-ms-transform:translate(-50%, -50%) scale(1);
-	-moz-transform:translate(-50%, -50%) scale(1);
-	-o-transform:translate(-50%, -50%) scale(1);
-	transform:translate(-50%, -50%) scale(1);
+	-webkit-transform:translate(-50%, -50%) scale(1) translateZ(0);
+	-ms-transform:translate(-50%, -50%) scale(1) translateZ(0);
+	-moz-transform:translate(-50%, -50%) scale(1) translateZ(0);
+	-o-transform:translate(-50%, -50%) scale(1) translateZ(0);
+	transform:translate(-50%, -50%) scale(1) translateZ(0);
 	opacity:1;
 }
 input.book-style:focus{
@@ -3629,3 +3633,8 @@ div.troll-popup.card-start-step.overloading{}
 .cards-row-wrap .card-burning-item-main img{max-height: 100%;}
 .cards-row-wrap .content-card-item.card-burning{position: relative;}
 .cards-row-wrap .content-card-item.card-burning .card-burning-item-main{opacity: 1;transform: scale(1);}
+
+/* popup лекаря*/
+div.troll-popup.custom-img-and-title{box-shadow: none;}
+.custom-img-and-title .custom-img-and-title-wrap{text-align: center;color: white;}
+.custom-img-and-title .custom-img-and-title-wrap .custom-title{font-size: 22px;}

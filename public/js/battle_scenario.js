@@ -257,7 +257,6 @@ function createFieldCardView(cardData, strength, titleView) {
 
 	var immune=false;
 	var full_immune = false;
-	console.log('Dmitry checkpoint', cardData);
 	cardData.actions.forEach(function(item) {
 		if ( item.hasOwnProperty('immumity_type') ) {
 
@@ -981,7 +980,8 @@ function fieldBuilding(step_status) {
                                 var rowId = intRowToField(row);
 
                                 if(card['type'] == 'special'){
-                                    $('.convert-battle-front #'+player+'.convert-cards '+rowId+' .image-inside-line').empty();
+
+                            		animationDeleteSpecialCard(player,rowId);
 
 								}else{
 
@@ -1108,6 +1108,54 @@ function animationBurningCardEndDeleting() {
 }
 //animationBurningCard($('.convert-cards .content-card-item[data-cardid="131"]'))
 
+function animationDeleteSpecialCard(player,rowId) {
+
+	var card = $('#'+player+'.convert-cards '+rowId+' .image-inside-line li'),
+		userName = $('#'+player).attr('data-user'),
+		otboy = $('.cards-bet [data-user="'+userName+'"] [data-field="discard"]'),
+		otboyOffset = otboy.offset(),
+		cardOffset = card.offset(),
+		zIndexHolder = 0;
+
+	setTimeout(function() {
+
+		card.css({
+			'position':'fixed',
+			'width':'auto',
+			'z-index':'1000',
+			'transition':'opacity ease .4s',
+			'transform':'translateZ(0)',
+			'left':cardOffset.left+'px',
+			'top':cardOffset.top - $(window).scrollTop()+'px'
+		}).animate({
+			left: otboyOffset.left,
+			top: otboyOffset.top - $(window).scrollTop()
+		},{
+		    duration: 2500,
+		    progress: function (animation, number,remainingMs) {
+		    	if(number >= 0.65 && number <= 0.67){
+		    		card.css({'opacity':'0'});
+		    	}
+		    },
+		    start: function(){
+		    	card.parents('.convert-stuff').css({'z-index':'2'})
+		    	zIndexHolder = card.parent().css('z-index');
+		    	card.parent().css({'z-index':'100'})
+		    },
+		    complete: function() {
+		    	card.parents('.convert-stuff').removeAttr('style');
+		        card.parent().css({'z-index':zIndexHolder});
+				card.fadeOut(500,function(){
+					card.remove();
+				})
+		    }
+		  })
+
+	}, 1000);
+
+}
+//animationDeleteSpecialCard('p1','#meele')
+
 //Смена идентификатора хода пользователя
 function changeTurnIndicator(login){
 	if(login == $('.user-describer').attr('id')){
@@ -1183,7 +1231,7 @@ function detailCardPopupOnStartStep(card, strength) {
 //открыть попап (даже если уже открыт еще однин)
 function openSecondTrollPopup(id,customClass) {
 	id.addClass('show troll-popup-custom');
-	if(customClass.length){
+	if(customClass != null){
 		id.addClass(customClass);
 	}
 	$('.new-popups-block').addClass('show-second');
@@ -1191,7 +1239,7 @@ function openSecondTrollPopup(id,customClass) {
 // закрыть попап по id
 function closeSecondTrollPopup(id,customClass) {
 	id.removeClass('show troll-popup-custom');
-	if(customClass.length){
+	if(customClass != null){
 		id.removeClass(customClass);
 	}
 	$('.new-popups-block').removeClass('show-second');
@@ -1230,11 +1278,11 @@ function detailCardPopupOnOverloading(cardDetailOverloadingMarkup,card,strength)
 
 function secondTrollPopupCustomImgAndTitle(text,imgSrc) {
 	var holder = $('#card-start-step');
-	holder.find('.content-card-info').empty();
-	holder.append('<div class=""></div>')
+	//holder.find('.content-card-info').empty();
+	holder.find('.content-card-info').empty().append('<div class="custom-img-and-title-wrap"><div class="custom-title"><span>'+text+'</span></div><div class="custom-img"><img src="'+imgSrc+'" alt=""></div></div>');
 
 
-	openSecondTrollPopup(holder);
+	openSecondTrollPopup(holder,'custom-img-and-title');
 	setTimeout(function(){
 		closeSecondTrollPopup(holder);
 
@@ -1517,10 +1565,14 @@ function startBattle() {
 
 
 					if ( result.step_status.played_card['card'] ) {
-						/* Dmitry checkpoint */
+
 						var actions = result.step_status.actions;
 						var playedCard = result.step_status.played_card.card;
-						console.log(result);
+						//console.log(result);
+
+						var resultLogin  = result.login;
+						var thisUser = $('.user-describer .name').text();
+
 						if (actions.length) {
 
 							actions.forEach(function(item) {
@@ -1535,8 +1587,6 @@ function startBattle() {
 
 								} else if ( item == '18' ) {
 
-									var resultLogin  = result.login;
-									var thisUser = $('.user-describer .name').text();
 									var debuffRows = [];
 
 									for ( var i = 0; i < playedCard.actions.length; i++ ) {
@@ -1560,8 +1610,11 @@ function startBattle() {
 
 									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
 
-								} else if ( item == '7' ) {
-									//Анимация лекаря
+								} else if ( item == '6' ) {
+
+									//Анимация лекаря ( ефект лечения)
+									secondTrollPopupCustomImgAndTitle('Исцеление!','/img/card_images/magic_istselenie_582b19299d5e2.png');
+
 
 								} else {
 
