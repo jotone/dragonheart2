@@ -717,32 +717,21 @@ function illuminateSelf() {
 }//Свое поле
 
 function illuminateCustom(params) {//Поле действия карты по-умолчанию
-
 	var options = {};
+
 	$.extend( options, params );
-
 	if ( options.hasOwnProperty('parent') ) {
-
 		for ( var i = 0; i < options.row.length; i++ ) {
-
 			var field = intRowToField(options.row[i]);
 			$('.convert-battle-front ' + options.parent + ' .convert-one-field ' + field).addClass('active');
-
 		}
-
 	}
-
 	if ( options.hasOwnProperty('debuff') ) {
-
 		options.debuffRow.forEach(function(item) {
-
 			var field = intRowToField(item);
 			$('.convert-battle-front .oponent .convert-one-field ' + field).addClass('can-debuff');
-
 		});
-
 	}
-
 }
 
 //Перевод значения названия поля в id ряда
@@ -986,19 +975,33 @@ function fieldBuilding(step_status) {
 								}else{
 
 									// Узнаю какие карты нужно удалить и даю им класс ready-to-die
-									var currentCardDelate = $('.convert-battle-front #'+player+'.convert-cards '+rowId+' .cards-row-wrap li[data-cardid="'+card['id']+'"]');
-									currentCardDelate.each(function(index,item){
-										$(item).addClass('ready-to-die');
-									})
+									var currentCardDelate = $('.convert-battle-front #'+player+'.convert-cards '+rowId+' .cards-row-wrap li[data-cardid="'+card['id']+'"]:not(.ready-to-die)').first();
+									currentCardDelate.addClass('ready-to-die');
 
 								}
 						}
 					}
 				}
 			}
-			// После всех циклов запускаю функцию
-			animationBurningCardEndDeleting();
+			// После всех циклов запускаю функцию анимации удаления карты
 
+			if(typeof step_status.actions != "undefined"){
+				step_status.actions.forEach(function(item){
+					switch(item){
+						case '9':
+							//console.log("одурманивание");
+							//animationBurningCardEndDeleting('fade');
+
+						break;
+						case '19':
+							//console.log("Убийца");
+							animationBurningCardEndDeleting();
+						break;
+					}
+				})
+			}else{
+				animationBurningCardEndDeleting();
+			}
 		}
 
 		//Обновление силы карт
@@ -1072,38 +1075,53 @@ function animationCardReturnToOutage() {
 	return timeout;
 }
 
-function animationBurningCardEndDeleting() {
+function animationBurningCardEndDeleting(action) {
 	var cardAll = $('.content-card-item.ready-to-die');
 
 	cardAll.each(function(index,elemet){
 		var card = $(elemet);
-		if (card.parents('.field-for-cards').css('overflow') == 'hidden' ) {
-			card.parents('.field-for-cards').css({
-				'overflow':'visible',
-				'position': 'relative',
-    			'z-index': '4'
+
+		if (!card.parents('.field-for-cards').hasClass('overflow-visible') ) {
+
+			card.parents('.field-for-cards').addClass('overflow-visible');
+			card.parents('.convert-stuff').css({
+				'z-index':'10'
 			});
+
 		}
-		card.append('<span class="card-burning-item-main"><img src="/images/card-burning-item-main.gif" alt="" /></span');
-		setTimeout(function(){
-			card.addClass('card-burning');
-			setTimeout(function(){
-				card.find('.content-card-item-main').fadeOut(900,function(){
+
+		switch(action){
+			case 'fade':
+				card.removeClass('show');
+				setTimeout(function() {
+					card.remove();
+				}, 500);
+			break;
+			default:
+				//console.log('default');
+				card.append('<span class="card-burning-item-main"><img src="/images/card-burning-item-main-2.gif" alt="" /></span');
+				setTimeout(function(){
+					card.addClass('card-burning');
 					setTimeout(function(){
-						card.removeClass('card-burning');
-						setTimeout(function(){
+						card.find('.content-card-item-main').fadeOut(900,function(){
+							setTimeout(function(){
+								card.removeClass('card-burning');
+								setTimeout(function(){
 
-							if ( (cardAll - 1) == index ){
-								card.parents('.field-for-cards').removeAttr('style');
-							}
+									if ( (cardAll.length - 1) == index ){
+										card.parents('.field-for-cards').removeClass('overflow-visible');
+										card.parents('.convert-stuff').removeAttr('style');
+									}
 
-							card.remove();
+									card.remove();
 
-						},1000)
-					},500)
-				});
-			},2500)
-		},300)
+								},1000)
+							},500)
+						});
+					},2500)
+				},300)
+		}
+
 	})
 }
 //animationBurningCard($('.convert-cards .content-card-item[data-cardid="131"]'))
@@ -1221,9 +1239,9 @@ function detailCardPopupOnStartStep(card, strength) {
 	openSecondTrollPopup(holder,null);
 
 	setTimeout(function(){
-		closeSecondTrollPopup(holder,null);
+		closeSecondTrollPopup(holder,null);//закрываю попап с детальной инфой карты
 		setTimeout(function(){
-			showCardOnDesc();
+			showCardOnDesc();//показываю сыгранную карту на столе
 		},500)
 	},2000);
 }
@@ -1245,8 +1263,34 @@ function closeSecondTrollPopup(id,customClass) {
 	$('.new-popups-block').removeClass('show-second');
 }
 //показать карты анимированно на столе
-function showCardOnDesc() {
-	$('.content-card-item.loading').addClass('show').removeClass('loading');
+function showCardOnDesc(action) {
+
+	var card = $('.content-card-item.loading');
+
+	switch(action){
+		case 'mini-scale':
+			card.addClass('show').removeClass('loading');
+			setTimeout(function(){
+				if (!card.parents('.field-for-cards').hasClass('overflow-visible') ) {
+					card.parents('.field-for-cards').addClass('overflow-visible');
+				}
+
+				card.addClass('mini-scale');
+				setTimeout(function() {
+
+					card.removeClass('mini-scale');
+
+					setTimeout(function() {
+						card.parents('.field-for-cards').removeClass('overflow-visible');
+					}, 300);
+
+				}, 500);
+			},1000);
+			break;
+		default:
+			card.addClass('show').removeClass('loading');
+	}
+
 }
 
 // При открытом попапе если мы нажимаем на любую область документа - попап закрываеться
@@ -1258,7 +1302,7 @@ $(document).on('click',function(){
 });
 
 //Показать попап при перегрупировке
-function detailCardPopupOnOverloading(cardDetailOverloadingMarkup,card,strength) {
+function detailCardPopupOnOverloading(cardDetailOverloadingMarkup,card,strength,otherFunc) {
 	var holder = $('#card-start-step');
 	holder.find('.content-card-info').empty().append(cardDetailOverloadingMarkup);
 	var popContent = createCardDescriptionView(card, strength, 'without-description');
@@ -1270,7 +1314,13 @@ function detailCardPopupOnOverloading(cardDetailOverloadingMarkup,card,strength)
 		setTimeout(function(){
 			closeSecondTrollPopup(holder,null);
 			setTimeout(function(){
+
 				holder.removeClass('overloading');
+
+				if( otherFunc == 'show-and-delate-card' ){
+					showCardOnDesc('mini-scale');
+					animationBurningCardEndDeleting('fade');
+				}
 			},1000)
 		},2000)
 	},2000)
@@ -1280,7 +1330,6 @@ function secondTrollPopupCustomImgAndTitle(text,imgSrc) {
 	var holder = $('#card-start-step');
 	//holder.find('.content-card-info').empty();
 	holder.find('.content-card-info').empty().append('<div class="custom-img-and-title-wrap"><div class="custom-title"><span>'+text+'</span></div><div class="custom-img"><img src="'+imgSrc+'" alt=""></div></div>');
-
 
 	openSecondTrollPopup(holder,'custom-img-and-title');
 	setTimeout(function(){
@@ -1563,6 +1612,8 @@ function startBattle() {
 					// }
 
 
+					var resultLogin  = result.login;
+					var thisUser = $('.user-describer .name').text();
 
 					if ( result.step_status.played_card['card'] ) {
 
@@ -1570,16 +1621,13 @@ function startBattle() {
 						var playedCard = result.step_status.played_card.card;
 						//console.log(result);
 
-						var resultLogin  = result.login;
-						var thisUser = $('.user-describer .name').text();
-
 						if (actions.length) {
 
 							actions.forEach(function(item) {
 								//Анимация и функционал перегрупировки
 								if ( item == '10' ) {
 
-									if ( result.login != $('.user-describer .name').text() ) {
+									if ( resultLogin != thisUser ) {
 
 										window.card_overloading = createCardDescriptionView( result.step_status.played_card['card'],  result.step_status.played_card['strength'], 'without-description' );
 
@@ -1616,6 +1664,36 @@ function startBattle() {
 									secondTrollPopupCustomImgAndTitle('Исцеление!','/img/card_images/magic_istselenie_582b19299d5e2.png');
 
 
+								} else if ( item == '9' ) {
+									//Функционал карты одурманивание
+
+									var intoxicationCard = createCardDescriptionView( result.step_status.played_card['card'],  result.step_status.played_card['strength'], 'without-description' );
+
+									for(var player in result.step_status.added_cards){
+										for(var row in result.step_status.added_cards[player]){
+											if(row != 'hand'){
+												for(var i in result.step_status.added_cards[player][row]){
+
+													var card = result.step_status.added_cards[player][row][i];
+													detailCardPopupOnOverloading(
+														intoxicationCard,
+														card['card'],
+														card['strength'],
+														'show-and-delate-card'
+													);
+													console.log('Функционал карты одурманивание');
+
+												}
+											}
+										}
+									}
+
+									//check if we not take a card width intoxication - we only show popup width this card
+									if( result.step_status.added_cards.length == 0 && result.step_status.dropped_cards.length == 0 ){
+										detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+									}
+
+
 								} else {
 
 									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
@@ -1625,9 +1703,7 @@ function startBattle() {
 							});
 
 						} else {
-
 							detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
-
 						}
 
 					}
@@ -1637,11 +1713,13 @@ function startBattle() {
 						//Проверяю есть ли карты для добавления пользователю и(!) список карт для удаления
 						if( !$.isEmptyObject(result.step_status.added_cards) && !$.isEmptyObject(result.step_status.dropped_cards) ){
 							//ПОказывать только противнику
-							if ( result.login == $('.user-describer .name').text() ) {
+							if ( resultLogin == thisUser ) {
+
 								detailCardPopupOnOverloading (
 									window.card_overloading,
 									result.step_status.added_cards[Object.keys(result.step_status.added_cards)[0]].hand[0],
-									result.step_status.added_cards[Object.keys(result.step_status.added_cards)[0]].hand[0].strength
+									result.step_status.added_cards[Object.keys(result.step_status.added_cards)[0]].hand[0].strength,
+									null
 								);
 
 							}
