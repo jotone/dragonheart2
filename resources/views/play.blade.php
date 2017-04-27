@@ -39,7 +39,7 @@ function cardView($card){
 	}
 	$has_immune = 'false';
 	$has_full_immune = 'false';
-	foreach($card['actions'] as $action){
+	foreach($card_data['actions'] as $action){
 		if($action->action == '5'){
 			$has_immune = 'true';
 			$has_full_immune = ($action->immumity_type == '1')? 'true': 'false';

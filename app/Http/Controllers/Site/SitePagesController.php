@@ -73,7 +73,6 @@ class SitePagesController extends BaseController
 			return view('play')->withErrors(['Данный стол не существует.']);
 		}
 
-
 		$sec = intval(getenv('GAME_SEC_TIMEOUT'));
 		if($sec<=0) $sec = 60;
 
