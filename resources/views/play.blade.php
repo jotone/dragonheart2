@@ -37,9 +37,16 @@ function cardView($card){
 				$race_class = 'neutrall-race';
 			}
 	}
-
+	$has_immune = 'false';
+	$has_full_immune = 'false';
+	foreach($card['actions'] as $action){
+		if($action->action == '5'){
+			$has_immune = 'true';
+			$has_full_immune = ($action->immumity_type == '1')? 'true': 'false';
+		}
+	}
 	$card_view = '
-	<li class="content-card-item disable-select show" data-cardid="'.$card_data['id'].'" data-relative="'.$card_data['type'].'">
+	<li class="content-card-item disable-select show" data-cardid="'.$card_data['id'].'" data-relative="'.$card_data['type'].'" data-immune="'.$has_immune.'" data-full-immune="'.$has_full_immune.'">
 		<div class="content-card-item-main '.$race_class.' '.$leader_class.' '.$special_class.'" style="background-image: url('.URL::asset('/img/card_images/'.$card_data['img_url']).')" data-leader="'.$card_data['is_leader'].'" data-type="'.$card_data['type'].'">
 			<div class="card-load-info card-popup">
 				<div class="info-img">
@@ -519,7 +526,7 @@ foreach($battle_members as $key => $value){
 							@else
 								<div class="nothinh-for-swap"></div>
 							@endif
- 					</ul>
+					</ul>
 					<!--END OF Колода и отбой игрока-->
 				</div>
 			</div>

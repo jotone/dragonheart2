@@ -936,36 +936,36 @@ function fieldBuilding(step_status) {
 
 		//удаление карт
 		if(typeof step_status.dropped_cards != "undefined"){
-        	for(var player in step_status.dropped_cards){
-        		for(var row in step_status.dropped_cards[player]){
-        			if(row == 'mid'){
-                        $('.mezhdyblock #sortable-cards-field-more').children().fadeOut(500,function(){
-                        	$('.mezhdyblock #sortable-cards-field-more').empty();
-                        })
+			for(var player in step_status.dropped_cards){
+				for(var row in step_status.dropped_cards[player]){
+					if(row == 'mid'){
+						$('.mezhdyblock #sortable-cards-field-more').children().fadeOut(500,function(){
+							$('.mezhdyblock #sortable-cards-field-more').empty();
+						})
 					}
 					console.log('удаление карт');
-        			for(var i in step_status.dropped_cards[player][row]){
-        				var card = step_status.dropped_cards[player][row][i];
-                        switch(row) {
-                            case 'hand':
-                                var targetPlayer = $('.convert-cards[data-user=' + $('.user-describer').attr('id') + ']').attr('id');
-                                if(targetPlayer == player){
-                                	$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').fadeOut(500,function(){
-	                                	$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').remove();
-	                                })
-                                }
+					for(var i in step_status.dropped_cards[player][row]){
+						var card = step_status.dropped_cards[player][row][i];
+						switch(row) {
+							case 'hand':
+								var targetPlayer = $('.convert-cards[data-user=' + $('.user-describer').attr('id') + ']').attr('id');
+								if(targetPlayer == player){
+									$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').fadeOut(500,function(){
+										$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').remove();
+									})
+								}
 							break;
-                            case 'mid':
-                                $('.mezhdyblock #sortable-cards-field-more').children().fadeOut(500,function(){
-                                	$('.mezhdyblock #sortable-cards-field-more').empty();
-                                })
+							case 'mid':
+								$('.mezhdyblock #sortable-cards-field-more').children().fadeOut(500,function(){
+									$('.mezhdyblock #sortable-cards-field-more').empty();
+								})
 							break;
-                            default:
-                                var rowId = intRowToField(row);
+							default:
+								var rowId = intRowToField(row);
 
-                                if(card['type'] == 'special'){
+								if(card['type'] == 'special'){
 
-                            		animationDeleteSpecialCard(player,rowId);
+									animationDeleteSpecialCard(player,rowId);
 
 								}else{
 
@@ -1042,10 +1042,10 @@ function sortCards(){
 	$('#sortableUserCards').empty();
 
 	for (var i in arrayToSort.other) {
-	    $('#sortableUserCards').append(arrayToSort.other[i].card);
+		$('#sortableUserCards').append(arrayToSort.other[i].card);
 	}
 	for (var i in arrayToSort.special) {
-	    $('#sortableUserCards').append(arrayToSort.special[i]);
+		$('#sortableUserCards').append(arrayToSort.special[i]);
 	}
 	calculateRightMarginCardHands();
 
@@ -1148,24 +1148,24 @@ function animationDeleteSpecialCard(player,rowId) {
 			left: otboyOffset.left,
 			top: otboyOffset.top - $(window).scrollTop()
 		},{
-		    duration: 2500,
-		    progress: function (animation, number,remainingMs) {
-		    	if(number >= 0.65 && number <= 0.67){
-		    		card.css({'opacity':'0'});
-		    	}
-		    },
-		    start: function(){
-		    	card.parents('.convert-stuff').css({'z-index':'2'})
-		    	zIndexHolder = card.parent().css('z-index');
-		    	card.parent().css({'z-index':'100'})
-		    },
-		    complete: function() {
-		    	card.parents('.convert-stuff').removeAttr('style');
-		        card.parent().css({'z-index':zIndexHolder});
+			duration: 2500,
+			progress: function (animation, number,remainingMs) {
+				if(number >= 0.65 && number <= 0.67){
+					card.css({'opacity':'0'});
+				}
+			},
+			start: function(){
+				card.parents('.convert-stuff').css({'z-index':'2'})
+				zIndexHolder = card.parent().css('z-index');
+				card.parent().css({'z-index':'100'})
+			},
+			complete: function() {
+				card.parents('.convert-stuff').removeAttr('style');
+				card.parent().css({'z-index':zIndexHolder});
 				card.fadeOut(500,function(){
 					card.remove();
 				})
-		    }
+			}
 		  })
 
 	}, 1000);
@@ -1784,7 +1784,7 @@ function startBattle() {
 						delete window['card_healerTiming'];
 					}
 
-                    fieldBuilding(result.step_status);
+					fieldBuilding(result.step_status);
 
 					recalculateDecks(result);//Пересчет колод пользователя и противника
 					calculateRightMarginCardHands();
@@ -1833,8 +1833,8 @@ function startBattle() {
 
 				//Очищение полей
 				$('.mezhdyblock #sortable-cards-field-more, .convert-battle-front .image-inside-line, .convert-battle-front .cards-row-wrap').children().fadeOut(500,function(){
-                	$('.mezhdyblock #sortable-cards-field-more, .convert-battle-front .image-inside-line, .convert-battle-front .cards-row-wrap').empty();
-                });
+					$('.mezhdyblock #sortable-cards-field-more, .convert-battle-front .image-inside-line, .convert-battle-front .cards-row-wrap').empty();
+				});
 
 				setTimeout(function() {
 
