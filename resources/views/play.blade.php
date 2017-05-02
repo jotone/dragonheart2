@@ -64,7 +64,10 @@ function cardView($card){
 	}
 	$card_view .= '
 				<div class="label-power-card">
-					<span class="label-power-card-wrap">'.$strength.'</span>
+					<span class="label-power-card-wrap">
+						<span class="buff-debuff-value"></span>
+						<span class="card-current-value">'.$strength.'</span>
+					</span>
 					<span class="card-action-description">Сила карты</span>
 				</div>
 				<div class="hovered-items">
