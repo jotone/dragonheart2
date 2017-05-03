@@ -263,6 +263,7 @@ function createFieldCardView(cardData, strength, titleView) {
 
 	var immune=false;
 	var full_immune = false;
+
 	cardData.actions.forEach(function(item) {
 		if ( item.hasOwnProperty('immumity_type') ) {
 
@@ -573,12 +574,14 @@ function showCardActiveRow( card, type, conn, ident ) {
 										parent = '.oponent';
 									}
 
-								} else if ( action == '18' ) {
+								}
+								else if ( action == '18' ) {
 
 									params['debuff'] = true;
 									params['debuffRow'] = data['actions'][i].fear_ActionRow;
 
-								} else {
+								}
+								else {
 									parent = '.user';
 								}
 							}
@@ -725,7 +728,8 @@ function illuminateSelf() {
 	$('.user .convert-stuff .field-for-cards').addClass('active');
 }//Свое поле
 
-function illuminateCustom(params) { //Поле действия карты по-умолчанию
+function illuminateCustom(params) {
+	//Поле действия карты по-умолчанию
 	var options = {};
 
 	$.extend( options, params );
@@ -780,8 +784,9 @@ function recalculateBattleField() {
 		user:0
 	};
 	//подсчет силы на столе
-	$('.convert-battle-front .convert-stuff .field-for-cards').each(function(){
-		if($(this).parents('.convert-cards').hasClass('user')){
+	$('.convert-battle-front .convert-stuff .field-for-cards').each(function() {
+
+		if( $(this).parents('.convert-cards').hasClass('user') ) {
 			calc($(this), 'user');
 		}else{
 			calc($(this), 'oponent');
@@ -803,23 +808,23 @@ function recalculateBattleField() {
 
 //Отображение колод пользователей
 function recalculateDecks(result) {
-	//колода противника
-	if (typeof result.counts != "undefined") {
-		if (typeof result.counts['opon_deck'] != "undefined") {
+
+	if ( typeof result.counts != "undefined" ) {
+		//колода противника
+		if ( typeof result.counts['opon_deck'] != "undefined" ) {
 			if ( parseInt(result.counts['opon_deck']) > 0 ) {
-				$('#card-give-more-oponent li[data-field=deck]').empty().append(createDeckCardPreview(result.counts['opon_deck'], false));
+				$('#card-give-more-oponent li[data-field=deck]').empty().append( createDeckCardPreview( result.counts['opon_deck'], false ) );
 			} else {
 				$('#card-give-more-oponent li[data-field=deck]').empty().append('<div class="nothinh-for-swap"></div>');
 			}
 		}
-
 		//колода игрока
 		if ( typeof result.counts['user_deck'] != "undefined" ) {
 			if ( parseInt(result.counts['user_deck']) > 0 ) {
 				if ( typeof result.user_deck != "undefined" ) {
-					$('#allies-deck .jspPane').empty().append(createDeckCardPreview(result.counts['user_deck'], true, result.user_deck));
+					$('#allies-deck .jspPane').empty().append( createDeckCardPreview( result.counts['user_deck'], true, result.user_deck ) );
 				}
-				$('#card-give-more-user li[data-field=deck]').empty().append(createDeckCardPreview(result.counts['user_deck'], true));
+				$('#card-give-more-user li[data-field=deck]').empty().append( createDeckCardPreview( result.counts['user_deck'], true ) );
 			} else {
 				$('#card-give-more-user li[data-field=deck]').empty().append('<div class="nothinh-for-swap"></div>');
 			}
@@ -828,15 +833,15 @@ function recalculateDecks(result) {
 		if ( typeof result.counts['user_discard'] != "undefined" ) {
 			if ( parseInt(result.counts['user_discard']) > 0 ) {
 				if ( typeof result.user_discard != "undefined" ) {
-					if( $('#allies-discard .jspPane').length > 0 ) {
-						$('#allies-discard .jspPane').empty().append(createDeckCardPreview(result.counts['user_discard'], true, result.user_discard));
+					if ( $('#allies-discard .jspPane').length > 0 ) {
+						$('#allies-discard .jspPane').empty().append( createDeckCardPreview( result.counts['user_discard'], true, result.user_discard ) );
 					} else {
-						$('#allies-discard .deck-cards-list').empty().append(createDeckCardPreview(result.counts['user_discard'], true, result.user_discard));
+						$('#allies-discard .deck-cards-list').empty().append( createDeckCardPreview( result.counts['user_discard'], true, result.user_discard ) );
 						$('#allies-discard .deck-cards-list').jScrollPane();
 						var api = $('#allies-discard .deck-cards-list').data('jsp');
 						var throttleTimeout;
 						$(window).bind('resize', function () {
-							if (!throttleTimeout) {
+							if ( !throttleTimeout ) {
 								throttleTimeout = setTimeout(function () {
 									api.reinitialise();
 									throttleTimeout = null;
@@ -844,14 +849,14 @@ function recalculateDecks(result) {
 							}
 						});
 					}
-					$('#card-give-more-user li[data-field=discard]').empty().append(createDeckCardPreview(result.counts['user_discard'], true));
+					$('#card-give-more-user li[data-field=discard]').empty().append( createDeckCardPreview( result.counts['user_discard'], true ) );
 				}
-			}else{
+			} else {
 				$('#card-give-more-user li[data-field=discard]').empty().append('<div class="nothinh-for-swap"></div>');
 			}
 		}
 		//отбой противника
-		if(typeof result.counts['opon_discard'] != "undefined"){
+		if ( typeof result.counts['opon_discard'] != "undefined" ) {
 			if (parseInt(result.counts['opon_discard']) > 0) {
 				if($('#enemy-discard .jspPane').length > 0){
 					$('#enemy-discard .jspPane').empty().append(createDeckCardPreview(result.counts['opon_discard'], false, result['opon_discard']));
@@ -876,12 +881,13 @@ function recalculateDecks(result) {
 		}
 
 		if(typeof result.counts['opon_hand'] != "undefined"){
-			$('.oponent-stats .greencard-num').text(result.counts['opon_hand']);
+			$('.oponent-stats .greencard-num').text( result.counts['opon_hand'] );
 		}
+
 	}
 
 	if ( typeof result.user_hand != "undefined" ) {
-		$('.user-stats .greencard-num').text(result.user_hand.length);
+		$('.user-stats .greencard-num').text( result.user_hand.length );
 	}
 	hidePreloader();
 }
@@ -911,13 +917,17 @@ function fieldBuilding(step_status, recalcCallback) {
 		if ( typeof step_status['added_cards'] != "undefined" ) {
 			var player = $('.convert-cards[data-user='+$('.user-describer').attr('id')+']').attr('id');
 			if ( typeof step_status.added_cards[player] != "undefined" ) {
+
 				//добавление карт в руку
 				if ( (typeof step_status.added_cards[player]['hand'] != "undefined") && (step_status.added_cards[player]['hand'].length > 0) ) {
 					for ( var i in step_status.added_cards[player]['hand'] ) {
-						$('.user-card-stash #sortableUserCards').append(createFieldCardView(step_status.added_cards[player]['hand'][i], step_status.added_cards[player]['hand'][i]['strength'], true));
+						$('.user-card-stash #sortableUserCards').append( createFieldCardView( step_status.added_cards[player]['hand'][i], step_status.added_cards[player]['hand'][i]['strength'], true ) );
+						$('.user-card-stash #sortableUserCards li').last().addClass('added-by-effect waiting-for-animation');
 					}
+					console.log('adding');
 					sortCards();
 				}
+
 				//Дополнительные карты
 				for ( var row in step_status.added_cards[player] ) {
 					if ( row != 'hand' ) {
@@ -1042,18 +1052,18 @@ function recalculateCardsStrength(step_status) {
 
 }
 
-function sortCards(){
+function sortCards() {
 	var arrayToSort = {
 		special: [],
 		other: []
 	};
 	$('#sortableUserCards li').each(function(){
-		if($(this).attr('data-relative') == 'special'){
-			arrayToSort.special.push($(this));
-		}else{
+		if ( $(this).attr('data-relative') == 'special' ) {
+			arrayToSort.special.push( $(this) );
+		} else {
 			var temp = {
 				card: $(this),
-				strength: parseInt($(this).find('.label-power-card-wrap').text())
+				strength: parseInt( $(this).find('.label-power-card-wrap').text() )
 			}
 			arrayToSort.other.push(temp);
 		}
@@ -1071,6 +1081,10 @@ function sortCards(){
 		$('#sortableUserCards').append(arrayToSort.special[i]);
 	}
 	calculateRightMarginCardHands();
+
+	if ( $('.added-by-effect').length ) {
+		cardMovingFromTo( 'user', 'deck', $('.added-by-effect').length );
+	}
 
 }
 
@@ -1664,15 +1678,17 @@ function startBattle() {
 
 									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
 
-								} else if ( item == '6' ) {
+								}
+								//Анимация лекаря ( ефект лечения)
+								else if ( item == '6' ) {
 
-									//Анимация лекаря ( ефект лечения)
 									secondTrollPopupCustomImgAndTitle('Исцеление!','/img/card_images/magic_istselenie_582b19299d5e2.png');
 
 									recalculateCardsStrength(result.step_status);
 
-								} else if ( item == '9' ) {
-									//Функционал карты одурманивание
+								}
+								//Функционал карты одурманивание
+								else if ( item == '9' ) {
 
 									var intoxicationCard = createCardDescriptionView( result.step_status.played_card['card'],  result.step_status.played_card['strength'], 'without-description' );
 
@@ -1702,9 +1718,10 @@ function startBattle() {
 
 									recalculateCardsStrength(result.step_status);
 
-								} else if ( item == '7' ) {
-									// Карта лекаря
-									console.log('whose next turn: ', resultLogin, 'whose played: ', thisUser);
+								}
+								// Карта лекаря
+								else if ( item == '7' ) {
+
 									var user_discard = result.counts.user_discard;
 									var user_discard_cards = 0;
 
@@ -1714,7 +1731,6 @@ function startBattle() {
 											user_discard_cards++;
 										}
 									});
-									console.log(user_discard_cards);
 
 									if ( resultLogin == thisUser ) {
 										console.log('healer turn');
@@ -1731,8 +1747,15 @@ function startBattle() {
 
 									recalculateCardsStrength(result.step_status);
 									showCardOnDesc();
-									
-								} else {
+
+								}
+								// Шпион задействован
+								else if ( item == '20' ) {
+
+									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+
+								}
+								 else {
 
 									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
 
@@ -2145,6 +2168,101 @@ function startBattle() {
 		});
 
 	}
+
+	function cardMovingFromTo( side, from, count ) {
+
+		var wrapper = null;
+		var part = null;
+		var cardsPosition = $('.convert-battle-front');
+
+		if (side == 'opponent') {
+			wrapper = "#card-give-more-oponent";
+		}
+		else if (side == 'user') {
+			wrapper = '#card-give-more-user';
+		}
+
+		if (from == 'deck') {
+			part = '[data-field=deck]';
+		}
+		else if (from == 'discard') {
+			part = '[data-field=discard]';
+		}
+
+		var cardsStackObject = $(wrapper + ' ' + part);
+		var cardsStackPosition = cardsStackObject.offset();
+		var cardsStackParams = {
+			width: cardsStackObject.width(),
+			height: cardsStackObject.height(),
+			background: cardsStackObject.find('.card-my-init').css('background-image')
+		};
+
+		var styles = {
+			'width': cardsStackParams.width,
+			'height': cardsStackParams.height,
+			'background-image': cardsStackParams.background,
+			'top': cardsStackPosition.top,
+			'left': cardsStackPosition.left
+		}
+
+		var cardWhatGonaBeMoving = $('<div class="moving-card"></div>').css(styles);
+
+		var cardsDistonation = [];
+
+		var cardWidth = 103; // card width by default css
+		var paramToLeft = cardWidth/2;
+
+		if ( $('#sortableUserCards li').length ) {
+			cardWidth = $('#sortableUserCards li .content-card-item-main').width();
+			paramToLeft = parseInt( $('.content-card-item:not(.added-by-effect)').width()/2);
+		}
+
+		$('.added-by-effect').each(function() {
+			console.log($(this).offset().left, paramToLeft);
+			var addedParams = {
+				width: cardWidth,
+				height: $(this).height(),
+				top: $(this).offset().top - 10, // VERTICAL-ALIGN OF DECK - THEIR FAULT
+				left: $(this).offset().left - paramToLeft - 10 // NOT GOOD, BUT DON'T KNOW WHAT DO
+			};
+			cardsDistonation.push(addedParams);
+		});
+
+		for ( var i = 0; i < count; i++ ) {
+			var clonedCardMarkup = cardWhatGonaBeMoving.clone();
+			cardsPosition.append(clonedCardMarkup);
+		}
+
+		var point = 0;
+
+		var timer = setInterval(function() {
+
+			var cardDistonationParam = cardsDistonation[point];
+
+			var style = {
+				width: cardDistonationParam.width,
+				height: cardDistonationParam.height,
+				top: cardDistonationParam.top,
+				left: cardDistonationParam.left
+			};
+
+			$('.moving-card').eq(point).css(style).addClass('move');
+			$('.added-by-effect').eq(point).removeClass('waiting-for-animation');
+			point++;
+
+			if (point == count) {
+				clearInterval(timer);
+
+				setTimeout(function() {
+					$('.moving-card').remove();
+					$('.added-by-effect').removeClass('added-by-effect');
+				}, 1300);
+
+			}
+
+		}, 300);
+
+	};
 
 /* /Dmitry scripts */
 

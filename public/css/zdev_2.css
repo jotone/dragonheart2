@@ -57,6 +57,16 @@
 		100% { transform: scale(1) translate(0, 0px) translateZ(0px); }
 	}
 
+	/* cards in hand */
+
+		.moving-card { position: absolute; left: 0; top: 0; opacity: 0; pointer-events: none; z-index: 3; background-size: cover; transition: opacity 300ms ease, left 1000ms ease, top 1000ms ease, width 800ms ease, height 800ms ease, transform 300ms ease 1000ms; }
+		.moving-card.move { opacity: 1; transform: rotateY(90deg) translateZ(0px); }
+
+		.content-card-item.added-by-effect { transform-origin: 50% 50%; transition: transform 300ms ease 1300ms, opacity 300ms ease 1000ms; }
+		.content-card-item.added-by-effect.waiting-for-animation { transform: rotateY(-90deg) translateZ(0px); opacity: 0; }
+
+	/* /cards in hand */
+
 /* /Dmitry write it */
 
 .mbox{
