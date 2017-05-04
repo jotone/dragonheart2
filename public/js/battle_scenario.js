@@ -27,7 +27,6 @@ function resultPopupShow(message) {
 function closeAllTrollPopup() {
 	$('div.troll-popup').removeClass('show');
 	$('.new-popups-block').removeClass('show');
-
 }
 function clickCloseCross() { //закрыть попап
 	$('.close-this').click(function (e) {
@@ -892,11 +891,11 @@ function recalculateDecks(result) {
 	hidePreloader();
 }
 
-function fieldBuilding(step_status, recalcCallback) {
+function fieldBuilding(step_status, addingAnim, recalcCallback) {
 	//Рука игрока
 	if( typeof step_status != "undefined" ) {
 		//убрать карту из руки
-		if( (typeof step_status.played_card != "undefined") && (step_status.played_card['move_to']['user'].length > 0) ){
+		if( (typeof step_status.played_card != "undefined") && (step_status.played_card['move_to']['user'].length > 0) ) {
 			$('#sortableUserCards .active').remove();
 			$('#sortableUserCards li').removeClass('active');
 			var card = step_status.played_card;
@@ -922,7 +921,11 @@ function fieldBuilding(step_status, recalcCallback) {
 				if ( (typeof step_status.added_cards[player]['hand'] != "undefined") && (step_status.added_cards[player]['hand'].length > 0) ) {
 					for ( var i in step_status.added_cards[player]['hand'] ) {
 						$('.user-card-stash #sortableUserCards').append( createFieldCardView( step_status.added_cards[player]['hand'][i], step_status.added_cards[player]['hand'][i]['strength'], true ) );
-						$('.user-card-stash #sortableUserCards li').last().addClass('added-by-effect waiting-for-animation');
+
+						if ( addingAnim ) {
+							$('.user-card-stash #sortableUserCards li').last().addClass('added-by-effect waiting-for-animation');
+						}
+
 					}
 					console.log('adding');
 					sortCards();
@@ -972,12 +975,25 @@ function fieldBuilding(step_status, recalcCallback) {
 						var card = step_status.dropped_cards[player][row][i];
 						switch(row) {
 							case 'hand':
-								// удаление карты с руки противника Dmitry-checkpoint
+								// удаление карты с руки противника
+								console.log('remove from hand');
 								var targetPlayer = $('.convert-cards[data-user=' + $('.user-describer').attr('id') + ']').attr('id');
-								if(targetPlayer == player) {
-									$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').fadeOut(500,function(){
+								if ( targetPlayer == player ) {
+									animationCardReturnToOutage(
+										$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]'), 1500,
+										function() {
+											var timeout = (100 * ($('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').length - 1)) + 1500;
+											console.log(timeout);
+											setTimeout(function() {
+												$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').remove();
+											}, timeout);
+										}
+									);
+									/*
+									$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').fadeOut(500, function() {
 										$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').remove();
-									})
+									});
+									*/
 								}
 							break;
 							case 'mid':
@@ -1090,24 +1106,39 @@ function sortCards() {
 }
 
 //Анимация возвтращения своих карт в в колоду - работает вместе с animateHandCard()
-function animationCardReturnToOutage() {
+function animationCardReturnToOutage( cards, time, callback ) {
+
 	var outageHolder = $('#card-give-more-user [data-field="discard"]');
 	var outageHolderLeft = outageHolder.offset().left;
-
 	var transitionDelay = 0;
-	var userCards = $('#sortableUserCards');
-	userCards.find('li').addClass('tramsitioned');
-	userCards.find('li').each(function(index,item){
+
+	cards.addClass('tramsitioned');
+
+	var zIndex = 100;
+	console.log(this.arguments);
+	cards.each(function(index,item) {
+
 		var positionLeft = +($(item).offset().left).toFixed(0);
-		var shiftLeft = positionLeft - outageHolderLeft + 15;// 15 - корректировка на сдвиг скейлом
+		var shiftLeft = positionLeft - outageHolderLeft + 15; // 15 - корректировка на сдвиг скейлом
+
 		$(item).css({
 			'left':'-'+shiftLeft+'px',
 			'transform': 'scale3d(0.7,0.7,0.7)',
-			'transition-delay':transitionDelay+'s'
-		})
+			'transition-duration': time+'ms',
+			'transition-delay':transitionDelay+'s',
+			'z-index': zIndex
+		});
+
+		zIndex++;
 		transitionDelay+=0.1;
+
+		if ( index == (cards.length - 1) && typeof callback === 'function' ) {
+			callback();
+		}
+
 	});
-	var cardTransitionDuration = parseFloat(userCards.find('li').css('transition-duration'));
+
+	var cardTransitionDuration = parseFloat( cards.css('transition-duration') );
 	var timeout = (cardTransitionDuration + transitionDelay)*1000;
 
 	return timeout;
@@ -1331,7 +1362,7 @@ function showCardOnDesc(action) {
 }
 
 // При открытом попапе если мы нажимаем на любую область документа - попап закрываеться
-$(document).on('click',function(){
+$(document).on('click',function() {
 	if ( $('.troll-popup').hasClass('troll-popup-custom') ){
 		var id = $('.troll-popup.troll-popup-custom').attr('id');
 		closeSecondTrollPopup($('#'+id));
@@ -1436,11 +1467,13 @@ function startTimer(login) {
 	}, 1000);
 }
 
-function phpTime(){
+function phpTime() {
+
 	return Math.floor(Date.now()/ 1000);
+
 }
 
-function count(arr){
+function count(arr) {
 	var i = 0;
 	for(var key in arr) i++;
 	return i;
@@ -1590,7 +1623,7 @@ function startBattle() {
 						if(typeof result.turnDescript != "undefined") turnDescript = result.turnDescript;
 						changeTurnIndicator(result.login); //смена индикатора хода
 
-						fieldBuilding(result.step_status, recalculateCardsStrength);
+						fieldBuilding(result.step_status, false, recalculateCardsStrength);
 
 						recalculateDecks(result); //Пересчет колод пользователя и противника
 						calculateRightMarginCardHands();
@@ -1608,7 +1641,7 @@ function startBattle() {
 							allowToAction = false;
 						}
 
-						var animateHandTime = animationCardReturnToOutage();
+						var animateHandTime = animationCardReturnToOutage( $('#sortableUserCards li'), 400 );
 
 						setTimeout(function(){
 
@@ -1631,7 +1664,7 @@ function startBattle() {
 					var resultLogin  = result.login;
 					var thisUser = $('.user-describer .name').text();
 
-					fieldBuilding(result.step_status);
+					fieldBuilding(result.step_status, true);
 
 					if ( result.step_status.played_card['card'] ) {
 
@@ -1770,11 +1803,30 @@ function startBattle() {
 
 							});
 
-						} else {
+						}
+						else {
 
 							recalculateCardsStrength(result.step_status);
 
 							detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+
+						}
+
+					} else if ( typeof result.step_status.played_magic === 'object' ) {
+
+						var magicActions = result.step_status.actions;
+
+						if  ( magicActions.length ) {
+
+							magicActions.forEach(function(item) {
+								console.log(item, item == '17');
+								if ( item == '17' ) {
+
+									secondTrollPopupCustomImgAndTitle('Гипноз!', '/img/card_images/magic_slepota_582b15823fa99.png');
+
+								}
+
+							});
 
 						}
 
@@ -1812,7 +1864,7 @@ function startBattle() {
 			//Пользователь использовал карты с возможностью призыва карт
 			case 'dropCard':
 				if(typeof result.field_data != "undefined"){
-					fieldBuilding(result.step_status, recalculateCardsStrength);
+					fieldBuilding(result.step_status, true, recalculateCardsStrength);
 				}
 				recalculateDecks(result);//Пересчет колод пользователя и противника
 				if(result.login == $('.user-describer').attr('id')) {
@@ -1838,18 +1890,18 @@ function startBattle() {
 
 				circleRoundIndicator();
 
-				if (typeof result.magicUsage != "undefined") {
-					magicReview(result)
+				if ( typeof result.magicUsage != "undefined" ) {
+					magicReview(result);
 				}
 
 				//Очищение полей
 				$('.mezhdyblock #sortable-cards-field-more, .convert-battle-front .image-inside-line, .convert-battle-front .cards-row-wrap').children().fadeOut(500,function(){
 					$('.mezhdyblock #sortable-cards-field-more, .convert-battle-front .image-inside-line, .convert-battle-front .cards-row-wrap').empty();
 				});
-
+				console.log('round end');
 				setTimeout(function() {
 
-					if(typeof result.field_data != "undefined"){
+					if ( typeof result.field_data != "undefined" ) {
 						buildBattleField(result.field_data);
 						showCardOnDesc();
 					}
