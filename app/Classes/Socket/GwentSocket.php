@@ -1356,7 +1356,7 @@ class GwentSocket extends BaseSocket
 				if(isset($input_action->healer_type_group))		$action_data['type_group'] = $input_action->healer_type_group;
 
 				$heal_result = self::makeHealOrSummon($users_data, $action_data, 'discard', $user_turn_id, $user_turn);
-//card activates after user action
+				//card activates after user action
 				$users_data		= $heal_result['users_data'];
 				$user_turn_id	= $heal_result['user_turn_id'];
 				$user_turn		= $heal_result['user_turn'];

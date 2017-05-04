@@ -341,7 +341,7 @@ foreach($battle_field as $field => $data){
 			<div class="convert-cards oponent" @if(isset($players['enemy']['user_nickname']))data-user="{{ $players['enemy']['user_nickname'] }}"@endif id="{{$opponent_field_identificator}}">
 				<div class="convert-card-box">
 					<!-- Сверхдальние Юниты противника -->
-					<div class="convert-stuff @if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][2]) ) terrify-debuff debuff @endif">
+					<div class="convert-stuff @if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][2] === true) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="superRange">
 								<div class="image-inside-line">
@@ -367,7 +367,7 @@ foreach($battle_field as $field => $data){
 					<!-- END OF Сверхдальние Юниты противника -->
 
 					<!-- Дальние Юниты противника -->
-					<div class="convert-stuff @if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][1]) ) terrify-debuff debuff @endif">
+					<div class="convert-stuff @if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][1] === true) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="range">
 								<div class="image-inside-line">
@@ -394,7 +394,7 @@ foreach($battle_field as $field => $data){
 					<!-- END OF Дальние Юниты противника -->
 
 					<!-- Ближние Юниты противника -->
-					<div class="convert-stuff @if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][0]) ) terrify-debuff debuff @endif">
+					<div class="convert-stuff @if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][0] === true) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="meele">
 								<div class="image-inside-line">
@@ -424,13 +424,13 @@ foreach($battle_field as $field => $data){
 			<div class="mezdyline"></div>
 
 			<!-- Поле пользователя -->
-			<div class="convert-cards user" data-user="{{ (isset($players['allied']['user_nickname'])?$players['allied']['user_nickname']:'') }}" id="{{convert-stuff}}">
+			<div class="convert-cards user" data-user="{{ (isset($players['allied']['user_nickname'])?$players['allied']['user_nickname']:'') }}" id="{{$user_field_identificator}}">
 				<div class="convert-card-box">
 					<!-- Ближние Юниты пользователя -->
-					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][0]) ) terrify-debuff debuff @endif">
+
+					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][0] === true) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="meele">
-
 								<div class="image-inside-line">
 									@if(!empty($battle_field[$user_field_identificator][0]['special']))
 										{!! cardView($battle_field[$user_field_identificator][0]['special']) !!}
@@ -453,7 +453,7 @@ foreach($battle_field as $field => $data){
 					<!-- END OF Ближние Юниты пользователя -->
 
 					<!-- Дальние Юниты пользователя -->
-					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][1]) ) terrify-debuff debuff @endif">
+					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][1] === true) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="range">
 								<div class="image-inside-line">
@@ -478,7 +478,7 @@ foreach($battle_field as $field => $data){
 					<!-- END OF Дальние Юниты пользователя -->
 
 					<!-- Сверхдальние юниты пользователя -->
-					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][2]) ) terrify-debuff debuff @endif">
+					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][2] === true) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="superRange">
 								<div class="image-inside-line">
