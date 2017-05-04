@@ -963,7 +963,7 @@ function fieldBuilding(step_status, recalcCallback) {
 			for(var player in step_status.dropped_cards){
 				for(var row in step_status.dropped_cards[player]){
 					if(row == 'mid'){
-						$('.mezhdyblock #sortable-cards-field-more').children().fadeOut(500,function(){
+						$('.mezhdyblock #sortable-cards-field-more').children().fadeOut(500, function() {
 							$('.mezhdyblock #sortable-cards-field-more').empty();
 						})
 					}
@@ -972,8 +972,9 @@ function fieldBuilding(step_status, recalcCallback) {
 						var card = step_status.dropped_cards[player][row][i];
 						switch(row) {
 							case 'hand':
+								// удаление карты с руки противника Dmitry-checkpoint
 								var targetPlayer = $('.convert-cards[data-user=' + $('.user-describer').attr('id') + ']').attr('id');
-								if(targetPlayer == player){
+								if(targetPlayer == player) {
 									$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').fadeOut(500,function(){
 										$('.user-card-stash #sortableUserCards li[data-cardid="'+card['id']+'"]').remove();
 									})
@@ -1749,6 +1750,10 @@ function startBattle() {
 									showCardOnDesc();
 
 								}
+								// удаление карты противника с руки в отбой
+								else if ( item == '17' ) {
+									console.log('removed card from opponent hand to diskard');
+								}
 								// Шпион задействован
 								else if ( item == '20' ) {
 
@@ -1798,7 +1803,7 @@ function startBattle() {
 					calculateRightMarginCardHands();
 
 					//Обработка Маг. Эффектов (МЭ)
-					if(typeof result.magicUsage != "undefined"){ //always defined, don't know for what it need
+					if ( typeof result.magicUsage != "undefined" ) {
 						magicReview(result);
 					}
 				}
