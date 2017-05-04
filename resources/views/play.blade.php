@@ -52,15 +52,13 @@ function cardView($card){
 				<div class="info-img">
 					<img class="ignore" src="/images/info-icon.png" alt="">
 					<span class="card-action-description">Инфо о карте</span>
-				</div>
-	';
+				</div>';
 
 	if($card_data['is_leader'] == 1){
 		$card_view .= '
 				<div class="leader-flag">
 					<span class="card-action-description">Карта Лидера</span>
-				</div>
-		';
+				</div>';
 	}
 	$card_view .= '
 				<div class="label-power-card">
@@ -73,30 +71,29 @@ function cardView($card){
 				<div class="hovered-items">
 					<div class="card-game-status">
 						<div class="card-game-status-role">';
-			if($card_data['type'] == 'special'){
-				foreach($card_data['row_txt'] as $i => $dist){
-					if(!is_array($dist)) $dist = get_object_vars($dist);
-					$card_view .= '
-						<img src="'.URL::asset($dist['image']).'" alt="">
-						<span class="card-action-description">'.$dist['title'].'</span>
-						';
-				}
-			}
+	if($card_data['type'] == 'special'){
+		foreach($card_data['row_txt'] as $i => $dist){
+			if(!is_array($dist)) $dist = get_object_vars($dist);
+			$card_view .= '
+				<img src="'.URL::asset($dist['image']).'" alt="">
+				<span class="card-action-description">'.$dist['title'].'</span>';
+		}
+	}
 
 	$card_view .= '
-						</div>
-						<div class="card-game-status-wrap">
+				</div>
+				<div class="card-game-status-wrap">
 	';
-							if(!empty($card_data['action_txt'])){
-								foreach($card_data['action_txt'] as $i => $act){
-									if(!is_array($act)) $act = get_object_vars($act);
-									$card_view .= '<span class="card-action">
-										 <img src="'.URL::asset($act['img']).'" alt="">
-										<span class="card-action-description">'.$act['title'].'</span>
-									</span>
-									';
-								}
-							}
+	if(!empty($card_data['action_txt'])){
+		foreach($card_data['action_txt'] as $i => $act){
+			if(!is_array($act)) $act = get_object_vars($act);
+			$card_view .= '
+				<span class="card-action">
+					 <img src="'.URL::asset($act['img']).'" alt="">
+					<span class="card-action-description">'.$act['title'].'</span>
+				</span>';
+		}
+	}
 	$card_view .= '
 						</div>
 					</div>
@@ -112,17 +109,12 @@ function cardView($card){
 			</div>
 		</div>
 	</li>';
-
 	return $card_view;
 }
 
-
 $user = Auth::user();
-
 $players = ['enemy' => [], 'allied' => []];
-
 $battle_field = unserialize($battle_data->battle_field);
-
 $magic_usage = unserialize($battle_data->magic_usage);
 
 if($user['id'] == $battle_data->creator_id){
@@ -158,38 +150,77 @@ foreach($battle_members as $key => $value){
 		}
 
 		$players['allied'] = [
-			'user_deck'     => unserialize($value -> user_deck),
-			'user_discard'  => unserialize($value -> user_discard),
+			'user_deck'		=> unserialize($value -> user_deck),
+			'user_discard'	=> unserialize($value -> user_discard),
 			'user_deck_race'=> $fraction_name[0] -> title,
 			'user_deck_slug'=> $fraction_name[0] -> slug,
 			'card_img'		=> $fraction_name[0] -> card_img,
-			'user_energy'   => $value -> user_energy,
-			'user_hand'     => $user_hand,
+			'user_energy'	=> $value -> user_energy,
+			'user_hand'		=> $user_hand,
 			'user_hand_count'=>count($user_hand),
-			'user_img'      => $player_data[0] -> img_url,
-			'user_magic'    => $user_magic,
-			'user_nickname' => $player_data[0] -> login,
-			'user_ready'    => $value -> user_ready,
-			'wins_count'    => count($round_status[$user_field_identificator]),
+			'user_img'		=> $player_data[0] -> img_url,
+			'user_magic'	=> $user_magic,
+			'user_nickname'	=> $player_data[0] -> login,
+			'user_ready'	=> $value -> user_ready,
+			'wins_count'	=> count($round_status[$user_field_identificator]),
+			'fear_rows'		=> [false,false,false],
 		];
+		$players[$user_field_identificator] = &$players['allied'];
 	}else{
 		$players['enemy'] = [
-			'user_deck'     => unserialize($value -> user_deck),
-			'user_discard'  => unserialize($value -> user_discard),
+			'user_deck'		=> unserialize($value -> user_deck),
+			'user_discard'	=> unserialize($value -> user_discard),
 			'user_deck_race'=> $fraction_name[0] -> title,
 			'user_deck_slug'=> $fraction_name[0] -> slug,
 			'card_img'		=> $fraction_name[0] -> card_img,
-			'user_energy'   => $value -> user_energy,
+			'user_energy'	=> $value -> user_energy,
 			'user_hand_count'=> count($user_hand),
-			'user_img'      => $player_data[0] -> img_url,
-			'user_magic'    => $user_magic,
-			'user_nickname' => $player_data[0] -> login,
-			'wins_count'    => count($round_status[$opponent_field_identificator])
+			'user_img'		=> $player_data[0] -> img_url,
+			'user_magic'	=> $user_magic,
+			'user_nickname'	=> $player_data[0] -> login,
+			'wins_count'	=> count($round_status[$opponent_field_identificator]),
+			'fear_rows'		=> [false,false,false],
 		];
+		$players[$opponent_field_identificator] = &$players['enemy'];
+	}
+}
+//fear counts
+foreach($battle_field as $field => $data){
+	if($field == 'mid'){
+		foreach($data as $card_iter => $card){
+			foreach($card['card']['actions'] as $action){
+				if($action->action == 18){
+					foreach($action->fear_ActionRow as $fear_row){
+						$players['enemy']['fear_rows'][$fear_row] = true;
+						$players['allied']['fear_rows'][$fear_row] = true;
+					}
+				}
+			}
+		}
+	}else{
+		foreach($data as $row => $row_data){
+			foreach($row_data['warrior'] as $card){
+				foreach($card['card']['actions'] as $action){
+					if($action->action == 18){
+						foreach($action->fear_ActionRow as $fear_row){
+							if($action->fear_actionTeamate == 0){
+								if($field == $opponent_field_identificator){
+									$players[$user_field_identificator]['fear_rows'][$fear_row] = true;
+								}else{
+									$players[$opponent_field_identificator]['fear_rows'][$fear_row] = true;
+								}
+							}else{
+								$players['enemy']['fear_rows'][$fear_row] = true;
+								$players['allied']['fear_rows'][$fear_row] = true;
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
 ?>
-
 
 <div class="troll-popup" id="allies-discard">
 	<div class="close-this"></div>
@@ -199,9 +230,9 @@ foreach($battle_members as $key => $value){
 			<ul class="deck-cards-list">
 			@if( (isset($players['allied']['user_discard'])) and (count($players['allied']['user_discard']) != 0) )
 				@if(!empty($players['allied']['user_discard']))
-						@foreach($players['allied']['user_discard'] as $i => $card)
-							{!! cardView($card) !!}
-						@endforeach
+					@foreach($players['allied']['user_discard'] as $i => $card)
+						{!! cardView($card) !!}
+					@endforeach
 				@endif
 			@endif
 			</ul>
@@ -245,9 +276,7 @@ foreach($battle_members as $key => $value){
 </div>
 </div> <!--//закрывающий тег обертки попапов который открыт в другом файле не удалять!)-->
 
-
 <div class="wrap-play disable-select">
-
 	<div class="field-battle">
 		<!-- Поле битвы -->
 		<div class="convert-battle-front">
@@ -294,7 +323,6 @@ foreach($battle_members as $key => $value){
 							@endif
 						</div>
 						<div class="rounds-counts-title">{{$players['allied']['user_nickname']}}</div>
-
 					</div>
 					<div class="vs">vs</div>
 					<div class="rounds-counts oponent">
@@ -306,7 +334,6 @@ foreach($battle_members as $key => $value){
 							@endif
 						</div>
 						<div class="rounds-counts-title">@if(isset($players['enemy']['user_nickname'])){{$players['enemy']['user_nickname']}}@endif</div>
-
 					</div>
 				</div>
 			</div>
@@ -314,21 +341,17 @@ foreach($battle_members as $key => $value){
 			<div class="convert-cards oponent" @if(isset($players['enemy']['user_nickname']))data-user="{{ $players['enemy']['user_nickname'] }}"@endif id="{{$opponent_field_identificator}}">
 				<div class="convert-card-box">
 					<!-- Сверхдальние Юниты противника -->
-					<div class="convert-stuff">
+					<div class="convert-stuff @if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][2]) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="superRange">
-
 								<div class="image-inside-line">
 									@if(!empty($battle_field[$opponent_field_identificator][2]['special']))
 										{!! cardView($battle_field[$opponent_field_identificator][2]['special']) !!}
 									@endif
 								</div>
-
 								<!-- Поле размещения сверхдальних карт -->
 								<div class="inputer-field-super-renge fields-for-cards-wrap">
-
 									<div class="bg-img-super-renge fields-for-cards-img"><!-- Картинка пустого сверхдальнего ряда --></div>
-
 									<ul class="cards-row-wrap">
 									@foreach($battle_field[$opponent_field_identificator][2]['warrior'] as $i => $card)
 										{!! cardView($card) !!}
@@ -344,10 +367,9 @@ foreach($battle_members as $key => $value){
 					<!-- END OF Сверхдальние Юниты противника -->
 
 					<!-- Дальние Юниты противника -->
-					<div class="convert-stuff">
+					<div class="convert-stuff @if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][1]) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="range">
-
 								<div class="image-inside-line">
 									@if(!empty($battle_field[$opponent_field_identificator][1]['special']))
 										{!! cardView($battle_field[$opponent_field_identificator][1]['special']) !!}
@@ -355,7 +377,6 @@ foreach($battle_members as $key => $value){
 								</div>
 								<!-- Поле размещения дальних карт -->
 								<div class="inputer-field-range fields-for-cards-wrap">
-
 									<div class="bg-img-range fields-for-cards-img"><!-- Картинка пустого дальнего ряда --></div>
 									<!-- Список дальних карт-->
 									<ul class="cards-row-wrap">
@@ -373,17 +394,15 @@ foreach($battle_members as $key => $value){
 					<!-- END OF Дальние Юниты противника -->
 
 					<!-- Ближние Юниты противника -->
-					<div class="convert-stuff">
+					<div class="convert-stuff @if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][0]) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="meele">
-
 								<div class="image-inside-line">
 									@if(!empty($battle_field[$opponent_field_identificator][0]['special']))
 										{!! cardView($battle_field[$opponent_field_identificator][0]['special']) !!}
 									@endif
 								</div>
 								<div class="inputer-field-meele fields-for-cards-wrap">
-
 									<div class="bg-img-meele fields-for-cards-img"><!-- Картинка пустого ближнего ряда --></div>
 									<!-- Список ближних карт-->
 									<ul class="cards-row-wrap">
@@ -405,10 +424,10 @@ foreach($battle_members as $key => $value){
 			<div class="mezdyline"></div>
 
 			<!-- Поле пользователя -->
-			<div class="convert-cards user" data-user="{{ (isset($players['allied']['user_nickname'])?$players['allied']['user_nickname']:'') }}" id="{{$user_field_identificator}}">
+			<div class="convert-cards user" data-user="{{ (isset($players['allied']['user_nickname'])?$players['allied']['user_nickname']:'') }}" id="{{convert-stuff}}">
 				<div class="convert-card-box">
 					<!-- Ближние Юниты пользователя -->
-					<div class="convert-stuff">
+					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][0]) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="meele">
 
@@ -417,11 +436,8 @@ foreach($battle_members as $key => $value){
 										{!! cardView($battle_field[$user_field_identificator][0]['special']) !!}
 									@endif
 								</div><!-- Место для спецкарты -->
-
 								<div class="inputer-field-meele fields-for-cards-wrap">
-
 									<div class="bg-img-meele fields-for-cards-img"></div>
-
 									<!-- Список ближних карт-->
 									<ul class="cards-row-wrap">
 									@foreach($battle_field[$user_field_identificator][0]['warrior'] as $i => $card)
@@ -437,20 +453,16 @@ foreach($battle_members as $key => $value){
 					<!-- END OF Ближние Юниты пользователя -->
 
 					<!-- Дальние Юниты пользователя -->
-					<div class="convert-stuff">
+					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][1]) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="range">
-
 								<div class="image-inside-line">
 									@if(!empty($battle_field[$user_field_identificator][1]['special']))
 										{!! cardView($battle_field[$user_field_identificator][1]['special']) !!}
 									@endif
 								</div><!-- Место для спецкарты -->
-
 								<div class="inputer-field-range fields-for-cards-wrap">
-
 									<div class="bg-img-range fields-for-cards-img"><!-- Картинка пустого ближнего ряда --></div>
-
 									<!-- Список дальних карт-->
 									<ul class="cards-row-wrap">
 									@foreach($battle_field[$user_field_identificator][1]['warrior'] as $i => $card)
@@ -458,7 +470,6 @@ foreach($battle_members as $key => $value){
 									@endforeach
 									</ul>
 									<!-- END OF Список дальних карт-->
-
 								</div>
 							</div>
 						</div>
@@ -467,20 +478,16 @@ foreach($battle_members as $key => $value){
 					<!-- END OF Дальние Юниты пользователя -->
 
 					<!-- Сверхдальние юниты пользователя -->
-					<div class="convert-stuff">
+					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][2]) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="superRange">
-
 								<div class="image-inside-line">
 									@if(!empty($battle_field[$user_field_identificator][2]['special']))
 										{!! cardView($battle_field[$user_field_identificator][2]['special']) !!}
 									@endif
 								</div><!-- Место для спецкарты -->
-
 								<div class="inputer-field-super-renge fields-for-cards-wrap">
-
 									<div class="bg-img-super-renge fields-for-cards-img"><!-- Картинка пустого ближнего ряда --></div>
-
 									<!-- Список сверхдальних карт-->
 									<ul class="cards-row-wrap">
 									@foreach($battle_field[$user_field_identificator][2]['warrior'] as $i => $card)
@@ -488,7 +495,6 @@ foreach($battle_members as $key => $value){
 									@endforeach
 									</ul>
 									<!-- END OF Список сверхдальнихдальних карт-->
-
 								</div>
 							</div>
 						</div>
@@ -552,11 +558,8 @@ foreach($battle_members as $key => $value){
 				</button>
 			</div>
 		</div>
-
 		<!-- END OF Поле битвы -->
-
 	</div>
-
 
 	<!-- Правый сайдбар -->
 	<div class="convert-right-info">
@@ -625,7 +628,6 @@ foreach($battle_members as $key => $value){
 
 					<!-- Количество выиграных раундов (скорее всего) n из 3х -->
 					<div class="circle-status" data-pct="25">
-
 						<svg id="svg" width='140px'  viewPort="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
 							<filter id="MyFilter" filterUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
 								<feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
@@ -642,7 +644,6 @@ foreach($battle_members as $key => $value){
 							</filter>
 							<circle filter="url(#MyFilter)" id="bar-oponent" r="65" cx="71" cy="71" fill="transparent" stroke-dasharray="409" stroke-dashoffset="100px" stroke-linecap="round"></circle>
 						</svg>
-
 					</div>
 
 					<div class="naming-oponent">
@@ -651,7 +652,6 @@ foreach($battle_members as $key => $value){
 						@if(isset($players['enemy']['user_deck_race']))
 							{{$players['enemy']['user_deck_race']}}
 						@endif
-
 						<!-- Колода противника-->
 						</div>
 					</div>
@@ -672,7 +672,6 @@ foreach($battle_members as $key => $value){
 					<!-- Количество Энергии противника -->
 					</div>
 				</div>
-
 			</div>
 		</div>
 
@@ -693,9 +692,7 @@ foreach($battle_members as $key => $value){
 					<div class="power-text  power-text-user"><!-- Сумарная сила воинов во всех рядах противника --></div>
 				</div>
 				<div class="oponent-discribe">
-
 					<div class="image-oponent-ork" @if(!empty($players['allied']['user_img']))style="background-image: url('/img/user_images/{{$players['allied']['user_img']}}');"@endif></div><!-- Аватар игрока -->
-
 					<div class="circle-status">
 						<svg id="svg" width='140px'  viewPort="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
 							<filter id="MyFilter" filterUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
@@ -731,7 +728,6 @@ foreach($battle_members as $key => $value){
 					<div class="stats-shit"></div>
 					<div class="stats-energy">{{ (isset($players['allied']['user_energy'])?$players['allied']['user_energy']:'') }}<!-- Количество Энергии игрока --></div>
 				</div>
-
 			</div>
 			<div class="useless-card">
 				<div class="inside-for-some-block">
@@ -775,22 +771,19 @@ foreach($battle_members as $key => $value){
 			</div>
 		</div>
 		<div class="info-block-with-timer">
-
-				<div class="timer-for-play cfix">
-					<div class="title-timer"><span>ход противника:</span></div>
-					<div class="timer-tic-tac-convert">
-						<div class="tic-tac">
-							<div class="tic-tac-wrap">
-								<span class="tic" data-time="minute">00</span>
-								<span>:</span>
-								<span class="tac" data-time="seconds">00</span>
-							</div>
+			<div class="timer-for-play cfix">
+				<div class="title-timer"><span>ход противника:</span></div>
+				<div class="timer-tic-tac-convert">
+					<div class="tic-tac">
+						<div class="tic-tac-wrap">
+							<span class="tic" data-time="minute">00</span>
+							<span>:</span>
+							<span class="tac" data-time="seconds">00</span>
 						</div>
 					</div>
 				</div>
-
+			</div>
 		</div>
-
 	</div>
 </div>
 @stop
