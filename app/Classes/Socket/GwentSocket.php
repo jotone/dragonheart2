@@ -1757,13 +1757,14 @@ class GwentSocket extends BaseSocket
 						}
 					}
 				}
+
 				foreach($card_to_kill as $player => $row_data){
 					foreach($row_data as $row_iter => $cards_to_kill){
 						foreach($cards_to_kill as $card_to_kill){
 							foreach($battle_field[$player][$row_iter]['warrior'] as $card_iter => $card_data){
 								if( ($card_to_kill['id'] == $card_data['card']['id']) && ($card_to_kill['strength'] == $card_data['strength']) ){
 									$users_data[$player]['discard'][] = $card_data['card'];
-									$step_status['dropped_cards'][$player][$row][] = [
+									$step_status['dropped_cards'][$player][$row_iter][] = [
 										'id' => $card_data['card']['id'],
 										'type' => $card_data['card']['type']
 									];
