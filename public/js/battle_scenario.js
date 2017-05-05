@@ -139,6 +139,7 @@ function userWantsChangeCard() {
 	$(document).on('click', '#selecthandCardsPopup #handCards .change-card', function(){
 		showPreloader();
 		var card = $(this).parent().attr('data-cardid');
+		$(this).addClass('clicked');
 		conn.send(
 			 JSON.stringify({
 				 action: 'changeCardInHand',
@@ -1572,6 +1573,25 @@ function startBattle() {
 
 			case 'changeCardInHand':
 				hidePreloader();
+
+				$('#selecthandCardsPopup #handCards .change-card.clicked').parents('li').addClass('animator-out');
+				setTimeout(function(){
+					$('#selecthandCardsPopup #handCards .animator-out').remove();
+					$('#selecthandCardsPopup h5 span').text(result.can_change_cards);
+					$('#selecthandCardsPopup #handCards').append(createFieldCardView(result.card_to_hand, result.card_to_hand['strength'], true));
+					$('#selecthandCardsPopup #handCards li:last-child').addClass('animator-in');
+					$('#selecthandCardsPopup #handCards li:last-child').addClass('go');
+					setTimeout(function () {
+						$('#selecthandCardsPopup #handCards li:last-child').removeClass('animator-in go');
+					},700);
+				},700);
+
+				if (result.can_change_cards == 0) {
+					$('.content-card-item-main').removeClass('disactive');
+					$('.content-card-item .change-card').remove();
+				}
+
+				/*
 				$('#selecthandCardsPopup #handCards li[data-cardid="'+result.card_to_drop+'"]').addClass('animator-out');
 				setTimeout(function(){
 					$('#selecthandCardsPopup #handCards li[data-cardid="'+result.card_to_drop+'"] .disactive').closest('.content-card-item').remove();
@@ -1583,6 +1603,7 @@ function startBattle() {
 						$('#selecthandCardsPopup #handCards li:last-child').removeClass('animator-in go');
 					},700);
 				},700);
+				*/
 			break;
 
 			//Все пользователи готовы к игре
