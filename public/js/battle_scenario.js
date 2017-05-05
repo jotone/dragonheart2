@@ -15,20 +15,24 @@ function radioPseudo() {
 		}
 	});
 }
+
 function openTrollPopup(popup) {
 	popup.addClass('show');
 	$('.new-popups-block').addClass('show');
 }
+
 //попап результатов
 function resultPopupShow(message) {
 	$('#successEvent').find('.result').text(message);
 	openTrollPopup($('#successEvent'));
 }
+
 function closeAllTrollPopup() {
 	$('div.troll-popup').removeClass('show');
 	$('.new-popups-block').removeClass('show');
 
 }
+
 function clickCloseCross() { //закрыть попап
 	$('.close-this').click(function (e) {
 		e.preventDefault();
@@ -36,9 +40,11 @@ function clickCloseCross() { //закрыть попап
 		if($('div.troll-popup.show').length<=0){closeAllTrollPopup();}
 	});
 }
+
 function showPreloader() {
 	$('.afterloader').css({'opacity':'1', 'z-index':'2222'});
 }
+
 function hidePreloader() {
 	$('.afterloader').css({'opacity':'0', 'z-index':'-1'});
 }
@@ -1291,6 +1297,7 @@ function openSecondTrollPopup(id,customClass) {
 	}
 	$('.new-popups-block').addClass('show-second');
 }
+
 // закрыть попап по id
 function closeSecondTrollPopup(id,customClass) {
 	id.removeClass('show troll-popup-custom');
@@ -1299,6 +1306,7 @@ function closeSecondTrollPopup(id,customClass) {
 	}
 	$('.new-popups-block').removeClass('show-second');
 }
+
 //показать карты анимированно на столе
 function showCardOnDesc(action) {
 
@@ -1339,7 +1347,7 @@ $(document).on('click',function(){
 });
 
 //Показать попап при перегрупировке
-function detailCardPopupOnOverloading(cardDetailOverloadingMarkup,card,strength,otherFunc) {
+function detailCardPopupOnOverloading(cardDetailOverloadingMarkup, card, strength, otherFunc) {
 	console.log('detailCardPopupOnOverloading');
 	var holder = $('#card-start-step');
 	holder.find('.content-card-info').empty().append(cardDetailOverloadingMarkup);
@@ -1436,23 +1444,25 @@ function startTimer(login) {
 	}, 1000);
 }
 
-function phpTime(){
+function phpTime() {
 	return Math.floor(Date.now()/ 1000);
 }
 
-function count(arr){
+function count(arr) {
 	var i = 0;
 	for(var key in arr) i++;
 	return i;
 }
 
 function magicReview(result) {
+
 	$('.convert-right-info .magic-effects-wrap li').removeClass('disactive');
+
 	for(var player in result.magicUsage){
 
 		var magicUsingTimes = (result.deck_slug == 'forest')? 2: 1;
 
-		for(var activatedInRound in result.magicUsage[player]){
+		for (var activatedInRound in result.magicUsage[player]) {
 			if( (activatedInRound == result.round) || (count(result.magicUsage[player]) >= magicUsingTimes) ){
 				$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li').removeClass('active').addClass('disactive');
 			}
@@ -1463,6 +1473,7 @@ function magicReview(result) {
 			$('.convert-right-info .magic-effects-wrap[data-player='+player+'] li[data-cardid="'+result.magicUsage[player][activatedInRound]['id']+'"]').addClass('used');
 		}
 	}
+
 }
 
 var currentRound = 1;
@@ -1833,6 +1844,8 @@ function startBattle() {
 				}
 				$('.rounds-counts.user .rounds-counts-count').text(win_status[0]);
 				$('.rounds-counts.oponent .rounds-counts-count').text(win_status[1]);
+				
+				$('.convert-stuff').removeAttr('class').addClass('convert-stuff');
 
 				recalculateDecks(result);
 
