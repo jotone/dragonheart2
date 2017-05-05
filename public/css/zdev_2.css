@@ -67,6 +67,16 @@
 
 	/* /cards in hand */
 
+	/* magic bloched */
+
+		ul.magic-effects-wrap.magic-bloched li { transform: rotateY(360deg); }
+		ul.magic-effects-wrap.magic-bloched li:nth-child(1) { transition-delay: 300ms; }
+		ul.magic-effects-wrap.magic-bloched li:nth-child(2) { transition-delay: 600ms; }
+		ul.magic-effects-wrap.magic-bloched li:nth-child(3) { transition-delay: 900ms; }
+		ul.magic-effects-wrap.magic-bloched li:before { opacity: 1; }
+
+	/* /magic bloched */
+
 /* /Dmitry write it */
 
 .mbox{

@@ -1489,7 +1489,7 @@ function magicReview(result) {
 
 	$('.convert-right-info .magic-effects-wrap li').removeClass('disactive');
 
-	for(var player in result.magicUsage){
+	for ( var player in result.magicUsage ) {
 
 		var magicUsingTimes = (result.deck_slug == 'forest')? 2: 1;
 
@@ -1827,13 +1827,44 @@ function startBattle() {
 
 						var magicActions = result.step_status.actions;
 
+						var playerArray = Object.keys(result.step_status.played_magic);
+						var playerKey = playerArray[0];
+						var magicObject = result.step_status.played_magic[playerKey];
+
 						if  ( magicActions.length ) {
 
 							magicActions.forEach(function(item) {
-								// Гипноз
-								if ( item == '17' ) {
 
-									secondTrollPopupCustomImgAndTitle('Гипноз!', '/img/card_images/magic_slepota_582b15823fa99.png');
+								var title = magicObject.title;
+								var magicImg = '/img/card_images/'+magicObject.img_url;
+
+								secondTrollPopupCustomImgAndTitle(title, magicImg);
+
+								// блокирование магии противника
+								if ( item == '1' ) {
+
+									if (resultLogin == thisUser) {
+										$('.user-describer .magic-effects-wrap').addClass('magic-bloched');
+									}
+									else {
+										$('.oponent-describer .magic-effects-wrap').addClass('magic-bloched');
+									}
+
+								}
+								// Жажда крови
+								else if ( item == '4' ) {
+
+								}
+								// Злоба, Слабость
+								else if ( item == '15' ) {
+
+								}
+								// Гипноз
+								else if ( item == '17' ) {
+
+								}
+								// Неменуемая гибель
+								else if ( item == '19' ) {
 
 								}
 
