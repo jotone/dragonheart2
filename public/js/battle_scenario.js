@@ -1823,6 +1823,25 @@ function startBattle() {
 						}
 
 					}
+					else if ( typeof result.step_status.played_magic === 'object' ) {
+
+						var magicActions = result.step_status.actions;
+
+						if  ( magicActions.length ) {
+
+							magicActions.forEach(function(item) {
+								// Гипноз
+								if ( item == '17' ) {
+
+									secondTrollPopupCustomImgAndTitle('Гипноз!', '/img/card_images/magic_slepota_582b15823fa99.png');
+
+								}
+
+							});
+
+						}
+
+					}
 
 					//проверяю есть ли действие карты и существует ли переменная card_overloading
 					if( !result.step_status.actions.length && window.hasOwnProperty('card_overloading') ){
