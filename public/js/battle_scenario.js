@@ -1633,7 +1633,8 @@ function startBattle() {
 
 					},1000)
 
-				} else {
+				}
+				else {
 
 					if(typeof result.turnDescript != "undefined") turnDescript = result.turnDescript;
 
@@ -1771,17 +1772,18 @@ function startBattle() {
 									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
 
 								}
-								 else {
+								// Удалить после реализации всех еффектов
+								else {
 
 									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
 
 									recalculateCardsStrength(result.step_status);
 
 								}
-
 							});
 
-						} else {
+						}
+						else {
 
 							recalculateCardsStrength(result.step_status);
 
@@ -1844,7 +1846,7 @@ function startBattle() {
 				}
 				$('.rounds-counts.user .rounds-counts-count').text(win_status[0]);
 				$('.rounds-counts.oponent .rounds-counts-count').text(win_status[1]);
-				
+
 				$('.convert-stuff').removeAttr('class').addClass('convert-stuff');
 
 				recalculateDecks(result);
