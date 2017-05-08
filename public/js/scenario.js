@@ -963,59 +963,34 @@ function eventsToRefreshSilverPrices(input){
 }
 
 function refreshGoldPrices(){
-	console.log('1');
 	var goldValue = parseInt($('#buySomeGold input[name=goldToBuy]').val());
-	if( Number.isInteger(goldValue) ){
-		var usd = goldValue / window.exchange_gold;
-		usd = (Math.ceil(usd * 100) / 100).toFixed(2);
-		if(usd < 1) usd =1;
-		$('#buySomeGold input[name=goldToUsd]').val(usd);
-		$('#buySomeGold .error').removeClass('show');
-		$('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val(usd);
-		if(goldValue != 0){
-			$('#buySomeGold .button-troll').removeClass('unactive');
-		}else{
-			$('#buySomeGold .button-troll').addClass('unactive');
-		}
-		if($('#buySomeGold input[name=goldToBuy]').val() < window.exchange_gold){
-			$('#buySomeGold input[name=goldToBuy]').val(window.exchange_gold);
-		}
-		if($('#buySomeGold input[name=goldToUsd]').val() < 1){
-			$('#buySomeGold input[name=goldToUsd]').val(1);
-		}
-	}else{
-		$('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val('1');
-		$('#buySomeGold .error').addClass('show');
-		$('#buySomeGold .button-troll').addClass('unactive');
+	var usdValue = (goldValue / window.exchange_gold).toFixed(2);
+	if(usdValue < 1) usdValue =1;
+	var rubValue = parseFloat((usdValue * window.exchange_rub).toFixed(2));
+	var koef = 0;
+	switch($('#buySomeGold input[name=paymentType]').val()){
+		case 'PC': koef = rubValue - rubValue * (1/1.005);
+		case 'AC': koef = rubValue - rubValue * 0.98;
 	}
+	rubValue = (rubValue + koef).toFixed(2);
+	$('#buySomeGold input[name=goldToUsd]').val(usdValue);
+	$('#buySomeGold .error').removeClass('show');
+	$('#buySomeGold input[name=sum]').val(rubValue);
 }
 
 function refreshUsdPrices(){
-    console.log('2');
 	var usdValue = parseInt($('#buySomeGold input[name=goldToUsd]').val());
-	if(Number.isInteger(usdValue)){
-		if(usdValue < 1) usdValue = 1;
-		var usd = usdValue * window.exchange_gold;
-		console.log(usd);
-		$('#buySomeGold input[name=goldToBuy]').val(usd);
-		$('#buySomeGold .error').removeClass('show');
-		$('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val(usdValue);
-		if(usdValue != 0){
-			$('#buySomeGold .button-troll').removeClass('unactive');
-		}else{
-			$('#buySomeGold .button-troll').addClass('unactive');
-		}
-		if($('#buySomeGold input[name=goldToBuy]').val() < window.exchange_gold){
-			$('#buySomeGold input[name=goldToBuy]').val(window.exchange_gold);
-		}
-		if(usdValue < 1){
-			$('#buySomeGold input[name=goldToUsd]').val(1);
-		}
-	}else{
-		$('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val('1');
-		$('#buySomeGold .error').addClass('show');
-		$('#buySomeGold .button-troll').addClass('unactive');
+	var goldValue = (usdValue * window.exchange_gold).toFixed(2);
+	var rubValue = parseFloat((usdValue * window.exchange_rub).toFixed(2));
+	var koef = 0;
+	switch($('#buySomeGold input[name=paymentType]').val()){
+		case 'PC': koef = rubValue - rubValue * (1/1.005);
+		case 'AC': koef = rubValue - rubValue * 0.98;
 	}
+	rubValue = (rubValue + koef).toFixed(2);
+	$('#buySomeGold input[name=goldToBuy]').val(goldValue);
+	$('#buySomeGold .error').removeClass('show');
+	$('#buySomeGold input[name=sum]').val(rubValue);
 }
 
 //Функция обновления значений ресурсов пользователя
@@ -1179,28 +1154,31 @@ function animationButtonClick() {
 		});
 	}
 }
+
 function incrementDecrementInputNumber() {
 	$('.input-type-number').each(function () {
 		var input = $(this).find('input');
-		$(this).find('.increment').click(function () {
-			var x = input.val();
-			x++;
+		var step = (typeof input.attr('step') != 'undefined')? parseInt(input.attr('step')): 1;
+		var min = (typeof input.attr('min') != 'undefined')? parseInt(input.attr('min')): 1;
+		$(this).find('.increment').click(function (){
+			var x = parseInt(input.val());
+			x = x + step;
 			input.val(x);
 		});
-		$(this).find('.decrement').click(function () {
+		$(this).find('.decrement').click(function (){
 			var x = parseInt(input.val());
-			if(x > 1 ){
-				x--;
+			if((x - step) >= min){
+				x = x - step;
 				input.val(x);
 			}else{
-				input.val(1);
+				input.val(min);
 			}
 		});
 		input.keydown(function(event) { // Разрешаем: backspace, delete, tab и escape Разрешаем: Ctrl+A Разрешаем: home, end, влево, вправо
-			if ( event.keyCode == 46 || event.keyCode == 8 || event.keyCode == 9 || event.keyCode == 27 || (event.keyCode == 65 && event.ctrlKey === true) || (event.keyCode >= 35 && event.keyCode <= 39)) {
+			if( event.keyCode == 46 || event.keyCode == 8 || event.keyCode == 9 || event.keyCode == 27 || (event.keyCode == 65 && event.ctrlKey === true) || (event.keyCode >= 35 && event.keyCode <= 39)){
 				return;
-			} else {
-				if ((event.keyCode < 48 || event.keyCode > 57) && (event.keyCode < 96 || event.keyCode > 105 )) { event.preventDefault(); }
+			}else{
+				if((event.keyCode < 48 || event.keyCode > 57) && (event.keyCode < 96 || event.keyCode > 105 )){event.preventDefault();}
 			}
 		});
 	});
@@ -1706,4 +1684,8 @@ $(document).ready(function(){
 			$('.item-rise').removeClass('active');
 		}
 	});
+	$('#buySomeGold .pay-buttons-wrap label').click(function(){
+		$(this).closest('.pay-buttons-wrap').find('label').removeClass('active');
+		$(this).addClass('active');
+	})
 });

@@ -201,19 +201,19 @@ $gold_exch = \DB::table('tbl_etc_data')->select('meta_key','meta_value')->where(
 			<div class="pop-row">
 				<p>Пополнение баланса золота, золото зачисляеться автоматически после оплаты.</p>
 			</div>
-			<div class="pop-row">
+			<div class="pop-row" style="display:flex; align-items: center; justify-content: space-around">
 				<div class="input-type-number">
-					<input name="goldToBuy" type="text" required="required" autocomplete="off" value="{{ $gold_exch[0]->meta_value }}" min="{{ $gold_exch[0]->meta_value }}">
-					<div class="inc clckAnim"></div>
-					<div class="dec clckAnim"></div>
+					<input name="goldToBuy" type="number" required="required" autocomplete="off" value="{{ $gold_exch[0]->meta_value }}" min="{{ $gold_exch[0]->meta_value }}" step="{{ $gold_exch[0]->meta_value }}">
+					<div class="increment clckAnim"></div>
+					<div class="decrement clckAnim"></div>
 				</div>
 				<img class="resource" src="{{ URL::asset('images/header_logo_gold.png') }}" alt="">
 
 				<span> = </span>
 				<div class="input-type-number">
-					<input name="goldToUsd" type="text" required="required" autocomplete="off" value="1" min="1">
-					<div class="inc clckAnim"></div>
-					<div class="dec clckAnim"></div>
+					<input name="goldToUsd" type="number" required="required" autocomplete="off" value="1" min="1" step="1">
+					<div class="increment clckAnim"></div>
+					<div class="decrement clckAnim"></div>
 				</div>
 				<span>&nbsp;$</span>
 			</div>
@@ -223,34 +223,28 @@ $gold_exch = \DB::table('tbl_etc_data')->select('meta_key','meta_value')->where(
 				</div>
 			</div>
 			@if($user)
-                <iframe frameborder="0" allowtransparency="true" scrolling="no" src="https://money.yandex.ru/quickpay/shop-widget?account=410013926813756&quickpay=shop&payment-type-choice=on&mobile-payment-type-choice=on&writer=seller&targets=bla&targets-hint=&default-sum=100&button-text=01&successURL=" width="450" height="201"></iframe>
-                <form id="pay" name="pay" method="POST" action="https://money.yandex.ru/quickpay/confirm.xml" target="_blank" enctype="application/x-www-form-urlencoded">
-                    <input type="hidden" name="receiver" value="410013926813756">
-                    <input type="hidden" name="quickpay-form" value="shop">
-                    <input type="hidden" name="targets" value="Пополнение счета Dragonheart">
-                    <input type="hidden" name="sum" value="">
-
-                    <label><input type="radio" name="paymentType" value="PC"> оплата из кошелька в Яндекс.Деньгах</label><br>
-                    <label><input type="radio" name="paymentType" value="AC"> с банковской карты;</label><br>
-                    <label><input type="radio" name="paymentType" value="MC"> с баланса мобильного</label>
-                </form>
-			<!--
-                <form id="pay" name="pay" method="POST" action="https://merchant.webmoney.ru/lmi/payment.asp" accept-charset="UTF-8" target="_blank">
-				<input type="hidden" name="LMI_PAYMENT_AMOUNT" value="">
-				<input type="hidden" name="LMI_PAYMENT_DESC_BASE64" value="<?php echo base64_encode('Тестовая покупка золота'); ?>">
-				<input type="hidden" name="LMI_PAYMENT_NO" value="1">
-				<input type="hidden" name="LMI_PAYEE_PURSE" value="Z145179295679">
-				<input type="hidden" name="LMI_PAYMER_EMAIL" value="{{ $user['email'] }}">
-				<input type="hidden" name="LMI_SIM_MODE" value="0">
-				<input type="hidden" name="LMI_RESULT_URL" value="{{URL::asset('/wm/payment')}}">
-				<input type="hidden" name="LMI_SUCCESS_URL" value="{{URL::asset('/wm/success')}}">
-				<input type="hidden" name="LMI_FAIL_URL" value="{{URL::asset('/wm/fail')}}">
-				<input type="hidden" name="id" value="{{ $user['id'] }}">
+			<form id="pay" name="pay" method="POST" action="https://money.yandex.ru/quickpay/confirm.xml" target="_blank" enctype="application/x-www-form-urlencoded">
+				<input type="hidden" name="receiver" value="410013926813756">
+				<input type="hidden" name="quickpay-form" value="shop">
+				<input type="hidden" name="targets" value="Пополнение счета Dragonheart">
+				<input type="hidden" name="sum" value="">
+				<input type="hidden" name="successURL" value="{{ route('ya-mo-succ') }}">
+				<input type="hidden" name="formcomment" value="{{ $user['id'] }}">
+				<div class="pay-buttons-wrap">
+					<label style="background-image: url(https://money.yandex.ru/b/_/qTOToHuhW55WKrD_UAZ0KUl6PiI.svg)" title="Оплата из кошелька в Яндекс.Деньгах">
+						<input type="radio" name="paymentType" value="PC" checked="checked">
+					</label>
+					<label style="background-image: url(https://money.yandex.ru/b/_/FRYVMdQY0d--xOk1KmZTYRe4LAc.svg)" title="С банковской карты;">
+						<input type="radio" name="paymentType" value="AC">
+					</label>
+					<label style="background-image: url(https://money.yandex.ru/b/_/IfxB8g1IzKVJ-ngXPHqBOmLMDvQ.svg)" title="С баланса мобильного">
+						<input type="radio" name="paymentType" value="MC">
+					</label>
+				</div>
 				<div class="pop-row">
 					<a class="button-troll" href="#"><b>Пополнить</b></a>
 				</div>
 			</form>
-			-->
 			@endif
 		</div>
 	</div>
