@@ -204,16 +204,16 @@ $gold_exch = \DB::table('tbl_etc_data')->select('meta_key','meta_value')->where(
 			<div class="pop-row">
 				<div class="input-type-number">
 					<input name="goldToBuy" type="text" required="required" autocomplete="off" value="{{ $gold_exch[0]->meta_value }}" min="{{ $gold_exch[0]->meta_value }}">
-					<div class="increment clckAnim"></div>
-					<div class="decrement clckAnim"></div>
+					<div class="inc clckAnim"></div>
+					<div class="dec clckAnim"></div>
 				</div>
 				<img class="resource" src="{{ URL::asset('images/header_logo_gold.png') }}" alt="">
 
 				<span> = </span>
 				<div class="input-type-number">
 					<input name="goldToUsd" type="text" required="required" autocomplete="off" value="1" min="1">
-					<div class="increment clckAnim"></div>
-					<div class="decrement clckAnim"></div>
+					<div class="inc clckAnim"></div>
+					<div class="dec clckAnim"></div>
 				</div>
 				<span>&nbsp;$</span>
 			</div>
@@ -223,7 +223,19 @@ $gold_exch = \DB::table('tbl_etc_data')->select('meta_key','meta_value')->where(
 				</div>
 			</div>
 			@if($user)
-			<form id="pay" name="pay" method="POST" action="https://merchant.webmoney.ru/lmi/payment.asp" accept-charset="UTF-8" target="_blank">
+                <iframe frameborder="0" allowtransparency="true" scrolling="no" src="https://money.yandex.ru/quickpay/shop-widget?account=410013926813756&quickpay=shop&payment-type-choice=on&mobile-payment-type-choice=on&writer=seller&targets=bla&targets-hint=&default-sum=100&button-text=01&successURL=" width="450" height="201"></iframe>
+                <form id="pay" name="pay" method="POST" action="https://money.yandex.ru/quickpay/confirm.xml" target="_blank" enctype="application/x-www-form-urlencoded">
+                    <input type="hidden" name="receiver" value="410013926813756">
+                    <input type="hidden" name="quickpay-form" value="shop">
+                    <input type="hidden" name="targets" value="Пополнение счета Dragonheart">
+                    <input type="hidden" name="sum" value="">
+
+                    <label><input type="radio" name="paymentType" value="PC"> оплата из кошелька в Яндекс.Деньгах</label><br>
+                    <label><input type="radio" name="paymentType" value="AC"> с банковской карты;</label><br>
+                    <label><input type="radio" name="paymentType" value="MC"> с баланса мобильного</label>
+                </form>
+			<!--
+                <form id="pay" name="pay" method="POST" action="https://merchant.webmoney.ru/lmi/payment.asp" accept-charset="UTF-8" target="_blank">
 				<input type="hidden" name="LMI_PAYMENT_AMOUNT" value="">
 				<input type="hidden" name="LMI_PAYMENT_DESC_BASE64" value="<?php echo base64_encode('Тестовая покупка золота'); ?>">
 				<input type="hidden" name="LMI_PAYMENT_NO" value="1">
@@ -238,6 +250,7 @@ $gold_exch = \DB::table('tbl_etc_data')->select('meta_key','meta_value')->where(
 					<a class="button-troll" href="#"><b>Пополнить</b></a>
 				</div>
 			</form>
+			-->
 			@endif
 		</div>
 	</div>

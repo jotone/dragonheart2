@@ -1,5 +1,6 @@
 /** /main page*/
 var curentRaceURL;
+
 function fancyboxForm(){
 	$('.fancybox-form').fancybox({
 		openEffect  : 'fade',
@@ -11,8 +12,8 @@ function fancyboxForm(){
 		padding:'0'
 	})
 }
-function radioPseudo2() {
 
+function radioPseudo2() {
 	$(document).on('click', '#buyingPremium label', function () {
 		if($(this).find('input').prop('checked')){
 			$('#buyingPremium .pseudo-radio').removeClass('active');
@@ -83,7 +84,6 @@ function clickCloseCross() { //закрыть попап
 		e.preventDefault();
 		$('.item-rise').removeClass('active');
 		$('.license-agreement').removeClass('show');
-
 		closeAllTrollPopup();
 	});
 }
@@ -106,10 +106,10 @@ function logoutUser() {
 				location = href;
 			}
 		});
-
 	});
 }
 /** /settings*/
+
 //Получить данные пользователя
 //Если user_login не указан, возвращает данные текущей сессии
 function getUserData(user_login){
@@ -133,13 +133,15 @@ function getUserData(user_login){
 				window.specailQuantity		= res['specialQuantity'];
 				window.leaderQuantity		= res['leaderQuantity'];
 				window.leagues				= res['leagues'];
-				window.exgange_gold			= res['exchanges']['usd_to_gold'];
+				window.exchange_gold			= res['exchanges']['usd_to_gold'];
+				window.exchange_rub			= res['exchanges']['rub_to_usd'];
 				window.gold_to_silver		= res['exchanges']['gold_to_silver'];
 				window.gold_to_100_energy	= res['exchanges']['gold_to_100_energy'];
 				window.gold_to_200_energy	= res['exchanges']['gold_to_200_energy'];
 				window.silver_to_100_energy = res['exchanges']['silver_to_100_energy'];
 				window.silver_to_200_energy = res['exchanges']['silver_to_200_energy'];
 				window.user_gold			= res['gold'];
+
 			}
 		},
 		error: function (jqXHR, exception) {
@@ -171,13 +173,13 @@ function applySettings(){
 		formData.append( 'gender', $('.form-wrap-item select[name=settings_gender]').val().trim() );
 		formData.append( 'action', 'user_settings' );
 		$.ajax({
-			url:        '/settings',
-			headers:    {'X-CSRF-TOKEN': token},
-			type:       'POST',
+			url:		'/settings',
+			headers:	{'X-CSRF-TOKEN': token},
+			type:		'POST',
 			processData:false,
 			contentType:false,
-			data:       formData,
-			success:    function(data){
+			data:		formData,
+			success:	function(data){
 				if(data == 'success') {
 					location = '/settings';
 				}else{
@@ -194,78 +196,66 @@ function applySettings(){
 function settingUpdateImg(){
 	$('.form-description-settings-inp input[name=image_user]').change(function(e){
 		var reader = new FileReader();
-		reader.onload = function (e) {
+		reader.onload = function (e){
 			if( $('.form-description-settings-img .form-description-settings-img-wrap #avatarImg').length > 0 ){
 				$('.form-description-settings-img .form-description-settings-img-wrap #avatarImg').attr('src', e.target.result);
 			}else{
 				$('.form-description-settings-img .form-description-settings-img-wrap').append('<img id="avatarImg" src="" alt="">');
 				$('.form-description-settings-img .form-description-settings-img-wrap #avatarImg').attr('src', e.target.result);
 			}
-		}
+		};
 		reader.readAsDataURL( $(this).prop('files')[0] );
 	});
 }
 //end of /settings
 /** /deck*/
+
 //Построение Отображения карты в колоде
 //data - данные карты
 //wraper - обертка для карты
 function buildCardDeckView(cardData, wraper){
 	var result = '' +
 		'<div class="content-card-item-main';
-			if(cardData['type'] == 'special'){result += ' special-type';}
-			if(cardData['is_leader'] == 1){result += ' leader-type';}
-   
-			switch (cardData['race']) {
-				case 'highlander':
-					result += ' highlander-race';
-					break;
-				case 'monsters':
-					result += ' monsters-race';
-					break;
-				case 'undead':
-					result += ' undead-race';
-					break;
-				case 'cursed':
-					result += ' cursed-race';
-					break;
-				case 'knight':
-					result += ' knight-race';
-					break;
-				case 'forest':
-					result += ' forest-race';
-					break;
-				default:
-					if(cardData['type'] == 'neutrall'){result += ' neutrall-race';}
-
-			}
+	if(cardData['type'] == 'special'){result += ' special-type';}
+	if(cardData['is_leader'] == 1){result += ' leader-type';}
+	switch (cardData['race']) {
+		case 'highlander':	result += ' highlander-race'; break;
+		case 'monsters':	result += ' monsters-race'; break;
+		case 'undead':		result += ' undead-race'; break;
+		case 'cursed':		result += ' cursed-race'; break;
+		case 'knight':		result += ' knight-race'; break;
+		case 'forest':		result += ' forest-race'; break;
+		default: if(cardData['type'] == 'neutrall'){result += ' neutrall-race';}
+	}
 	result +=' " style="background-image: url(/img/card_images/'+cardData['img_url']+')" data-leader="'+cardData['is_leader']+'" data-type="'+cardData['type']+'" data-weight="'+cardData['weight']+'">' +
 			'<div class="card-load-info card-popup"><div class="info-img"><img class="ignore" src="/images/info-icon.png" alt=""><span class="card-action-description">Инфо о карте</span></div>';
-	if(cardData['is_leader'] == 1){result += '<div class="leader-flag"><span class="card-action-description">Карта Лидера</span></div>';}
+	if(cardData['is_leader'] == 1){
+		result += '<div class="leader-flag"><span class="card-action-description">Карта Лидера</span></div>';
+	}
 	result +='<div class="label-power-card"><span class="label-power-card-wrap">'+cardData['strength']+'</span><span class="card-action-description">';
-	if(cardData['type'] == 'special'){result += 'Специальная карта';}else{result += 'Сила карты';}
-	result +=    '</span></div>' +
-				'<div class="hovered-items">' +
-					'<div class="card-game-status">' +
-						'<div class="card-game-status-role">' ;
-						if(cardData['type'] != 'special'){
-							for (var j = 0; j < cardData['allowed_rows'].length; j++) {
-								result +='<img src="'+cardData['allowed_rows'][j].image+'" alt=""><span class="card-action-description">'+cardData['allowed_rows'][j].title+'</span>';
-							}
-						}
+	if(cardData['type'] == 'special'){
+		result += 'Специальная карта';
+	}else{
+		result += 'Сила карты';
+	}
+	result +='</span></div><div class="hovered-items"><div class="card-game-status"><div class="card-game-status-role">' ;
+	if(cardData['type'] != 'special'){
+		for (var j = 0; j < cardData['allowed_rows'].length; j++) {
+			result +='<img src="'+cardData['allowed_rows'][j].image+'" alt=""><span class="card-action-description">'+cardData['allowed_rows'][j].title+'</span>';
+		}
+	}
 
-			result += '</div><div class="card-game-status-wrap">';
-							if(cardData['actions'].length>0){
-								for (var i = 0; i < cardData['actions'].length; i++) {
-									result = result + '<span class="card-action"><img src="' + cardData['actions'][i].img+'" alt=""><span class="card-action-description">'+cardData['actions'][i].title+'</span></span>';
-
-								}
-							}
+	result += '</div><div class="card-game-status-wrap">';
+	if(cardData['actions'].length>0){
+		for (var i = 0; i < cardData['actions'].length; i++) {
+			result = result + '<span class="card-action"><img src="' + cardData['actions'][i].img+'" alt=""><span class="card-action-description">'+cardData['actions'][i].title+'</span></span>';
+		}
+	}
 	result = result + '</div>' +
 					'</div>' +
 					'<div class="card-name-property"><p>'+cardData['title']+'</p></div>' +
 					'<div class="card-description-hidden"><div class="jsp-cont-descr">';
-		if(curentRaceURL.length>0){result +='<img src="img/fractions_images/'+curentRaceURL+'" alt="">';}
+	if(curentRaceURL.length>0){result +='<img src="img/fractions_images/'+curentRaceURL+'" alt="">';}
 
 	result += cardData['descr'] +'</div></div>'+
 				'</div>' +
@@ -293,28 +283,22 @@ function buildCardDeckView(cardData, wraper){
 			result += '</div>' +
 				'<div class="market-card-item-buy"><a href="#" class="button-buy" id="simpleBuy">КУПИТЬ</a></div>';
 		}
-		result += '' +
-				'</div>';
+		result += '</div>';
 	}
 	return result;
 }
-function infoCardStart() {
 
+function infoCardStart() {
 	var popup = $('#card-info');
 	$(document).on('click', '.info-img',function () {
-
 		closeAllTrollPopup();
 		var content =  $(this).closest('.content-card-item-main').parent().html();
 		popup.find('.content-card-info').html(content);
-
 		openTrollPopup(popup);
 		setTimeout(function () {
 			var jsp = popup.find('.jsp-cont-descr').jScrollPane();
-
 		}, 100);
-
 	});
-
 }
 
 //Формирование колод пользователя и свободных карт
@@ -450,11 +434,11 @@ function sortSomeDeck(side){
 function sendUserDeck(deck, cardId, source){
 	var token = $('input[name=_token]').val();
 	$.ajax({
-		url:        '/change_user_deck',
-		headers:    {'X-CSRF-TOKEN': token},
-		type:       'PUT',
-		data:       {deck:deck, id:cardId, source:source},
-		success:    function(){
+		url:	'/change_user_deck',
+		headers:{'X-CSRF-TOKEN': token},
+		type:	'PUT',
+		data:	{deck:deck, id:cardId, source:source},
+		success:function(){
 			//пересчет колоды
 			recalculateDeck();
 		},
@@ -469,10 +453,10 @@ function clearDeck() {
 	var race = $('.content-card-center .selection-rase select').val();
 	var token = $('input[name=_token]').val();
 	$.ajax({
-		url:    '/clear_deck',
-		headers:    {'X-CSRF-TOKEN': token},
-		type:   'PUT',
-		data:   {deck:race},
+		url:	'/clear_deck',
+		headers:{'X-CSRF-TOKEN': token},
+		type:	'PUT',
+		data:	{deck:race},
 		success:function(data){
 			var res = JSON.parse(data);
 			curentRaceURL = res.race_img;
@@ -481,7 +465,6 @@ function clearDeck() {
 			for(var i in res['available']){
 				$('.content-card-field ul#sortableTwo').append(buildCardDeckView(res['available'][i], 'ul'));
 			}
-
 			//Пересчет данных колоды
 			hidePreloader();
 			recalculateDeck();
@@ -501,10 +484,8 @@ function dblDraggCards() {
 			var counter = curentCard.find('.current-card-type-count');
 			var targetdeck;
 			if(curentCard.closest('ul').attr('id')=='sortableOne'){
-
 				targetdeck = $('#sortableTwo');
 			}else{
-
 				targetdeck = $('#sortableOne');
 			}
 
@@ -523,20 +504,16 @@ function dblDraggCards() {
 				var leadLeft = parseInt($('.content-card-center-block .deck-liders .current-value').text());
 				var leadMax = parseInt($('.content-card-center-block .deck-liders .min-value').text());
 
-
 				if((deck.attr('id') == 'sortableOne') ){ //если тянут карту в  игровую деку
-
 					if(curentCard.children('.content-card-item-main').attr('data-type') == 'special'){
 						if(specLeft >= specMax){
 							resultPopupShow('Достигнут лимит количества специальных карт в колоде');
-
 							return;
 						}
 					}
 					if(curentCard.children('.content-card-item-main').attr('data-leader') == '1'){
 						if(leadLeft >= leadMax){
 							resultPopupShow('Достигнут лимит количества карт лидеров в колоде');
-
 							return;
 						}
 					}
@@ -545,7 +522,6 @@ function dblDraggCards() {
 					if((deck.attr('id') == 'sortableOne') ){ //если тянут карту в  игровую деку
 						if(sameNowLeft >= maxSameCard){
 							resultPopupShow('Достигнут лимит количества данных карт в колоде');
-
 							return;
 						}
 					}
@@ -555,7 +531,6 @@ function dblDraggCards() {
 						var i = (parseInt(curentCard.attr('data-cardleft'))) - 1;
 						curentCard.attr('data-cardleft',i);
 						counter.text(i);
-
 					}
 					sameCard.attr('data-cardleft',(sameNowLeft + 1));
 					sameCard.find('.current-card-type-count').text(sameNowLeft + 1);
@@ -574,28 +549,27 @@ function dblDraggCards() {
 				}
 				var race = $('.content-card-center .selection-rase select').val();
 				sendUserDeck(race, curentCardID, source);
-
 			}
-
 		}else{return;}
 	});
 }
+
 function draggableCards() {
-$(document).on('mousedown', 'li.content-card-item', function (event) {
-	var startTime = (new Date()).getTime();
-	if((!$(event.target).hasClass('ignore')) && event.which==1) {
-		var eventX = event.pageX;
-		var eventY = event.pageY;
-		var that =$(this);
-		$(this).on('mouseup', function (e) {
-			var elapsed = ((new Date()).getTime() - startTime);
-			if(elapsed<300){
-				clearTimeout(timeout);
-			}
-		});
-		var timeout = setTimeout(function () {
-			var offsetX = eventX - that.offset().left;
-			var offsetY = eventY - that.offset().top;
+	$(document).on('mousedown', 'li.content-card-item', function (event) {
+		var startTime = (new Date()).getTime();
+		if((!$(event.target).hasClass('ignore')) && event.which==1) {
+			var eventX = event.pageX;
+			var eventY = event.pageY;
+			var that =$(this);
+			$(this).on('mouseup', function (e) {
+				var elapsed = ((new Date()).getTime() - startTime);
+				if(elapsed<300){
+					clearTimeout(timeout);
+				}
+			});
+			var timeout = setTimeout(function () {
+				var offsetX = eventX - that.offset().left;
+				var offsetY = eventY - that.offset().top;
 				reset();
 
 				var curentCard = that; //текущая карта
@@ -608,7 +582,6 @@ $(document).on('mousedown', 'li.content-card-item', function (event) {
 				var currentDeck, endDeck, succesDeck;
 				var counter = curentCard.find('.current-card-type-count');
 
-
 				var leftContainer = container.find('.content-card-left').outerWidth(); // ширина левой деки
 				var rightContainer = container.find('.content-card-right').outerWidth(); // ширина правой деки
 				var centerContainer = container.find('.content-card-field-center').outerWidth(); // ширина инфополя
@@ -619,7 +592,6 @@ $(document).on('mousedown', 'li.content-card-item', function (event) {
 					currentDeck = 1;
 					succesDeck = $('.content-card-left ul');
 				}
-
 
 				fakeCard = $(fakeCard);
 				fakeCard.addClass('fake-card').html(curentCardHTML);
@@ -632,7 +604,6 @@ $(document).on('mousedown', 'li.content-card-item', function (event) {
 					left: mx,
 					top: my,
 					opacity: 1
-
 				});
 				if(cardLeft <= 1 ){
 					curentCard.css('display','none')
@@ -640,7 +611,6 @@ $(document).on('mousedown', 'li.content-card-item', function (event) {
 					var i = (parseInt(curentCard.attr('data-cardleft'))) - 1;
 					curentCard.attr('data-cardleft',i);
 					counter.text(i);
-
 				}
 
 				container.on("mousemove", function (e) {
@@ -650,9 +620,7 @@ $(document).on('mousedown', 'li.content-card-item', function (event) {
 						left: (x - offsetX),
 						top: (y - offsetY),
 						opacity: 1
-
 					});
-
 				});
 				fakeWrap.on('mouseup', function (e) {
 					if((e.pageX - container.offset().left)<=leftContainer){ // вычисление конечной деки
@@ -667,9 +635,8 @@ $(document).on('mousedown', 'li.content-card-item', function (event) {
 					}else{
 						cancelDrag();
 					}
-
-
 				});
+
 				function successDrag(deck) {
 					if (deck.attr('id') == 'sortableOne') {     var source = 'available';  }
 					if (deck.attr('id') == 'sortableTwo') {var source = 'user_deck'; }
@@ -685,7 +652,6 @@ $(document).on('mousedown', 'li.content-card-item', function (event) {
 					var leadMax = parseInt($('.content-card-center-block .deck-liders .min-value').text());
 
 					if((deck.attr('id') == 'sortableOne') ){ //если тянут карту в  игровую деку
-
 						if(curentCard.children('.content-card-item-main').attr('data-type') == 'special'){
 							if(specLeft >= specMax){
 								resultPopupShow('Достигнут лимит количества специальных карт в колоде');
@@ -739,15 +705,12 @@ $(document).on('mousedown', 'li.content-card-item', function (event) {
 					$('.fake-card').remove();
 					$('.fake-wrap').remove();
 				}
-
-		},300);
-	}else{return;}
-});
-
+			},300);
+		}else{return;}
+	});
 }
 //end of /deck
 /** /market*/
-
 
 //Пользователь хочет купить карту
 function userByingCard(){
@@ -757,11 +720,10 @@ function userByingCard(){
 		var id = $(this).parents('.market-cards-item').attr('data-card');
 		var buyType = $(this).attr('id');
 		var available = $(this).parents('.market-cards-item').find('.available');
-
 		$.ajax({
-			url:    '/get_card_data',
-			type:   'GET',
-			data:   {card_id: id, buy_type:buyType},
+			url:	'/get_card_data',
+			type:	'GET',
+			data:	{card_id: id, buy_type:buyType},
 			success:function(data){
 				var res = JSON.parse(data);
 				if(res['message'] == 'success'){
@@ -774,17 +736,16 @@ function userByingCard(){
 					butts.click(function (e) {
 						e.preventDefault();
 						var result = $(this).data('value');
-					   closeAllTrollPopup();
+						closeAllTrollPopup();
 						if(result == true){
 							var token = $('#buyingCardOrmagic input[name=_token]').val();
 							var quant = parseInt($('#confirm-popup-with-number-input input[name=quant]').val());
-
 							if (quant >= 1){
 								$.ajax({
-									url:    '/card_buying',
-									type:   'PUT',
+									url:	'/card_buying',
+									type:	'PUT',
 									headers:{'X-CSRF-TOKEN': token},
-									data:   {card_id: id, buy_type:buyType, quant:quant},
+									data:	{card_id: id, buy_type:buyType, quant:quant},
 									success:function(data){
 										var res = JSON.parse(data);
 										if(res['message'] == 'success'){
@@ -802,7 +763,6 @@ function userByingCard(){
 								closeAllTrollPopup();
 								resultPopupShow('Карты не куплены.');
 							}
-
 							//end ajax card_is_buyed
 						}
 					});
@@ -812,7 +772,6 @@ function userByingCard(){
 			}
 		});
 		//end ajax get_card_data
-
 	});
 }
 //Украшение селекта рас
@@ -850,7 +809,6 @@ function userByingMagic(){
 	$('.main-table tr td .button-plus').click(function(e){
 		e.preventDefault();
 		var id = $(this).attr('data-type');
-
 		$.ajax({
 			url:	'/get_magic_effect_data',
 			type:	'GET',
@@ -949,8 +907,8 @@ function userChangesMagicEffectStatus(){
 //Возвращает карты/волшебство в зависимости от расы
 function getCardsByRace(fraction){
 	switch($('.market-page').attr('id')){
-		case 'market':  var url = '/get_cards_by_fraction'; break;
-		case 'magic':   var url = '/get_magic_by_fraction'; break;
+		case 'market':	var url = '/get_cards_by_fraction'; break;
+		case 'magic':	var url = '/get_magic_by_fraction'; break;
 	}
 	$.ajax({
 		url:	url,
@@ -959,7 +917,6 @@ function getCardsByRace(fraction){
 		success:function(data){
 			var res = JSON.parse(data);
 			curentRaceURL = res['race_img'];
-
 			switch($('.market-page').attr('id')){
 				case 'market':
 					$('.market-selection .select-rase-img, .content-card-field-wrap .market-cards-items-wrap').empty();
@@ -1004,40 +961,42 @@ function eventsToRefreshSilverPrices(input){
 	input.keyup(function(){refreshSilverPrices();});
 	input.keydown(function(){refreshSilverPrices();});
 }
-function refreshGoldPrices(){
-		var goldValue = parseInt($('#buySomeGold input[name=goldToBuy]').val());
-		if( Number.isInteger(goldValue) ){
-			var usd = goldValue / window.exgange_gold;
-			usd = (Math.ceil(usd * 100) / 100).toFixed(2);
-			if(usd < 1) usd =1;
-			$('#buySomeGold input[name=goldToUsd]').val(usd);
-			$('#buySomeGold .error').removeClass('show');
-			$('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val(usd);
-			if(goldValue != 0){
-				$('#buySomeGold .button-troll').removeClass('unactive');
-			}else{
-				$('#buySomeGold .button-troll').addClass('unactive');
-			}
-			if($('#buySomeGold input[name=goldToBuy]').val() < window.exgange_gold){
-				$('#buySomeGold input[name=goldToBuy]').val(window.exgange_gold);
-			}
-			if($('#buySomeGold input[name=goldToUsd]').val() < 1){
-				$('#buySomeGold input[name=goldToUsd]').val(1);
-			}
-		}else{
-			$('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val('1');
-			$('#buySomeGold .error').addClass('show');
 
+function refreshGoldPrices(){
+	console.log('1');
+	var goldValue = parseInt($('#buySomeGold input[name=goldToBuy]').val());
+	if( Number.isInteger(goldValue) ){
+		var usd = goldValue / window.exchange_gold;
+		usd = (Math.ceil(usd * 100) / 100).toFixed(2);
+		if(usd < 1) usd =1;
+		$('#buySomeGold input[name=goldToUsd]').val(usd);
+		$('#buySomeGold .error').removeClass('show');
+		$('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val(usd);
+		if(goldValue != 0){
+			$('#buySomeGold .button-troll').removeClass('unactive');
+		}else{
 			$('#buySomeGold .button-troll').addClass('unactive');
 		}
+		if($('#buySomeGold input[name=goldToBuy]').val() < window.exchange_gold){
+			$('#buySomeGold input[name=goldToBuy]').val(window.exchange_gold);
+		}
+		if($('#buySomeGold input[name=goldToUsd]').val() < 1){
+			$('#buySomeGold input[name=goldToUsd]').val(1);
+		}
+	}else{
+		$('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val('1');
+		$('#buySomeGold .error').addClass('show');
+		$('#buySomeGold .button-troll').addClass('unactive');
+	}
 }
-function refreshUsdPrices(){
-	var usdValue = parseInt($('#buySomeGold input[name=goldToUsd]').val());
-	if( Number.isInteger(usdValue) ){
-		if(usdValue < 1) usdValue = 1;
-		var usd = usdValue * window.exgange_gold;
-		usd = (Math.ceil(usd * 100) / 100).toFixed(0);
 
+function refreshUsdPrices(){
+    console.log('2');
+	var usdValue = parseInt($('#buySomeGold input[name=goldToUsd]').val());
+	if(Number.isInteger(usdValue)){
+		if(usdValue < 1) usdValue = 1;
+		var usd = usdValue * window.exchange_gold;
+		console.log(usd);
 		$('#buySomeGold input[name=goldToBuy]').val(usd);
 		$('#buySomeGold .error').removeClass('show');
 		$('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val(usdValue);
@@ -1046,8 +1005,8 @@ function refreshUsdPrices(){
 		}else{
 			$('#buySomeGold .button-troll').addClass('unactive');
 		}
-		if($('#buySomeGold input[name=goldToBuy]').val() < window.exgange_gold){
-			$('#buySomeGold input[name=goldToBuy]').val(window.exgange_gold);
+		if($('#buySomeGold input[name=goldToBuy]').val() < window.exchange_gold){
+			$('#buySomeGold input[name=goldToBuy]').val(window.exchange_gold);
 		}
 		if(usdValue < 1){
 			$('#buySomeGold input[name=goldToUsd]').val(1);
@@ -1055,10 +1014,10 @@ function refreshUsdPrices(){
 	}else{
 		$('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val('1');
 		$('#buySomeGold .error').addClass('show');
-
 		$('#buySomeGold .button-troll').addClass('unactive');
 	}
 }
+
 //Функция обновления значений ресурсов пользователя
 function refreshRosources(resources){
 	if(resources['gold'] != 'undefined') $('.rating .resurses .gold').text(resources['gold']);
@@ -1066,21 +1025,21 @@ function refreshRosources(resources){
 	if(resources['energy'] != 'undefined') $('.rating .resurses .lighting').text(resources['energy']);
 }
 function refreshSilverPrices(){
-		var goldValue = parseInt($('.market-buy-popup input[name=goldToSell]').val());
-		if( Number.isInteger(goldValue) ){
-			var silverToBuy = parseInt(goldValue * window.gold_to_silver);
-			$('#buySomeSilver #silverToBuy').text(silverToBuy);
-			$('#buySomeSilver .error').removeClass('show');
-			if(goldValue != 0){
-				$('#buySomeSilver .button-troll').removeClass('unactive');
-			}else{
-				$('#buySomeSilver .button-troll').addClass('unactive');
-			}
+	var goldValue = parseInt($('.market-buy-popup input[name=goldToSell]').val());
+	if( Number.isInteger(goldValue) ){
+		var silverToBuy = parseInt(goldValue * window.gold_to_silver);
+		$('#buySomeSilver #silverToBuy').text(silverToBuy);
+		$('#buySomeSilver .error').removeClass('show');
+		if(goldValue != 0){
+			$('#buySomeSilver .button-troll').removeClass('unactive');
 		}else{
-			$('#buySomeSilver #silverToBuy').text('0');
-			$('#buySomeSilver .error').addClass('show');
 			$('#buySomeSilver .button-troll').addClass('unactive');
 		}
+	}else{
+		$('#buySomeSilver #silverToBuy').text('0');
+		$('#buySomeSilver .error').addClass('show');
+		$('#buySomeSilver .button-troll').addClass('unactive');
+	}
 }
 function closeAllTrollPopup(){
 	$('div.troll-popup').removeClass('show');
@@ -1091,15 +1050,14 @@ function showSilverBuyingPopup(){
 	$(document).on('click', '.buy-more-silver', function(e){
 		e.preventDefault();
 		closeAllTrollPopup();
-
 		openTrollPopup($('#buySomeSilver'));
 		$('#buySomeSilver .button-troll').addClass('unactive');
 		$('#buySomeSilver .button-troll').click(function(e){
 			e.preventDefault();
 			var goldToSell = parseInt($('#buySomeSilver input[name=goldToSell]').val());
 			$.ajax({
-				url:    '/user_buying_silver',
-				type:   'PUT',
+				url:	'/user_buying_silver',
+				type:	'PUT',
 				headers:{'X-CSRF-TOKEN': $('.market-buy-popup input[name=_token]').val()},
 				data:	{gold:goldToSell},
 				success:function(data){
@@ -1130,13 +1088,13 @@ function showEnergyBuyingPopup(){
 		e.preventDefault();
 		closeAllTrollPopup();
 		$.ajax({
-			url:    '/check_user_playing_status',
-			type:   'GET',
+			url:	'/check_user_playing_status',
+			type:	'GET',
 			success:function (data) {
-				if (data != 0) {
+				if(data != 0){
 					var res = JSON.parse(data);
 					showErrorMessage(res['message']);
-				} else {
+				}else{
 					openTrollPopup($('#buySomeEnergy'));
 					$('#buySomeEnergy .button-troll').unbind();
 					$('#buySomeEnergy .button-troll').click(function(){
@@ -1174,13 +1132,13 @@ function showGoldBuyingPopup(){
 		event.preventDefault();
 		closeAllTrollPopup();
 		$.ajax({
-			url:    '/check_user_playing_status',
-			type:   'GET',
+			url:	'/check_user_playing_status',
+			type:	'GET',
 			success:function (data) {
-				if (data != 0) {
+				if(data != 0){
 					var res = JSON.parse(data);
 					showErrorMessage(res['message']);
-				} else {
+				}else{
 					openTrollPopup($('#buySomeGold'));
 					$('#buySomeGold .button-troll').click(function(e){
 					e.preventDefault();
@@ -1231,12 +1189,11 @@ function incrementDecrementInputNumber() {
 		});
 		$(this).find('.decrement').click(function () {
 			var x = parseInt(input.val());
-
 			if(x > 1 ){
 				x--;
 				input.val(x);
-			}else {
-			   input.val(1);
+			}else{
+				input.val(1);
 			}
 		});
 		input.keydown(function(event) { // Разрешаем: backspace, delete, tab и escape Разрешаем: Ctrl+A Разрешаем: home, end, влево, вправо
@@ -1287,13 +1244,13 @@ $(document).on('click','#buyingPremium a.button-troll',function(e){
 	var premiumType = $('#buyingPremium input[name=premiumType]:checked').val();
 	if(premiumType != undefined){
 		$.ajax({
-			url:    '/user_buying_premium',
-			type:   'PUT',
+			url:	'/user_buying_premium',
+			type:	'PUT',
 			headers:{'X-CSRF-TOKEN': $('.market-buy-popup input[name=_token]').val()},
 			beforeSend: function(){
 				showPreloader()
 			},
-			data:   {premiumType:premiumType},
+			data:	{premiumType:premiumType},
 			success:function(data){
 				var res = JSON.parse(data);
 				hidePreloader();
@@ -1314,21 +1271,17 @@ function showUserDecks(){
 		var fraction = $(this).data('name');
 		$('#choose-rase-block #gameForm input[name=currentRace]').val(fraction);
 		$.ajax({
-			url:    '/validate_deck',
-			type:   'GET',
+			url:	'/validate_deck',
+			type:	'GET',
 			beforeSend: function(){
 				showPreloader()
 			},
-			data:   {fraction:fraction},
+			data:	{fraction:fraction},
 			success:function(data){
 				var res = JSON.parse(data);
 				switch(res['message']){
-					case 'success':
-						$('#choose-rase-block #gameForm').submit();
-					break;
-					case 'in_battle':
-						location = '/play/'+res['room'];
-					break;
+					case 'success':		$('#choose-rase-block #gameForm').submit(); break;
+					case 'in_battle':	location = '/play/'+res['room']; break;
 					default:
 						resultPopupShow(res['message']);
 						hidePreloader();
@@ -1347,10 +1300,9 @@ function userConnectToGame(){
 		e.preventDefault();
 		showPreloader();
 		var id = $(this).attr('id');
-
 		$.ajax({
-			url:    '/user_connect_to_battle',
-			type:   'PUT',
+			url:	'/user_connect_to_battle',
+			type:	'PUT',
 			headers:{'X-CSRF-TOKEN': $('.market-buy-popup input[name=_token]').val()},
 			data:	{id:id},
 			success:function(data){
@@ -1416,120 +1368,109 @@ function changeChekInputInFilterDeck(){
 				}
 			}
 		});
-
 	});
 }
 //ranking page------------------------START----------------------------------------
 	//document ready starter for rankin page
-		function rankingPageStarter() {
-			initJSP();
-			rankTabs();
-			wheel();
-		}
+	function rankingPageStarter() {
+		initJSP();
+		rankTabs();
+		wheel();
+	}
 	//ranking tabs
-		function rankTabs(){
-			$('.ranking-page-buttons-league li').click(function () {
-				showPreloader();
-				$('.ranking-page-table-content li.pseudo').html('').removeClass('stand-on-bottom stand-on-top');
-				autoWidth();
-				var that =$(this);
-				var league = $(this).attr('data-league');
-				var ind = $(this).index()+1;
-				if(!$(this).hasClass('loaded')){
-					$.ajax({
-						url:    '/user_rating',
-						type:   'GET',
-						data:	{league:league},
-						success:function(data){
-							var res = JSON.parse(data);
-							if(res['message'] == 'success'){
-								$('.ranking-page-buttons-league li').removeClass('active');
-								$('.ranking-page-buttons-league li').eq(ind-1).addClass('active');
-							   constructRating(res['users'], ind);
-								that.addClass('loaded');
-							}else{
-								showErrorMessage(res['message']);
-								hidePreloader();
-								return;
-							}
-						},
-						error: function (jqXHR, exception) {
-							ajaxErrorMsg(jqXHR, exception);
+	function rankTabs(){
+		$('.ranking-page-buttons-league li').click(function () {
+			showPreloader();
+			$('.ranking-page-table-content li.pseudo').html('').removeClass('stand-on-bottom stand-on-top');
+			autoWidth();
+			var that =$(this);
+			var league = $(this).attr('data-league');
+			var ind = $(this).index()+1;
+			if(!$(this).hasClass('loaded')){
+				$.ajax({
+					url:	'/user_rating',
+					type:	'GET',
+					data:	{league:league},
+					success:function(data){
+						var res = JSON.parse(data);
+						if(res['message'] == 'success'){
+							$('.ranking-page-buttons-league li').removeClass('active');
+							$('.ranking-page-buttons-league li').eq(ind-1).addClass('active');
+							constructRating(res['users'], ind);
+							that.addClass('loaded');
+						}else{
+							showErrorMessage(res['message']);
 							hidePreloader();
 							return;
 						}
-					});
-				}else{
-					$('.ranking-page-buttons-league li').removeClass('active');
-					$('.ranking-page-table-content li').removeClass('active');
-					$('.ranking-page-table-head-container').removeClass('active');
-					$('.ranking-page-table-head-container').eq(ind-1).addClass('active');
-					$(this).addClass('active');
-					$('.ranking-page-table-content li').eq(ind).addClass('active');
-					hidePreloader();
-
-
-				}
-				checkPseudo();
-
-
-
-			});
-
-
-		}
+					},
+					error: function (jqXHR, exception) {
+						ajaxErrorMsg(jqXHR, exception);
+						hidePreloader();
+						return;
+					}
+				});
+			}else{
+				$('.ranking-page-buttons-league li').removeClass('active');
+				$('.ranking-page-table-content li').removeClass('active');
+				$('.ranking-page-table-head-container').removeClass('active');
+				$('.ranking-page-table-head-container').eq(ind-1).addClass('active');
+				$(this).addClass('active');
+				$('.ranking-page-table-content li').eq(ind).addClass('active');
+				hidePreloader();
+			}
+			checkPseudo();
+		});
+	}
 	//END ranking tabs
 	// construct rating
-		function constructRating(data, ind) { //создание таблицы рейтинга
-			var topContent="";
-			var botContent="";
-			for (var i = 0; i < data.length; i++) {
-				if(i<3){
-					topContent += constructRows(data[i]);
-				}else{
-					botContent += constructRows(data[i]);
-				}
-				$('.ranking-page-table-head-container').removeClass('active');
-				$('.ranking-page-table-head-container').eq(ind-1).addClass('active').html(topContent);
-				$('.ranking-page-table-content li').removeClass('active');
-				$('.ranking-page-table-content li').eq(ind).addClass('active').html(botContent);
-
-				setTimeout(function () {
-					initJSP();
-				},300);
+	function constructRating(data, ind) { //создание таблицы рейтинга
+		var topContent="";
+		var botContent="";
+		for (var i = 0; i < data.length; i++) {
+			if(i<3){
+				topContent += constructRows(data[i]);
+			}else{
+				botContent += constructRows(data[i]);
 			}
+			$('.ranking-page-table-head-container').removeClass('active');
+			$('.ranking-page-table-head-container').eq(ind-1).addClass('active').html(topContent);
+			$('.ranking-page-table-content li').removeClass('active');
+			$('.ranking-page-table-content li').eq(ind).addClass('active').html(botContent);
+			setTimeout(function () {
+				initJSP();
+			},300);
 		}
-		function constructRows(data) {//создание рядка рейтинга
-
-				var content ='<div class="ranking-page-table-row cfix';
-				if(data['is_active'] != undefined){
-					content +=' active'
-				}
-				content +='">' +
-					'<div class="cell place">';
-				switch(data['position']) {
-					case 1:
-						content+='<img src="/images/1st-place.png" alt="">';
-						break;
-					case 2:
-						content+='<img src="/images/2nd-place.png" alt="">';
-						break;
-					case 3:
-						content+='<img src="/images/3rd-place.png" alt="">';
-						break;
-					default:
-						content += data['position'];
-						break;
-				}
-				content +='</div>' +
-					'<div class="cell name">'+data['login']+'</div>' +
-					'<div class="cell battles">'+data['games']+'</div>' +
-					'<div class="cell percent">'+data['wins_percent']+'&nbsp;%</div>' +
-					'<div class="cell ranking">'+data['rating']+'</div>' +
-					'</div>';
-			return content;
-
+	}
+	function constructRows(data) {//создание ряда рейтинга
+		var content ='<div class="ranking-page-table-row cfix';
+		if(data['is_active'] != undefined){
+			content +=' active'
 		}
+		content +='">' +
+			'<div class="cell place">';
+		switch(data['position']) {
+			case 1:
+				content+='<img src="/images/1st-place.png" alt="">';
+				break;
+			case 2:
+				content+='<img src="/images/2nd-place.png" alt="">';
+				break;
+			case 3:
+				content+='<img src="/images/3rd-place.png" alt="">';
+				break;
+			default:
+				content += data['position'];
+				break;
+		}
+		content +='</div>' +
+			'<div class="cell name">'+data['login']+'</div>' +
+			'<div class="cell battles">'+data['games']+'</div>' +
+			'<div class="cell percent">'+data['wins_percent']+'&nbsp;%</div>' +
+			'<div class="cell ranking">'+data['rating']+'</div>' +
+			'</div>';
+		return content;
+	}
 	// END construct rating
 var atBot, atTop, api;
 var ajaxloaderFlagTop = false;
@@ -1537,123 +1478,110 @@ var ajaxloaderFlagBot = false;
 var start = false;
 	//jscrollPane init
 
-		function wheel() {
-			var box = document.querySelector('.ranking-page-table-content');
-			if (box.addEventListener) {
-				// IE9, Chrome, Safari, Opera
-				box.addEventListener("mousewheel", MouseWheelHandler, false);
-				// Firefox
-				box.addEventListener("DOMMouseScroll", MouseWheelHandler, false);
-			}
-			// IE 6/7/8
-			else box.attachEvent("onmousewheel", MouseWheelHandler);
-			function MouseWheelHandler(e) { // подгрузка по скролу
-				var league = $('.ranking-page-table-content li.active').attr('data-league');
-				var direction, position;
-				if (!ajaxloaderFlagBot && atBot) {
-					ajaxloaderFlagBot = true;
-					direction = 1;
-					position = parseInt($('.ranking-page-table-content li.active .ranking-page-table-row:last-child .place').text());
-					$.ajax({
-						url: '/user_rating_scroll',
-						type: 'GET',
-						data: {
-							league: league,
-							direction: direction,
-							position: position
-						},
-						success: function (data) {
-							var res = JSON.parse(data);
-
-							if (res['message'] == 'success') {
-								var content = '';
-								for (var i = 0; i < res['users'].length; i++) {
-									content += constructRows(res['users'][i]);
-								}
-								$('.ranking-page-table-content li.active .jspPane').append(content);
-								api.reinitialise();
-								ajaxloaderFlagBot = false;
-							} else {
-								showErrorMessage(res['message']);
-							}
-						},
-						error: function (jqXHR, exception) {
-							ajaxErrorMsg(jqXHR, exception);
-						}
-					});
-				}
-				if(!ajaxloaderFlagTop && atTop){
-					ajaxloaderFlagTop = true;
-					direction = 0;
-					position = parseInt($('.ranking-page-table-content li.active .ranking-page-table-row:first-child .place').text());
-					$.ajax({
-						url:    '/user_rating_scroll',
-						type:   'GET',
-						data:	{
-							league:league,
-							direction:direction,
-							position:position
-						},
-						success:function(data){
-							var res = JSON.parse(data);
-
-							if(res['message'] == 'success'){
-								var j = 0;
-								var content = '';
-								for (var i = 0; i < res['users'].length; i++) {
-									content += constructRows(res['users'][i]);
-									j++;
-								}
-								$('.ranking-page-table-content li.active .jspPane').prepend(content);
-								api.reinitialise();
-								api.scrollToY(j*50);
-								ajaxloaderFlagTop = false;
-							}else{
-								showErrorMessage(res['message']);
-							}
-						},
-						error: function (jqXHR, exception) {
-							ajaxErrorMsg(jqXHR, exception);
-						}
-					});
-
-				}
-			}
+	function wheel() {
+		var box = document.querySelector('.ranking-page-table-content');
+		if (box.addEventListener) {
+			// IE9, Chrome, Safari, Opera
+			box.addEventListener("mousewheel", MouseWheelHandler, false);
+			// Firefox
+			box.addEventListener("DOMMouseScroll", MouseWheelHandler, false);
 		}
-
-
-		function initJSP() {
-			checkPseudo();
-
-			$('.ranking-page-table-content li.active').each(function(){
-
-				 $(this).jScrollPane({
-						 showArrows: $(this).is('.arrow')
-					 }
-				 );
-				api = $(this).data('jsp');
-				var throttleTimeout;
-				$(this).bind('jsp-user-scroll-y',function(event, destTop, isAtTop, isAtBottom) {
-
-					atBot = isAtBottom;
-					atTop = isAtTop;
-					checkPseudo();
-				});
-				autoWidth();
-				$(window).bind('resize', function(){
-					if (!throttleTimeout) {
-						throttleTimeout = setTimeout(function(){
-								api.reinitialise();
-							autoWidth();
-								throttleTimeout = null;
-						}, 50);
+		// IE 6/7/8
+		else box.attachEvent("onmousewheel", MouseWheelHandler);
+		function MouseWheelHandler(e) { // подгрузка по скролу
+			var league = $('.ranking-page-table-content li.active').attr('data-league');
+			var direction, position;
+			if (!ajaxloaderFlagBot && atBot) {
+				ajaxloaderFlagBot = true;
+				direction = 1;
+				position = parseInt($('.ranking-page-table-content li.active .ranking-page-table-row:last-child .place').text());
+				$.ajax({
+					url: '/user_rating_scroll',
+					type: 'GET',
+					data: {
+						league: league,
+						direction: direction,
+						position: position
+					},
+					success: function (data) {
+						var res = JSON.parse(data);
+						if (res['message'] == 'success') {
+							var content = '';
+							for (var i = 0; i < res['users'].length; i++) {
+								content += constructRows(res['users'][i]);
+							}
+							$('.ranking-page-table-content li.active .jspPane').append(content);
+							api.reinitialise();
+							ajaxloaderFlagBot = false;
+						} else {
+							showErrorMessage(res['message']);
+						}
+					},
+					error: function (jqXHR, exception) {
+						ajaxErrorMsg(jqXHR, exception);
 					}
 				});
+			}
+			if(!ajaxloaderFlagTop && atTop){
+				ajaxloaderFlagTop = true;
+				direction = 0;
+				position = parseInt($('.ranking-page-table-content li.active .ranking-page-table-row:first-child .place').text());
+				$.ajax({
+					url:	'/user_rating_scroll',
+					type:	'GET',
+					data:	{league:league, direction:direction, position:position},
+					success:function(data){
+						var res = JSON.parse(data);
 
-			});
-			hidePreloader();
-
+						if(res['message'] == 'success'){
+							var j = 0;
+							var content = '';
+							for (var i = 0; i < res['users'].length; i++) {
+								content += constructRows(res['users'][i]);
+								j++;
+							}
+							$('.ranking-page-table-content li.active .jspPane').prepend(content);
+							api.reinitialise();
+							api.scrollToY(j*50);
+							ajaxloaderFlagTop = false;
+						}else{
+							showErrorMessage(res['message']);
+						}
+					},
+					error: function (jqXHR, exception) {
+						ajaxErrorMsg(jqXHR, exception);
+					}
+				});
+			}
 		}
+	}
+
+	function initJSP() {
+		checkPseudo();
+		$('.ranking-page-table-content li.active').each(function(){
+			$(this).jScrollPane({
+				showArrows: $(this).is('.arrow')
+			});
+			api = $(this).data('jsp');
+			var throttleTimeout;
+			$(this).bind('jsp-user-scroll-y',function(event, destTop, isAtTop, isAtBottom) {
+				atBot = isAtBottom;
+				atTop = isAtTop;
+				checkPseudo();
+			});
+			autoWidth();
+			$(window).bind('resize', function(){
+				if (!throttleTimeout) {
+					throttleTimeout = setTimeout(function(){
+						api.reinitialise();
+						autoWidth();
+						throttleTimeout = null;
+					}, 50);
+				}
+			});
+		});
+		hidePreloader();
+	}
 	//END jscrollPane init
 
 	function checkPseudo() {
@@ -1675,7 +1603,6 @@ var start = false;
 			}
 			if(elemBot >= containerBot){
 				act.addClass('stand-on-bottom');
-
 			}
 		}
 	}
@@ -1684,15 +1611,10 @@ var start = false;
 		$('.ranking-page-table-head').width(wid);
 		$('.ranking-page-table-content li.pseudo').width(wid);
 	}
-
-
-
 //ranking page------------------------END----------------------------------------
-
 
 function birdthDatePicker() {
 	if($( "#datepicker" ).length>0){$( "#datepicker" ).datepicker();}
-
 }
 $(document).ready(function(){
 	if( (!$('.login-page').length>0) && (!$('.registration-main-page').length > 0) ) getUserData();  //Получить данные пользователя (по идее должна не работать только после логинизации)
@@ -1726,17 +1648,17 @@ $(document).ready(function(){
 	changeChekInputInFilterDeck();
 	if($('a.log_out_menu').length > 0){logoutUser();}
 	$('.male-select').styler({
-			selectPlaceholder: 'Выбор фракции'
+		selectPlaceholder: 'Выбор фракции'
 	});
-    $('.rubric-select').styler({
-        selectPlaceholder: 'Тип вопроса'
-    });
+	$('.rubric-select').styler({
+		selectPlaceholder: 'Тип вопроса'
+	});
 	//вычисление количества активных пользователей на сайте
 	setInterval(function(){
-	   $.get('/get_user_quantity', function(data){
-			   $('.people-box .preload-peoples img').hide();
-			   $('.people-box .people').css('opacity', '1').text(data);
-	   });
+		$.get('/get_user_quantity', function(data){
+			$('.people-box .preload-peoples img').hide();
+			$('.people-box .people').css('opacity', '1').text(data);
+		});
 	},15000);
 	// отключение перетаскивания картинок
 	$("img").mousedown(function(){return false;});
@@ -1758,17 +1680,15 @@ $(document).ready(function(){
 	settingUpdateImg();
 	//Выбор расы колоды/волшебства
 
-
 	//PREMIUM
 	$('.button-PRO-convert a.button-push').click(function(e){
 		e.preventDefault();
 		openTrollPopup($('#buyingPremium'));
 	});
 
-
 	//Закрытие popup-окна
 	$(document).on('click', '.close-popup', function(){
-	   $(this).parent().hide();
+		$(this).parent().hide();
 	});
 	//пользователь создает стол
 	$(document).on('click', 'input[name=createTable]', function(){
@@ -1782,7 +1702,7 @@ $(document).ready(function(){
 	}
 	$(document).click(function (event) {//миссклики для закрытия попапов
 		var div = $('.active .hovered-block, .active .rase-ric');
-		if (!div.is(event.target) && div.has(event.target).length === 0){
+		if(!div.is(event.target) && div.has(event.target).length === 0){
 			$('.item-rise').removeClass('active');
 		}
 	});
