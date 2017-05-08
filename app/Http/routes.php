@@ -223,10 +223,8 @@ Route::post('/ya-mon/success', [
 	'as'	=> 'ya-mo-succ',
 	'uses'	=> 'Site\PaymentController@success'
 ]);
-//Страница невыполненного платежа
-Route::post('/ya-mon/fail', [
-	'as'	=> 'ya-mo-fail',
-	'uses'	=> 'Site\PaymentController@fail'
+Route::post('/create_payment', [
+	'uses'	=> 'Site\PaymentController@createPayStory'
 ]);
 
 //Admin

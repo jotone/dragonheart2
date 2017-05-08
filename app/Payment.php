@@ -4,8 +4,8 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model{
-    protected $table = 'tbl_wm_tests';
+    protected $table = 'tbl_payment';
     protected $fillable = [
-        'text', 'type'
+        'user_id', 'money_amount', 'gold_amount', 'pay_status'
     ];
 }

@@ -232,7 +232,7 @@ $a = unserialize('a:12:{s:17:"notification_type";s:12:"p2p-incoming";s:6:"amount
 				<input type="hidden" name="successURL" value="{{ route('ya-mo-succ') }}">
 				<input type="hidden" name="label" value="{{ $user['id'] }}">
 				<div class="pay-buttons-wrap">
-					<label style="background-image: url(https://money.yandex.ru/b/_/qTOToHuhW55WKrD_UAZ0KUl6PiI.svg)" title="Оплата из кошелька в Яндекс.Деньгах">
+					<label style="background-image: url(https://money.yandex.ru/b/_/qTOToHuhW55WKrD_UAZ0KUl6PiI.svg)" title="Оплата из кошелька в Яндекс.Деньгах" class="active">
 						<input type="radio" name="paymentType" value="PC" checked="checked">
 					</label>
 					<label style="background-image: url(https://money.yandex.ru/b/_/FRYVMdQY0d--xOk1KmZTYRe4LAc.svg)" title="С банковской карты;">

@@ -1120,8 +1120,25 @@ function showGoldBuyingPopup(){
 						if($('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val() < 1){
 							return false;
 						}else{
-							//CREATE QUERY TO DB WITH PAYMENTS
-							$('#pay').submit();
+							$.ajax({
+								url:	'/create_payment',
+								type:	'POST',
+								headers:{'X-CSRF-TOKEN': $('#buyingCardOrmagic input[name=_token]').val()},
+								data:	{
+									gold: $('#buySomeGold input[name=goldToUsd]').val(),
+									money:$('#buySomeGold input[name=sum]').val()
+								},
+								success:function(data){
+									try{
+										data = JSON.parse(data);
+										if(data['message'] == 'success'){
+											var label = $('#buySomeGold #pay input[name=label]').val() +'_' + data['transaction'];
+											$('#buySomeGold #pay input[name=label]').val(label);
+											//$('#pay').submit();
+										}
+									}catch(e){}
+								}
+							});
 						}
 					});
 					$('#buySomeGold .clckAnim').click(function () {
