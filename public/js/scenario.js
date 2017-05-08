@@ -1134,7 +1134,7 @@ function showGoldBuyingPopup(){
 										if(data['message'] == 'success'){
 											var label = $('#buySomeGold #pay input[name=label]').val() +'_' + data['transaction'];
 											$('#buySomeGold #pay input[name=label]').val(label);
-											//$('#pay').submit();
+											$('#pay').submit();
 										}
 									}catch(e){}
 								}
