@@ -1,6 +1,7 @@
 <?php
 $user = Auth::user();
 $gold_exch = \DB::table('tbl_etc_data')->select('meta_key','meta_value')->where('meta_key','=','usd_to_gold')->get();
+$a = unserialize('a:12:{s:17:"notification_type";s:12:"p2p-incoming";s:6:"amount";s:6:"570.96";s:8:"datetime";s:20:"2017-05-08T14:27:51Z";s:7:"codepro";s:5:"false";s:6:"sender";s:11:"41001000040";s:9:"sha1_hash";s:40:"fd4da4df835faf6833d039e506f109877069a806";s:17:"test_notification";s:4:"true";s:15:"operation_label";s:0:"";s:12:"operation_id";s:17:"test-notification";s:8:"currency";s:3:"643";s:5:"label";s:0:"";s:4:"_url";s:15:"/ya-mon/success";}');
 ?>
 <!DOCTYPE html>
 <html>
@@ -229,16 +230,13 @@ $gold_exch = \DB::table('tbl_etc_data')->select('meta_key','meta_value')->where(
 				<input type="hidden" name="targets" value="Пополнение счета Dragonheart">
 				<input type="hidden" name="sum" value="">
 				<input type="hidden" name="successURL" value="{{ route('ya-mo-succ') }}">
-				<input type="hidden" name="formcomment" value="{{ $user['id'] }}">
+				<input type="hidden" name="label" value="{{ $user['id'] }}">
 				<div class="pay-buttons-wrap">
 					<label style="background-image: url(https://money.yandex.ru/b/_/qTOToHuhW55WKrD_UAZ0KUl6PiI.svg)" title="Оплата из кошелька в Яндекс.Деньгах">
 						<input type="radio" name="paymentType" value="PC" checked="checked">
 					</label>
 					<label style="background-image: url(https://money.yandex.ru/b/_/FRYVMdQY0d--xOk1KmZTYRe4LAc.svg)" title="С банковской карты;">
 						<input type="radio" name="paymentType" value="AC">
-					</label>
-					<label style="background-image: url(https://money.yandex.ru/b/_/IfxB8g1IzKVJ-ngXPHqBOmLMDvQ.svg)" title="С баланса мобильного">
-						<input type="radio" name="paymentType" value="MC">
 					</label>
 				</div>
 				<div class="pop-row">

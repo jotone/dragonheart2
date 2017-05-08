@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers\Site;
+use App\Payment;
 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
@@ -9,7 +10,7 @@ class PaymentController extends BaseController
 {
     public function success(Request $request){
         $data = $request->all();
-        $result = \DB::table('tbl_wm_tests')->insent([
+        Payment::create([
             'text' => serialize($data),
             'type' => 'success'
         ]);
@@ -18,7 +19,7 @@ class PaymentController extends BaseController
 
     public function fail(Request $request){
         $data = $request->all();
-        $result = \DB::table('tbl_wm_tests')->insent([
+        Payment::create([
             'text' => serialize($data),
             'type' => 'fail'
         ]);

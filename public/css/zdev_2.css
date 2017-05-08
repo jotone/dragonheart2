@@ -3728,7 +3728,7 @@ div.troll-popup.custom-img-and-title{box-shadow: none;}
 .pay-buttons-wrap{display: flex;}
 .pay-buttons-wrap label{
 	display: block;
-	width: 33%;
+	width: 50%;
 	height:32px;
 	cursor:pointer;
 	border: 1px solid rgba(153,122,0, .5);

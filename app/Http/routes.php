@@ -219,12 +219,12 @@ Route::get('/get_socket_settings', [
 //Yadnex Money
 
 //Страница успешно выполненного платежа
-Route::any('/ya-mon/success', [
+Route::post('/ya-mon/success', [
 	'as'	=> 'ya-mo-succ',
 	'uses'	=> 'Site\PaymentController@success'
 ]);
 //Страница невыполненного платежа
-Route::any('/ya-mon/fail', [
+Route::post('/ya-mon/fail', [
 	'as'	=> 'ya-mo-fail',
 	'uses'	=> 'Site\PaymentController@fail'
 ]);

@@ -1120,6 +1120,7 @@ function showGoldBuyingPopup(){
 						if($('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val() < 1){
 							return false;
 						}else{
+							//CREATE QUERY TO DB WITH PAYMENTS
 							$('#pay').submit();
 						}
 					});
