@@ -1132,7 +1132,9 @@ function showGoldBuyingPopup(){
 									try{
 										data = JSON.parse(data);
 										if(data['message'] == 'success'){
-											var label = $('#buySomeGold #pay input[name=label]').val() +'_' + data['transaction'];
+											var label = $('#buySomeGold #pay input[name=label]').val();
+											label = label.split('_');
+											label = label[0]+'_' + data['transaction'];
 											$('#buySomeGold #pay input[name=label]').val(label);
 											$('#pay').submit();
 										}
