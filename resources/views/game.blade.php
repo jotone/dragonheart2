@@ -13,10 +13,10 @@ $errors = $errors->all();
 			<div class="content-top-wrap disable-select">
 				<div class="dragon-image cfix">
 
-						<div class="dragon-middle">
-							<img src="{{ URL::asset('images/dragon_glaz.png') }}" alt=""  class="glaz" />
-							<img src="{{ URL::asset('images/header_dragon_gold.png') }}" alt="" />
-						</div>
+					<div class="dragon-middle">
+						<img src="{{ URL::asset('images/dragon_glaz.png') }}" alt=""  class="glaz" />
+						<img src="{{ URL::asset('images/header_dragon_gold.png') }}" alt="" />
+					</div>
 
 				</div>
 				<div class="tabulate-image"></div>
@@ -52,7 +52,6 @@ $errors = $errors->all();
 					<div class="market-cards-wrap">
 						<div class="tables-list">
 							@foreach($battles['back'] as $value)
-
 								<div class="table-list-item">
 									<div class="title">&nbsp;<!--Стол №@{{ $value['data']['id']}}--></div>
 									<div class="content">
@@ -65,9 +64,7 @@ $errors = $errors->all();
 											</div>
 										</div>
 									</div>
-
 								</div>
-
 							@endforeach
 
 							@foreach($battles['allow'] as $value)
@@ -83,9 +80,7 @@ $errors = $errors->all();
 											</div>
 										</div>
 									</div>
-
 								</div>
-
 							@endforeach
 
 						</div>

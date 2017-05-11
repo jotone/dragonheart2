@@ -1125,7 +1125,7 @@ function showGoldBuyingPopup(){
 								type:	'POST',
 								headers:{'X-CSRF-TOKEN': $('#buyingCardOrmagic input[name=_token]').val()},
 								data:	{
-									gold: $('#buySomeGold input[name=goldToUsd]').val(),
+									gold: $('#buySomeGold input[name=goldToBuy]').val(),
 									money:$('#buySomeGold input[name=sum]').val()
 								},
 								success:function(data){

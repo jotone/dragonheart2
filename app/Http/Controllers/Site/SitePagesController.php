@@ -30,17 +30,17 @@ class SitePagesController extends BaseController
 
 		$fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
 		$output = [];
-        $user = Auth::user();
+		$user = Auth::user();
 
-        $fraction_image = Fraction::select('slug','bg_img')->where('slug', '=', $user['user_current_deck'])->get();
+		$fraction_image = Fraction::select('slug','bg_img')->where('slug', '=', $user['user_current_deck'])->get();
 
-        if(count($fraction_image->all()) > 0){
-            $bg_img = (!empty($fraction_image[0]->bg_img))
-                ? '../img/fractions_images/'.$fraction_image[0]->bg_img
-                : '../images/main_bg_1.jpg';
-        }else{
-            $bg_img = '../images/main_bg_1.jpg';
-        }
+		if(count($fraction_image->all()) > 0){
+			$bg_img = (!empty($fraction_image[0]->bg_img))
+				? '../img/fractions_images/'.$fraction_image[0]->bg_img
+				: '../images/main_bg_1.jpg';
+		}else{
+			$bg_img = '../images/main_bg_1.jpg';
+		}
 
 		foreach($fractions as $key => $fraction) {
 			$output[$key]['title'] = $fraction['title'];
@@ -55,12 +55,12 @@ class SitePagesController extends BaseController
 		$page_content = Page::where('slug','=','about_game')->get();
 
 		return view('home', [
-		    'fractions' => $output,
-            'exchange_options' => $exchange_options,
-            'user' => $user,
-            'bg_img' => $bg_img,
-            'page_content' => $page_content[0]
-        ]);
+			'fractions' => $output,
+			'exchange_options' => $exchange_options,
+			'user' => $user,
+			'bg_img' => $bg_img,
+			'page_content' => $page_content[0]
+		]);
 	}
 
 	//Страница игры
@@ -92,6 +92,10 @@ class SitePagesController extends BaseController
 	public function gamesPage(Request $request){
 		SiteFunctionsController::updateConnention();
 		$user = Auth::user();
+		$create_delay = EtcData::select('meta_value')
+			->where('label_data','=','timing')
+			->where('meta_key','=','creation_table_time')
+			->first();
 
 		//Данные Лиг
 		$leagues = \DB::table('tbl_league')->select('title','min_lvl')->orderBy('min_lvl','asc')->get();
@@ -127,22 +131,24 @@ class SitePagesController extends BaseController
 
 		$tmp_battles = ['allow' => [], 'back' => []];
 		foreach($battles as $battle_iter => $battle_data){
+			$delay = strtotime($battle_data->created_at) + $create_delay->meta_value;
+			if(strtotime(date('Y-m-d H:i:s')) >= $delay){
+				$user_creator = User::find($battle_data['creator_id']);
+				$current_battle_members = BattleMembers::where('battle_id', '=', $battle_data['id'])->count();
 
-			$user_creator = User::find($battle_data['creator_id']);
-			$current_battle_members = BattleMembers::where('battle_id', '=', $battle_data['id'])->count();
-
-			if( ($user['id'] == $battle_data['creator_id']) || ($user['id'] == $battle_data['opponent_id']) ){
-				$tmp_battles['back'][$battle_data['id']] = [
-					'data'      => $battle_data,
-					'creator'   => $user_creator['login'],
-					'users_count'=>$current_battle_members
-				];
-			}else if( ($current_battle_members != 2) && ($current_battle_members != 0) ){
-				$tmp_battles['allow'][$battle_data['id']] = [
-					'data'      => $battle_data,
-					'creator'   => $user_creator['login'],
-					'users_count'=>$current_battle_members
-				];
+				if( ($user['id'] == $battle_data['creator_id']) || ($user['id'] == $battle_data['opponent_id']) ){
+					$tmp_battles['back'][$battle_data['id']] = [
+						'data'      => $battle_data,
+						'creator'   => $user_creator['login'],
+						'users_count'=>$current_battle_members
+					];
+				}else if( ($current_battle_members != 2) && ($current_battle_members != 0) ){
+					$tmp_battles['allow'][$battle_data['id']] = [
+						'data'      => $battle_data,
+						'creator'   => $user_creator['login'],
+						'users_count'=>$current_battle_members
+					];
+				}
 			}
 		}
 
@@ -229,14 +235,14 @@ class SitePagesController extends BaseController
 			->orderBy('meta_value','asc')
 			->get();
 
-        $page_content = Page::where('slug','=','license')->get();
+		$page_content = Page::where('slug','=','license')->get();
 
 		$fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
 		return view('registration', [
-		    'fractions' => $fractions,
-            'exchange_options' => $exchange_options,
-            'page_content' => $page_content[0]
-        ]);
+			'fractions' => $fractions,
+			'exchange_options' => $exchange_options,
+			'page_content' => $page_content[0]
+		]);
 	}
 
 	//Мои карты
@@ -316,22 +322,22 @@ class SitePagesController extends BaseController
 	}
 
 	//Тех поддержка
-    public function supportPage(){
-        $exchange_options = \DB::table('tbl_etc_data')
-            ->select('label_data','meta_key','meta_value', 'meta_key_title')
-            ->where('label_data', '=', 'premium_buing')
-            ->orderBy('meta_value','asc')
-            ->get();
+	public function supportPage(){
+		$exchange_options = \DB::table('tbl_etc_data')
+			->select('label_data','meta_key','meta_value', 'meta_key_title')
+			->where('label_data', '=', 'premium_buing')
+			->orderBy('meta_value','asc')
+			->get();
 
-        $fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
+		$fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
 
-        $rubrics = Rubric::orderBy('position','asc')->get();
-        return view('support', [
-            'fractions' => $fractions,
-            'exchange_options' => $exchange_options,
-            'rubrics' => $rubrics
-        ]);
-    }
+		$rubrics = Rubric::orderBy('position','asc')->get();
+		return view('support', [
+			'fractions' => $fractions,
+			'exchange_options' => $exchange_options,
+			'rubrics' => $rubrics
+		]);
+	}
 
 	//Обучение
 	public function trainingPage(){
@@ -343,12 +349,12 @@ class SitePagesController extends BaseController
 			->get();
 
 		$fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
-        $page_content = Page::where('slug','=','training')->get();
+		$page_content = Page::where('slug','=','training')->get();
 
 		return view('training', [
-		    'fractions' => $fractions,
-            'exchange_options' => $exchange_options,
-            'page_content' => $page_content[0]
-        ]);
+			'fractions' => $fractions,
+			'exchange_options' => $exchange_options,
+			'page_content' => $page_content[0]
+		]);
 	}
 }
