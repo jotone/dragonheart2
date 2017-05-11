@@ -224,14 +224,6 @@ $a = unserialize('a:12:{s:17:"notification_type";s:12:"p2p-incoming";s:6:"amount
 				</div>
 			</div>
 			@if($user)
-			<!--<form id="pay" name="pay" method="POST" action="https://money.yandex.ru/quickpay/confirm.xml" target="_blank" enctype="application/x-www-form-urlencoded">
-				<input type="hidden" name="receiver" value="410013926813756">
-				<input type="hidden" name="quickpay-form" value="shop">
-				<input type="hidden" name="targets" value="Пополнение счета Dragonheart">
-				<input type="hidden" name="sum" value="">
-				<input type="hidden" name="successURL" value="{{ route('ya-mo-succ') }}">
-				<input type="hidden" name="label" value="{{ $user['id'] }}">
-				-->
 				<div class="pay-buttons-wrap">
 					<label style="background-image: url(https://money.yandex.ru/b/_/qTOToHuhW55WKrD_UAZ0KUl6PiI.svg)" title="Оплата из кошелька в Яндекс.Деньгах" class="active">
 						<input type="radio" name="paymentType" value="PC" checked="checked">
@@ -243,7 +235,6 @@ $a = unserialize('a:12:{s:17:"notification_type";s:12:"p2p-incoming";s:6:"amount
 				<div class="pop-row">
 					<a class="button-troll" href="#"><b>Пополнить</b></a>
 				</div>
-			<!--</form>-->
 			@endif
 		</div>
 	</div>

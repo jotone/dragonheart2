@@ -3739,3 +3739,4 @@ div.troll-popup.custom-img-and-title{box-shadow: none;}
 .pay-buttons-wrap label.active{background-color:#fff;}
 .pay-buttons-wrap label:last-child{border: 1px solid rgba(153,122,0, .5);}
 .pay-buttons-wrap label input[type=radio]{display: none;}
+.payment-title{color: #fff; padding-right: 20px; font-size: 14px;}

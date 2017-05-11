@@ -11,14 +11,11 @@ use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends BaseController
 {
-	public function payPage($id){
-		dd($id);
-	}
-
 	public function success(Request $request){
 		$data = $request->all();
 		if(!empty($data['label'])){
-			$operation = explode('_',$data['label']);
+		    $label = base64_decode($data['label']);
+			$operation = explode('_',$label);
 			if(count($operation) == 2){
 				$payment = Payment::find($operation[1]);
 				if(($payment->user_id == $operation[0]) && ($payment->pay_status == 0)){
@@ -61,6 +58,7 @@ class PaymentController extends BaseController
 			'user_id'		=> $user['id'],
 			'money_amount'	=> $rub,
 			'gold_amount'	=> $gold,
+            'type'			=> $data['type'],
 			'pay_status'	=> 0
 		]);
 		if($result !== false){

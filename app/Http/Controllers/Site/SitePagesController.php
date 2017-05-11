@@ -8,6 +8,7 @@ use App\Fraction;
 use App\EtcData;
 use App\League;
 use App\Page;
+use App\Payment;
 use App\Rubric;
 use App\User;
 
@@ -355,6 +356,24 @@ class SitePagesController extends BaseController
 			'fractions' => $fractions,
 			'exchange_options' => $exchange_options,
 			'page_content' => $page_content[0]
+		]);
+	}
+
+	//Оплата
+	public function payPage($id){
+		SiteFunctionsController::updateConnention();
+		$exchange_options = \DB::table('tbl_etc_data')
+			->select('label_data','meta_key','meta_value', 'meta_key_title')
+			->where('label_data', '=', 'premium_buing')
+			->orderBy('meta_value','asc')
+			->get();
+
+		$fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
+		$pay_data = Payment::find($id);
+		return view('payment', [
+			'fractions' => $fractions,
+			'exchange_options' => $exchange_options,
+			'pay_data' => $pay_data
 		]);
 	}
 }

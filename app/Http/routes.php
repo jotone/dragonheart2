@@ -220,7 +220,7 @@ Route::get('/get_socket_settings', [
 
 //Страница отправки пополнения счета
 Route::get('/transactions/{id}', [
-	'uses'	=> 'Site\PaymentController@payPage'
+	'uses'	=> 'Site\SitePagesController@payPage'
 ]);
 //Страница успешно выполненного платежа
 Route::post('/ya-mon/success', [
