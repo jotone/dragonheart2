@@ -3021,7 +3021,7 @@ input.book-style{
 	border-right:1px solid #714026;
 	width:7px;
 	height:7px;
-	left:11px;
+	left:10px;
 }
 .input-type-number .increment:before, .input-type-number .inc:before{ transform:rotate(-45deg); top:4px; }
 .input-type-number .decrement:before, .input-type-number .dec:before{ transform:rotate(135deg); top:-1px; left:10px; }

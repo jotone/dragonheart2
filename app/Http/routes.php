@@ -218,6 +218,10 @@ Route::get('/get_socket_settings', [
 
 //Yadnex Money
 
+//Страница отправки пополнения счета
+Route::get('/transactions/{id}', [
+	'uses'	=> 'Site\PaymentController@payPage'
+]);
 //Страница успешно выполненного платежа
 Route::post('/ya-mon/success', [
 	'as'	=> 'ya-mo-succ',
