@@ -359,6 +359,9 @@ foreach($battle_field as $field => $data){
 									</ul>
 									<!-- END OF Список сверхдальних карт-->
 								</div>
+								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][2] === true) )
+									<div class="debuff-or-buff-anim active"></div>
+								@endif
 								<!-- END OF Поле размещения сверхдальних карт -->
 							</div>
 						</div>
@@ -386,6 +389,9 @@ foreach($battle_field as $field => $data){
 									</ul>
 									<!-- END OF Список дальних карт-->
 								</div>
+								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][1] === true) )
+									<div class="debuff-or-buff-anim active"></div>
+								@endif
 								<!-- END OF Поле размещения дальних карт -->
 							</div>
 						</div>
@@ -412,6 +418,9 @@ foreach($battle_field as $field => $data){
 									</ul>
 									<!-- END OF Список ближних карт-->
 								</div>
+								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][0] === true) )
+									<div class="debuff-or-buff-anim active"></div>
+								@endif
 							</div>
 						</div>
 						<div class="field-for-sum"><!-- Сумарная сила воинов в ближнем ряду --></div>
@@ -446,6 +455,9 @@ foreach($battle_field as $field => $data){
 									</ul>
 									<!-- END OF Список ближних карт-->
 								</div>
+								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][0] === true) )
+									<div class="debuff-or-buff-anim active"></div>
+								@endif
 							</div>
 						</div>
 						<div class="field-for-sum"><!-- Сила воинов в ближнем ряду--></div>
@@ -471,6 +483,9 @@ foreach($battle_field as $field => $data){
 									</ul>
 									<!-- END OF Список дальних карт-->
 								</div>
+								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][1] === true) )
+									<div class="debuff-or-buff-anim active"></div>
+								@endif
 							</div>
 						</div>
 						<div class="field-for-sum"></div>
@@ -496,6 +511,9 @@ foreach($battle_field as $field => $data){
 									</ul>
 									<!-- END OF Список сверхдальнихдальних карт-->
 								</div>
+								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][2] === true) )
+									<div class="debuff-or-buff-anim active"></div>
+								@endif
 							</div>
 						</div>
 						<div class="field-for-sum"></div>
