@@ -7,8 +7,26 @@
     vertical-align: top;
     padding-top: 30px; } }
 
+@media screen and (max-width: 1440px) {
+  /*zooming*/
+  .wrap-play{zoom: 0.85;}
+  .global-wrapper{zoom: 0.78;}
+}
+
 @media screen and (max-width: 1366px) {
+  /*zooming*/
+  .global-wrapper{zoom: 0.64;}
+  .wrap-play{zoom: 0.70;}
+
   .mbox .header-box .rating .convert-resurses .resurses {
     padding-bottom: 5px; }
     .mbox .header-box .rating .convert-resurses .resurses:last-child {
-      display: block; } }
+      display: block; }
+}
+
+@media screen and (max-width: 1280px) {
+  /*zooming*/
+  .global-wrapper{zoom: 0.65;}
+  .wrap-play{zoom: 0.67;}
+
+}

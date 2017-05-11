@@ -1,91 +1,87 @@
+.convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards { transition: all 300ms ease; }
+.convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards.can-debuff { box-shadow: inset 0 0 50px 25px rgba(190, 0, 0, .75); }
 
-/* Dmitry write it */
+.convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards { position: relative; }
 
-	.convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards { transition: all 300ms ease; }
-	.convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards.can-debuff { box-shadow: inset 0 0 50px 25px rgba(190, 0, 0, .75); }
+.convert-battle-front .convert-cards .convert-card-box .convert-stuff .field-for-sum { transition: all 300ms ease; }
+.convert-battle-front .convert-cards .convert-card-box .convert-stuff .field-for-sum.pulsed { animation-name: pulseAnim; animation-duration: 500ms; animation-timing-function: ease; }
 
-	.convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards { position: relative; }
+.debuff-or-buff-anim { position: absolute; }
 
-	.convert-battle-front .convert-cards .convert-card-box .convert-stuff .field-for-sum { transition: all 300ms ease; }
-	.convert-battle-front .convert-cards .convert-card-box .convert-stuff .field-for-sum.pulsed { animation-name: pulseAnim; animation-duration: 500ms; animation-timing-function: ease; }
+.cards-row-wrap .content-card-item.pulsed .label-power-card { animation-name: pulseAnim; animation-duration: 2000ms; animation-timing-function: ease; }
+.cards-row-wrap .content-card-item.pulsed .label-power-card .card-current-value { opacity: 0; transition: all 0ms ease; }
+.cards-row-wrap .content-card-item.pulsed .label-power-card .buff-debuff-value { opacity: 1; transition: all 500ms ease; }
 
-	.debuff-or-buff-anim { position: absolute; }
+.label-power-card-wrap { position: relative; display: block; transition: all 500ms ease; }
+.label-power-card-wrap .card-current-value { transition: all 500ms ease; }
+.label-power-card-wrap .buff-debuff-value { position: absolute; top: 0; left: 50%; transform: translate(-50%, 0) translateZ(0px); opacity: 0; transition: all 0ms ease; }
+.label-power-card-wrap .buff-debuff-value:before { content: attr(data-math-simb); position: absolute; right: 100%; top: 50%; transform: translate(0, -55%) translateZ(0px); }
 
-	.cards-row-wrap .content-card-item.pulsed .label-power-card { animation-name: pulseAnim; animation-duration: 2000ms; animation-timing-function: ease; }
-	.cards-row-wrap .content-card-item.pulsed .label-power-card .card-current-value { opacity: 0; transition: all 0ms ease; }
-	.cards-row-wrap .content-card-item.pulsed .label-power-card .buff-debuff-value { opacity: 1; transition: all 500ms ease; }
+/* debuff anim */
 
-	.label-power-card-wrap { position: relative; display: block; transition: all 500ms ease; }
-	.label-power-card-wrap .card-current-value { transition: all 500ms ease; }
-	.label-power-card-wrap .buff-debuff-value { position: absolute; top: 0; left: 50%; transform: translate(-50%, 0) translateZ(0px); opacity: 0; transition: all 0ms ease; }
-	.label-power-card-wrap .buff-debuff-value:before { content: attr(data-math-simb); position: absolute; right: 100%; top: 50%; transform: translate(0, -55%) translateZ(0px); }
+	.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.debuff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff .field-for-sum { color: #b40000; box-shadow: inset 0 0 10px 2px rgba(180, 0, 0, .4); }
 
-	/* debuff anim */
+	.convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff .cards-row-wrap .content-card-item:not([data-immune='true']):not([data-full-immune='true']) .label-power-card-wrap { color: #b40000; }
 
-		.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.debuff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff .field-for-sum { color: #b40000; box-shadow: inset 0 0 10px 2px rgba(180, 0, 0, .4); }
+	/* terrify anim */
 
-		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff .cards-row-wrap .content-card-item:not([data-immune='true']):not([data-full-immune='true']) .label-power-card-wrap { color: #b40000; }
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.terrify-debuff .debuff-or-buff-anim { left: calc(100% + 70px); top: 0; height: 100%; width: 100%; box-shadow: inset 30px 0 50px 0px rgba(180, 0, 0, 1), -10px 0 50px 20px rgba(180, 0, 0, 1); transition: left 2000ms ease, box-shadow 1000ms ease 2000ms, background-color 1000ms ease 2000ms; }
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.terrify-debuff .debuff-or-buff-anim.active { left: 0; box-shadow: inset 0 0 50px 0px rgba(180, 0, 0, .75), -10px 0 50px 20px rgba(180, 0, 0, .0); background-color: rgba(0, 0, 0, .75); }
 
-		/* terrify anim */
+	/* /terrify anim */
 
-			.convert-battle-front .convert-cards .convert-card-box .convert-stuff.terrify-debuff .debuff-or-buff-anim { left: calc(100% + 70px); top: 0; height: 100%; width: 100%; box-shadow: inset 30px 0 50px 0px rgba(180, 0, 0, 1), -10px 0 50px 20px rgba(180, 0, 0, 1); transition: left 2000ms ease, box-shadow 1000ms ease 2000ms, background-color 1000ms ease 2000ms; }
-			.convert-battle-front .convert-cards .convert-card-box .convert-stuff.terrify-debuff .debuff-or-buff-anim.active { left: 0; box-shadow: inset 0 0 50px 0px rgba(180, 0, 0, .75), -10px 0 50px 20px rgba(180, 0, 0, .0); background-color: rgba(0, 0, 0, .75); }
+/* /debuff anim */
 
-		/* /terrify anim */
+/* buff anim */
 
-	/* /debuff anim */
+	.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.buff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff .field-for-sum { color: #50c800; box-shadow: inset 0 0 10px 2px rgba(80, 200, 0, .4); }
 
-	/* buff anim */
+	.convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff .cards-row-wrap .content-card-item:not([data-full-immune]) .label-power-card-wrap { color: #50c800; }
 
-		.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.buff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff .field-for-sum { color: #50c800; box-shadow: inset 0 0 10px 2px rgba(80, 200, 0, .4); }
+/* /buff anim */
 
-		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff .cards-row-wrap .content-card-item:not([data-full-immune]) .label-power-card-wrap { color: #50c800; }
+/* buff & debuff anim */
 
-	/* /buff anim */
+	.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.buff.debuff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff.debuff .field-for-sum { color: #00aad2; box-shadow: inset 0 0 10px 2px rgba(0, 170, 210, .4); }
 
-	/* buff & debuff anim */
+	.convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff.buff .cards-row-wrap .content-card-item:not([data-immune]):not([data-full-immune]) .label-power-card-wrap { color: #00aad2; }
 
-		.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.buff.debuff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff.debuff .field-for-sum { color: #00aad2; box-shadow: inset 0 0 10px 2px rgba(0, 170, 210, .4); }
+/* /buff & debuff anim */
 
-		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.debuff.buff .cards-row-wrap .content-card-item:not([data-immune]):not([data-full-immune]) .label-power-card-wrap { color: #00aad2; }
+@keyframes pulseAnim {
+	0% { transform: scale(1) translate(0, 0px) translateZ(0px); }
+	50% { transform: scale(2) translate(5px, 8px) translateZ(0px); }
+	100% { transform: scale(1) translate(0, 0px) translateZ(0px); }
+}
 
-	/* /buff & debuff anim */
+/* cards in hand */
 
-	@keyframes pulseAnim {
-		0% { transform: scale(1) translate(0, 0px) translateZ(0px); }
-		50% { transform: scale(2) translate(5px, 8px) translateZ(0px); }
-		100% { transform: scale(1) translate(0, 0px) translateZ(0px); }
-	}
+	.moving-card { position: absolute; left: 0; top: 0; opacity: 0; pointer-events: none; z-index: 3; background-size: cover; transition: opacity 300ms ease, left 1000ms ease, top 1000ms ease, width 800ms ease, height 800ms ease, transform 300ms ease 1000ms; }
+	.moving-card.move { opacity: 1; transform: rotateY(90deg) translateZ(0px); }
 
-	/* cards in hand */
+	.content-card-item.added-by-effect { transform-origin: 50% 50%; transition: transform 300ms ease 1300ms, opacity 300ms ease 1000ms; }
+	.content-card-item.added-by-effect.waiting-for-animation { transform: rotateY(-90deg) translateZ(0px); opacity: 0; }
 
-		.moving-card { position: absolute; left: 0; top: 0; opacity: 0; pointer-events: none; z-index: 3; background-size: cover; transition: opacity 300ms ease, left 1000ms ease, top 1000ms ease, width 800ms ease, height 800ms ease, transform 300ms ease 1000ms; }
-		.moving-card.move { opacity: 1; transform: rotateY(90deg) translateZ(0px); }
+/* /cards in hand */
 
-		.content-card-item.added-by-effect { transform-origin: 50% 50%; transition: transform 300ms ease 1300ms, opacity 300ms ease 1000ms; }
-		.content-card-item.added-by-effect.waiting-for-animation { transform: rotateY(-90deg) translateZ(0px); opacity: 0; }
+/* magic bloched */
 
-	/* /cards in hand */
+	ul.magic-effects-wrap.magic-bloched li { transform: rotateY(360deg); }
+	ul.magic-effects-wrap.magic-bloched li:nth-child(1) { transition-delay: 300ms; }
+	ul.magic-effects-wrap.magic-bloched li:nth-child(2) { transition-delay: 600ms; }
+	ul.magic-effects-wrap.magic-bloched li:nth-child(3) { transition-delay: 900ms; }
+	ul.magic-effects-wrap.magic-bloched li:before { opacity: 1; }
 
-	/* magic bloched */
+/* /magic bloched */
 
-		ul.magic-effects-wrap.magic-bloched li { transform: rotateY(360deg); }
-		ul.magic-effects-wrap.magic-bloched li:nth-child(1) { transition-delay: 300ms; }
-		ul.magic-effects-wrap.magic-bloched li:nth-child(2) { transition-delay: 600ms; }
-		ul.magic-effects-wrap.magic-bloched li:nth-child(3) { transition-delay: 900ms; }
-		ul.magic-effects-wrap.magic-bloched li:before { opacity: 1; }
+/* popup select cards */
 
-	/* /magic bloched */
+	div.troll-popup#selecthandCardsPopup { overflow: hidden; max-height: 100%; }
+	div.troll-popup#selecthandCardsPopup ul.cards-select-wrap { width: calc(100% + 100px); padding-right: 100px; max-height: calc(100vh - 200px); overflow-x: hidden; overflow-y: scroll; }
+	div.troll-popup#selecthandCardsPopup ul.cards-select-wrap:after { display: none; }
 
-	/* popup select cards */
+/* /popup select cards */
 
-		div.troll-popup#selecthandCardsPopup { overflow: hidden; max-height: 100%; }
-		div.troll-popup#selecthandCardsPopup ul.cards-select-wrap { width: calc(100% + 100px); padding-right: 100px; max-height: calc(100vh - 200px); overflow-x: hidden; overflow-y: scroll; }
-		div.troll-popup#selecthandCardsPopup ul.cards-select-wrap:after { display: none; }
-
-	/* /popup select cards */
-
-/* /Dmitry write it */
 
 .mbox{
 	-webkit-box-sizing:border-box;
@@ -251,7 +247,9 @@
 	top:-10px; }
 .mbox .header-box .rating .convert-resurses .resurses div{
 	position:relative;
-	top:-10px; }
+	top:-8px;
+	font-size: 15px;
+	}
 .mbox .header-box .rating .convert-resurses .resurses .gold{
 	color:#fef502;
 	display:inline-block;
@@ -263,7 +261,7 @@
 .mbox .header-box .rating .convert-resurses .resurses .lighting{
 	color:#048ecf;
 	display:inline-block;
-	margin-left:10px; }
+	margin-left:6px;}
 .mbox .header-box .button-PRO-convert{
 	padding-top:-webkit-calc((136px - 53px) / 2);
 	padding-top:-moz-calc((136px - 53px) / 2);
@@ -841,7 +839,7 @@
 #sortableUserCards li.tramsitioned{ transition-property: all; transition-timing-function: ease; z-index:1; }
 #sortableUserCards li.active,
 #sortableUserCards li:hover{
-	z-index:25;
+	z-index:125;
 }
 #sortableUserCards li.active .content-card-item-main,
 #sortableUserCards li:hover .content-card-item-main{
@@ -2440,15 +2438,15 @@ html{ height:100%; }
 	border-bottom:1px solid #714026;
 	color:#714026;
 	font-weight:700;
-	font-size:16px;
+	font-size:18px;
 	padding-bottom:5px;
 	text-transform:uppercase;
 	font-family:'indisplay', sans-serif;
-	margin:0 10px; }
+}
 .login-page .row-with-rase .conteiner .item-rise .hovered-block .contein .description .des-text{
 	padding-top:10px;
 	color:#714026;
-	font-size:14px;
+	font-size:16px;
 	font-weight:400;
 	font-family:'indisplay', sans-serif;
 	line-height:1; }

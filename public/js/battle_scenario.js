@@ -935,7 +935,6 @@ function fieldBuilding(step_status, addingAnim, recalcCallback) {
 						}
 
 					}
-					console.log('adding');
 					sortCards();
 				}
 
@@ -1028,7 +1027,8 @@ function fieldBuilding(step_status, addingAnim, recalcCallback) {
 			}
 			// После всех циклов запускаю функцию анимации удаления карты
 
-			if(typeof step_status.actions != "undefined"){
+			if(typeof step_status.actions != "undefined" && step_status.actions.length){
+
 				step_status.actions.forEach(function(item){
 					switch(item){
 						case '9':
@@ -1046,10 +1046,16 @@ function fieldBuilding(step_status, addingAnim, recalcCallback) {
 						break;
 					}
 				})
-			}else{
+			} else if (typeof window.card_overloadingUsage != "undefined" && window.card_overloadingUsage == true){
+				// проверка на розыгрыш карты "перегрупировка"
+				animationBurningCardEndDeleting('fade');
+				delete window['card_overloadingUsage'];
+			}
+			else{
 
 				animationBurningCardEndDeleting();
 			}
+
 		}
 
 		//Обновление силы карт
@@ -1058,7 +1064,9 @@ function fieldBuilding(step_status, addingAnim, recalcCallback) {
 		}
 
 	}
+
 	recalculateBattleField();
+
 }
 
 function recalculateCardsStrength(step_status) {
@@ -1170,6 +1178,7 @@ function animationBurningCardEndDeleting(action) {
 				card.removeClass('show');
 				setTimeout(function() {
 					card.remove();
+					recalculateBattleField();//перещет силы на столе
 				}, 500);
 			break;
 			default:
@@ -1189,6 +1198,7 @@ function animationBurningCardEndDeleting(action) {
 									}
 
 									card.remove();
+									recalculateBattleField();//перещет силы на столе
 
 								},1000)
 							},500)
@@ -1714,6 +1724,7 @@ function startBattle() {
 										window.card_overloading = createCardDescriptionView( result.step_status.played_card['card'],  result.step_status.played_card['strength'], 'without-description' );
 
 									}
+									window.card_overloadingUsage = true;
 
 								}
 								// Анимация и функционал дебафов
@@ -1751,6 +1762,10 @@ function startBattle() {
 
 									recalculateCardsStrength(result.step_status);
 
+								}
+								else if ( item == '4' ) {
+									//Воодушевление карта
+									recalculateBattleField();
 								}
 								//Функционал карты одурманивание
 								else if ( item == '9' ) {
@@ -1832,19 +1847,34 @@ function startBattle() {
 									recalculateCardsStrength(result.step_status);
 
 								}
+
 							});
+
+
+							//Проверка, если карта не:
+							// 1) дебафает поле,
+							// 2) Убийца (удаляет карту с доски),
+
+							//то запуститьфункцию перещета силы на столе - recalculateBattleField()
+							var recalculateDecksCheck = actions.some(function(element, index){
+							  if (element == '18' || element == '19') {
+							      return true;
+							  }
+							});
+							if (!recalculateDecksCheck){
+								recalculateBattleField();
+							}
+
 
 						}
 						else {
-
 							recalculateCardsStrength(result.step_status);
 
 							detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
 
 						}
 
-					}
-					else if ( typeof result.step_status.played_magic === 'object' ) {
+					} else if ( typeof result.step_status.played_magic === 'object' ) {
 
 						var magicActions = result.step_status.actions;
 
@@ -1914,13 +1944,15 @@ function startBattle() {
 						delete window['card_overloading'];
 					}
 
-					recalculateDecks(result);//Пересчет колод пользователя и противника
+
+
 					calculateRightMarginCardHands();
 
 					//Обработка Маг. Эффектов (МЭ)
 					if ( typeof result.magicUsage != "undefined" ) {
 						magicReview(result);
 					}
+
 				}
 			break;
 
