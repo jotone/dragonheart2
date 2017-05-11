@@ -965,32 +965,15 @@ function eventsToRefreshSilverPrices(input){
 function refreshGoldPrices(){
 	var goldValue = parseInt($('#buySomeGold input[name=goldToBuy]').val());
 	var usdValue = (goldValue / window.exchange_gold).toFixed(2);
-	if(usdValue < 1) usdValue =1;
-	var rubValue = parseFloat((usdValue * window.exchange_rub).toFixed(2));
-	var koef = 0;
-	switch($('#buySomeGold input[name=paymentType]').val()){
-		case 'PC': koef = rubValue - rubValue * (1/1.005);
-		case 'AC': koef = rubValue - rubValue * 0.98;
-	}
-	rubValue = (rubValue + koef).toFixed(2);
 	$('#buySomeGold input[name=goldToUsd]').val(usdValue);
 	$('#buySomeGold .error').removeClass('show');
-	$('#buySomeGold input[name=sum]').val(rubValue);
 }
 
 function refreshUsdPrices(){
 	var usdValue = parseInt($('#buySomeGold input[name=goldToUsd]').val());
 	var goldValue = (usdValue * window.exchange_gold).toFixed(2);
-	var rubValue = parseFloat((usdValue * window.exchange_rub).toFixed(2));
-	var koef = 0;
-	switch($('#buySomeGold input[name=paymentType]').val()){
-		case 'PC': koef = rubValue - rubValue * (1/1.005);
-		case 'AC': koef = rubValue - rubValue * 0.98;
-	}
-	rubValue = (rubValue + koef).toFixed(2);
 	$('#buySomeGold input[name=goldToBuy]').val(goldValue);
 	$('#buySomeGold .error').removeClass('show');
-	$('#buySomeGold input[name=sum]').val(rubValue);
 }
 
 //Функция обновления значений ресурсов пользователя
@@ -1109,37 +1092,31 @@ function showGoldBuyingPopup(){
 		$.ajax({
 			url:	'/check_user_playing_status',
 			type:	'GET',
-			success:function (data) {
+			success:function(data){
 				if(data != 0){
 					var res = JSON.parse(data);
 					showErrorMessage(res['message']);
 				}else{
 					openTrollPopup($('#buySomeGold'));
 					$('#buySomeGold .button-troll').click(function(e){
-					e.preventDefault();
-						if($('#buySomeGold input[name=LMI_PAYMENT_AMOUNT]').val() < 1){
-							return false;
-						}else{
-							$.ajax({
-								url:	'/create_payment',
-								type:	'POST',
-								headers:{'X-CSRF-TOKEN': $('#buyingCardOrmagic input[name=_token]').val()},
-								data:	{
-									gold: $('#buySomeGold input[name=goldToUsd]').val(),
-									money:$('#buySomeGold input[name=sum]').val()
-								},
-								success:function(data){
-									try{
-										data = JSON.parse(data);
-										if(data['message'] == 'success'){
-											var label = $('#buySomeGold #pay input[name=label]').val() +'_' + data['transaction'];
-											$('#buySomeGold #pay input[name=label]').val(label);
-											$('#pay').submit();
-										}
-									}catch(e){}
-								}
-							});
-						}
+						e.preventDefault();
+						$.ajax({
+							url:	'/create_payment',
+							type:	'POST',
+							headers:{'X-CSRF-TOKEN': $('#buyingCardOrmagic input[name=_token]').val()},
+							data:	{
+								money: $('#buySomeGold input[name=goldToUsd]').val(),
+								type: $('#buySomeGold input[name=paymentType]:checked').val()
+							},
+							success:function(data){
+								try{
+									data = JSON.parse(data);
+									if(data['message'] == 'success'){
+										location = '/transactions/'+data['transaction'];
+									}
+								}catch(e){}
+							}
+						});
 					});
 					$('#buySomeGold .clckAnim').click(function () {
 						if($(this).parent('.input-type-number').find('input[name=goldToUsd]').length > 0){
@@ -1153,6 +1130,7 @@ function showGoldBuyingPopup(){
 				}
 			},
 			error: function (jqXHR, exception) {
+				console.log(jqXHR.responseText())
 				ajaxErrorMsg(jqXHR, exception);
 			}
 		});

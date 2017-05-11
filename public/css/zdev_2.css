@@ -3019,7 +3019,7 @@ input.book-style{
 	border-right:1px solid #714026;
 	width:7px;
 	height:7px;
-	left:11px;
+	left:10px;
 }
 .input-type-number .increment:before, .input-type-number .inc:before{ transform:rotate(-45deg); top:4px; }
 .input-type-number .decrement:before, .input-type-number .dec:before{ transform:rotate(135deg); top:-1px; left:10px; }
@@ -3737,3 +3737,4 @@ div.troll-popup.custom-img-and-title{box-shadow: none;}
 .pay-buttons-wrap label.active{background-color:#fff;}
 .pay-buttons-wrap label:last-child{border: 1px solid rgba(153,122,0, .5);}
 .pay-buttons-wrap label input[type=radio]{display: none;}
+.payment-title{color: #fff; padding-right: 20px; font-size: 14px;}

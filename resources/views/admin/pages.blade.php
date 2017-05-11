@@ -1,6 +1,5 @@
 @extends('admin.layouts.default')
 @section('content')
-
     <div class="main-central-wrap" id="sitePagesTexts">
         <fieldset>
             <legend>Выберите страницу</legend>

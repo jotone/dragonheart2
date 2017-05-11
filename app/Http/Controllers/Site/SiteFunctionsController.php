@@ -366,7 +366,11 @@ class SiteFunctionsController extends BaseController
 	public function getUserPlayingStatus(){
 		$user = Auth::user();
 		$status = \DB::table('users')->select('login','user_busy')->where('login','=', $user->login)->get();
-		return $status[0]->user_busy;
+		if($status[0]->user_busy > 0){
+            return json_encode(['message' => 'Операция невозможна. Вы находитесь в битве.']);
+        }else{
+            return $status[0]->user_busy;
+        }
 	}
 
 	//Получить кол-во активных пользователей
