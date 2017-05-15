@@ -33,7 +33,8 @@ function closeAllTrollPopup() {
 
 }
 
-function clickCloseCross() { //закрыть попап
+//закрыть попап
+function clickCloseCross() {
 	$('.close-this').click(function (e) {
 		e.preventDefault();
 		$(this).closest('div.troll-popup').removeClass('show');
@@ -545,10 +546,13 @@ function showCardActiveRow( card, type, conn, ident ) {
 
 								var actionObj = data['actions'][i];
 
-								var fieldDebuf = actionObj.fear_ActionRow;
+								var fieldDebuff = actionObj.fear_ActionRow;
+								var debuffTeameate = actionObj.fear_actionTeamate;
+
 								var params = {
 									debuff: true,
-									debuffRow: fieldDebuf
+									debuffRow: fieldDebuff,
+									debuffTeameate: debuffTeameate
 								};
 
 								illuminateCustom(params); // подсветить поля дебафа
@@ -735,8 +739,9 @@ function illuminateSelf() {
 	$('.user .convert-stuff .field-for-cards').addClass('active');
 }//Свое поле
 
+//Поле действия карты по-умолчанию
 function illuminateCustom(params) {
-	//Поле действия карты по-умолчанию
+
 	var options = {};
 
 	$.extend( options, params );
@@ -750,6 +755,9 @@ function illuminateCustom(params) {
 		options.debuffRow.forEach(function(item) {
 			var field = intRowToField(item);
 			$('.convert-battle-front .oponent .convert-one-field ' + field).addClass('can-debuff');
+			if ( options.debuffTeameate == 1 ) {
+				$('.convert-battle-front .user .convert-one-field ' + field).addClass('can-debuff');
+			}
 		});
 	}
 }
@@ -1332,7 +1340,7 @@ function detailCardPopupOnStartStep(card, strength, callback) {
 }
 
 //открыть попап (даже если уже открыт еще однин)
-function openSecondTrollPopup(id,customClass) {
+function openSecondTrollPopup(id, customClass) {
 	id.addClass('show troll-popup-custom');
 	if(customClass != null){
 		id.addClass(customClass);
@@ -1341,7 +1349,7 @@ function openSecondTrollPopup(id,customClass) {
 }
 
 // закрыть попап по id
-function closeSecondTrollPopup(id,customClass) {
+function closeSecondTrollPopup(id, customClass) {
 	id.removeClass('show troll-popup-custom');
 	if(customClass != null){
 		id.removeClass(customClass);
@@ -1423,7 +1431,7 @@ function detailCardPopupOnOverloading(cardDetailOverloadingMarkup, card, strengt
 	},2000)
 }
 
-function secondTrollPopupCustomImgAndTitle(text,imgSrc) {
+function secondTrollPopupCustomImgAndTitle(text, imgSrc) {
 	var holder = $('#card-start-step');
 	//holder.find('.content-card-info').empty();
 	holder.find('.content-card-info').empty().append('<div class="custom-img-and-title-wrap"><div class="custom-title"><span>'+text+'</span></div><div class="custom-img"><img src="'+imgSrc+'" alt=""></div></div>');
@@ -1719,7 +1727,6 @@ function startBattle() {
 
 						var actions = result.step_status.actions;
 						var playedCard = result.step_status.played_card.card;
-						//console.log(result);
 
 						if (actions.length) {
 
@@ -1740,12 +1747,14 @@ function startBattle() {
 
 									var debuffRows = [];
 									var debuffValue = 0;
+									var debuffTeamates = 0;
 
 									for ( var i = 0; i < playedCard.actions.length; i++ ) {
 
 										if ( playedCard.actions[i].action == item ) {
 											debuffRows = playedCard.actions[i].fear_ActionRow;
 											debuffValue = playedCard.actions[i].fear_strenghtValue;
+											debuffTeamates = parseInt( playedCard.actions[i].fear_actionTeamate );
 										}
 
 									}
@@ -1753,10 +1762,16 @@ function startBattle() {
 									if ( resultLogin == thisUser ) {
 
 										buffingDebuffingAnimOnRows( 'user', debuffRows, debuffValue, 'debuff', 'terrify' );
+										if ( debuffTeamates == 1 ) {
+											buffingDebuffingAnimOnRows( 'oponent', debuffRows, debuffValue, 'debuff', 'terrify' );
+										}
 										console.log('enemy turn', result);
 									} else {
 
 										buffingDebuffingAnimOnRows( 'oponent', debuffRows, debuffValue, 'debuff', 'terrify' );
+										if ( debuffTeamates == 1 ) {
+											buffingDebuffingAnimOnRows( 'user', debuffRows, debuffValue, 'debuff', 'terrify' );
+										}
 										console.log('your turn', result);
 									}
 
