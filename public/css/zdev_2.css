@@ -77,10 +77,28 @@
 /* popup select cards */
 
 	div.troll-popup#selecthandCardsPopup { overflow: hidden; max-height: 100%; }
-	div.troll-popup#selecthandCardsPopup ul.cards-select-wrap { width: calc(100% + 100px); padding-right: 100px; max-height: calc(100vh - 200px); overflow-x: hidden; overflow-y: scroll; }
+	div.troll-popup#selecthandCardsPopup ul.cards-select-wrap { width: calc(100% + 100px); padding-right: 100px; max-height: calc(100vh - 325px); overflow-x: hidden; overflow-y: scroll; }
 	div.troll-popup#selecthandCardsPopup ul.cards-select-wrap:after { display: none; }
 
 /* /popup select cards */
+
+/* card buffed-debuffed */
+
+	.buffed-or-debuffed.buffed.debuffed .label-power-card-wrap { color: #00aad2; }
+
+	/* buffed */
+
+		.buffed-or-debuffed.buffed .label-power-card-wrap { color: #3e8212; }
+
+	/* /buffed */
+
+	/* debuffed */
+
+		.buffed-or-debuffed.debuffed .label-power-card-wrap { color: #b40000; }
+
+	/* /debuffed */
+
+/* /card buffed-debuffed */
 
 
 .mbox{
