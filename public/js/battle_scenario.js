@@ -1743,7 +1743,7 @@ function startBattle() {
 									window.card_overloadingUsage = true;
 
 								}
-								// Анимация и функционал дебафов
+								// Анимация и функционал страха
 								else if ( item == '18' ) {
 
 									var debuffRows = [];
@@ -1841,7 +1841,7 @@ function startBattle() {
 								//Воодушевление карта
 								else if ( item == '4' ) {
 
-									var params = {
+									var addInspirationParams = {
 										side: '',
 										rows: [],
 										value: 'x2',
@@ -1850,27 +1850,87 @@ function startBattle() {
 									};
 
 									var played_card = result.step_status.played_card;
+
+									for ( var i = 0; i < played_card.card.actions.length; i++ ) {
+										if ( played_card.card.actions[i].action === '4' ) {
+											var inspirationAction = played_card.card.actions[i];
+											console.log(inspirationAction);
+											inspirationAction.inspiration_ActionRow.forEach(function(item) {
+												addInspirationParams.rows.push(item);
+											});
+											break;
+										}
+									}
+
 									if ( played_card.card.fraction == 'special' ) {
 										// remove if in future gona be
 										// special card that buff all
 										// rows in inspiration
-										params.rows.push( played_card.move_to.row );
-									}
-									else {
-										params.rows = played_card.card.action_row;
+										addInspirationParams.rows = [played_card.move_to.row];
 									}
 
+
 									if ( resultLogin == thisUser ) {
-										params.side = 'oponent';
+										addInspirationParams.side = 'oponent';
 									}
 									else {
-										params.side = 'user';
+										addInspirationParams.side = 'user';
 									}
 
 									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
-									buffingDebuffingAnimOnRows( params );
+									buffingDebuffingAnimOnRows( addInspirationParams );
 
 									recalculateBattleField();
+								}
+								//Печаль
+								else if ( item == '11' ) {
+
+									var removeInspirationParams = {
+										side: 'both',
+										rows: [],
+										type: 'buff',
+										effectName: 'inspiration',
+										value: '/2'
+									};
+
+									var played_card = result.step_status.played_card;
+									var friendlyFire = false;
+
+									for ( var i = 0; i < played_card.card.actions.length; i++ ) {
+										if ( played_card.card.actions[i].action === '11' ) {
+											var sorrowAction = played_card.card.actions[i];
+											console.log(sorrowAction);
+											sorrowAction.sorrow_ActionRow.forEach(function(item) {
+												removeInspirationParams.rows.push(item);
+											});
+											if ( sorrowAction.hasOwnProperty('sorrow_actionTeamate') && sorrowAction.sorrow_actionTeamate === '1' ) {
+												friendlyFire = true;
+											}
+											break;
+										}
+									}
+
+									if ( played_card.card.fraction === 'special' ) {
+										removeInspirationParams.rows = [played_card.move_to.row];
+									}
+
+
+
+									if ( !friendlyFire ) {
+
+										if ( resultLogin == thisUser ) {
+											//run on opponent side
+											removeInspirationParams.side = 'user';
+										}
+										else {
+											// run on user side
+											removeInspirationParams.side = 'oponent';
+										}
+
+									}
+
+									removeBuffsOrDebuffFromRow(removeInspirationParams);
+
 								}
 								//Функционал карты одурманивание
 								else if ( item == '9' ) {
@@ -2355,8 +2415,8 @@ function startBattle() {
 			var row = $('.' + params.side + ' .field-for-cards' + rowId);
 			var parent = row.parents('.convert-stuff');
 			var pointsSum = parent.find('.field-for-sum');
-			parent.addClass(params.effectName + '-' + params.type);
-			var effectMarkup = '<div class="debuff-or-buff-anim"></div>';
+			parent.addClass(params.effectName + '-' + params.type + '-wrap');
+			var effectMarkup = '<div class="debuff-or-buff-anim ' + params.effectName + '-' + params.type + '"></div>';
 			row.append(effectMarkup);
 			var effectObjects = row.find('.debuff-or-buff-anim');
 			var effectObjectAdded = row.find('.debuff-or-buff-anim:not(active)');
@@ -2587,6 +2647,56 @@ function startBattle() {
 		}, 300);
 
 	};
+
+	/* side, effectName, type, rows */
+	function removeBuffsOrDebuffFromRow(params) {
+
+		var sideClass = '';
+		if (params.side !== 'both') {
+			sideClass = '.' + params.side;
+		}
+		var effectFullName = params.effectName + '-' + params.type;
+
+		params.rows.forEach(function(item, index) {
+
+			var row = intRowToField(item);
+			var theRow = $(sideClass + ' .field-for-cards' + row);
+
+			theRow.each(function() {
+				if ( $(this).find('.' + effectFullName).length ) {
+
+					var rowAnim = $(this);
+					var animElement = rowAnim.find('.' + effectFullName);
+					animElement.addClass('removing');
+
+					setTimeout(function(){
+
+						animElement.remove();
+						var cards = rowAnim.find('.content-card-item');
+
+						cards.each(function() {
+							var card = $(this);
+							cardStrengthPulsing( card, 'debuff', params.value );
+						});
+						rowAnim.parents('.convert-stuff').removeClass(effectFullName + '-wrap');
+						if ( rowAnim.find('[class$="-' + params.type + '"]').length === 0 ) {
+							rowAnim.parents('.convert-stuff').removeClass(params.type);
+						}
+
+					}, 1500);
+
+				}
+			});
+
+			if ( index === (params.rows.length - 1) ) {
+				setTimeout(function() {
+					recalculateBattleField();
+				}, 2500);
+			}
+
+		});
+
+	}
 
 /* /Dmitry scripts */
 
