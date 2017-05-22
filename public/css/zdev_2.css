@@ -36,7 +36,14 @@
 
 	.convert-battle-front .convert-cards.user .convert-card-box .convert-stuff.buff .field-for-sum, .convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff .field-for-sum { color: #50c800; box-shadow: inset 0 0 10px 2px rgba(80, 200, 0, .4); }
 
-	.convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff .cards-row-wrap .content-card-item:not([data-full-immune]) .label-power-card-wrap { color: #50c800; }
+	.convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff .cards-row-wrap .content-card-item:not([data-full-immune='true']) .label-power-card-wrap { color: #50c800; }
+
+	/* inspiration buff */
+
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.inspiration-buff .debuff-or-buff-anim { width: 100%; height: 100%; background-color: rgba(247, 217, 2, .25); border-radius: 50% 50% 0 0; top: 100%; left: 0%; overflow: hidden; transition: top 1000ms ease, border-radius 500ms ease 800ms; }
+		.convert-battle-front .convert-cards .convert-card-box .convert-stuff.inspiration-buff .debuff-or-buff-anim.active { top: 0%; border-radius: 0; }
+
+	/* /inspiration buff */
 
 /* /buff anim */
 
