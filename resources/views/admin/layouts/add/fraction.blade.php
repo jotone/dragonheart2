@@ -43,6 +43,14 @@
                 <td><label>Бэкграунд для фракции:</label></td>
                 <td><input name="fractionBGAddImg" type="file"><div class="image-container cfix"></div></td>
             </tr>
+            <tr>
+                <td><label>Описание Фракции в магазине</label></td>
+                <td><textarea name="fraction_shop"></textarea></td>
+            </tr>
+            <tr>
+                <td><label>Описание Фракции при покупке волшебства</label></td>
+                <td><textarea name="fraction_magic"></textarea></td>
+            </tr>
         </table>
 
         <input type="button" name="addFraction" value="Добавить">
