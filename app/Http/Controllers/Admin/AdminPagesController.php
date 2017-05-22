@@ -511,5 +511,10 @@ class AdminPagesController extends BaseController
         }
         return 'success';
     }
+
+    public function usersPayment(Request $request){
+        $data = $request->all();
+        return view('admin.payments');
+    }
     //END OF Страницы
 }
