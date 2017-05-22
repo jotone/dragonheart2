@@ -512,6 +512,11 @@ Route::group(['middleware' => 'admin'], function() {
 			'as'	=> 'admin-user-edit',
 			'uses'	=> 'Admin\AdminUserController@userEdit'
 		]);
+	//Оплаченые пополнения
+    Route::get('/admin/payments', [
+        'as'    => 'admin-payment',
+        'uses'  => 'Admin\AdminPagesController@usersPayment'
+    ]);
 
 	//Страницы
 	Route::get('/admin/pages', [

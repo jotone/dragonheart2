@@ -14,7 +14,7 @@ class PaymentController extends BaseController
 	public function success(Request $request){
 		$data = $request->all();
 		if(!empty($data['label'])){
-		    $label = base64_decode($data['label']);
+			$label = base64_decode($data['label']);
 			$operation = explode('_',$label);
 			if(count($operation) == 2){
 				$payment = Payment::find($operation[1]);
@@ -56,10 +56,13 @@ class PaymentController extends BaseController
 
 		$result = Payment::create([
 			'user_id'		=> $user['id'],
+			'user_name'		=> $user['login'],
 			'money_amount'	=> $rub,
 			'gold_amount'	=> $gold,
-            'type'			=> $data['type'],
-			'pay_status'	=> 0
+			'type'			=> $data['type'],
+			'pay_status'	=> 0,
+			'last_gold_status' => $user['user_gold'],
+			'last_exchange_status' => $usd_to_rub->meta_value
 		]);
 		if($result !== false){
 			return json_encode([
