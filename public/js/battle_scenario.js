@@ -1652,6 +1652,7 @@ function startBattle() {
 
 			//Пользователь сделал действие
 			case 'userMadeAction':
+
 				if( currentRound != result['round'] ) {
 					/*$('.convert-cards .content-card-item').addClass('transition');
 					$('.field-for-cards').addClass('visible');
