@@ -34,7 +34,11 @@
         <li><a href="{{ route('admin-card-groups') }}">Группы Карт</a></li>
         <li><a href="{{ route('admin-magic') }}">Волшебство</a></li>
         <li><a href="{{ route('admin-actions') }}">Действия</a></li>
-        <li><a href="{{ route('admin-users') }}">Пользователи</a></li>
+        <li><a href="{{ route('admin-users') }}">Пользователи</a>
+            <ul>
+                <li><a href="{{ route('admin-payment') }}">Оплаченые пополнения</a></li>
+            </ul>
+        </li>
         <li><a href="{{ route('admin-pages') }}">Страницы</a>
             <ul>
                 <li><a href="{{ route('admin-support') }}">Тех.Поддержка</a></li>
