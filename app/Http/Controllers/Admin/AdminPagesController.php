@@ -25,13 +25,13 @@ class AdminPagesController extends BaseController
 
 		$output = [];
 		foreach($fractions as $key => $fraction){
-			$output[$key]['id']      = $fraction->id;
-			$output[$key]['title']   = $fraction->title;
-			$output[$key]['slug']    = $fraction -> slug;
-			$output[$key]['type']    = AdminViews::fractionTypeToRus($fraction -> type);
-			$output[$key]['img_url'] = $fraction -> img_url;
-			$output[$key]['created'] = date('Y/m/d  H:i', strtotime($fraction->created_at));
-			$output[$key]['updated'] = date('Y/m/d  H:i', strtotime($fraction->updated_at));
+			$output[$key]['id']		= $fraction->id;
+			$output[$key]['title']	= $fraction->title;
+			$output[$key]['slug']	= $fraction -> slug;
+			$output[$key]['type']	= AdminViews::fractionTypeToRus($fraction -> type);
+			$output[$key]['img_url']= $fraction -> img_url;
+			$output[$key]['created']= date('Y/m/d  H:i', strtotime($fraction->created_at));
+			$output[$key]['updated']= date('Y/m/d  H:i', strtotime($fraction->updated_at));
 		}
 		return view('admin.main', ['fractions' => $output]);
 	}
@@ -43,6 +43,7 @@ class AdminPagesController extends BaseController
 
 	public function fractionEditPage($id){
 		$fraction = Fraction::find($id);
+
 		return view('admin.layouts.edit.fraction', ['fraction' => $fraction]);
 	}
 	//END OF Фракции
@@ -155,19 +156,19 @@ class AdminPagesController extends BaseController
 			$in_group = AdminViews::getCardGroups($card->card_groups);
 			$actions = AdminViews::getCardActions($card->card_actions);
 
-			$output[$key]['id']         = $card->id;
-			$output[$key]['title']      = $card->title;
-			$output[$key]['img_url']    = $card->img_url;
+			$output[$key]['id']			= $card->id;
+			$output[$key]['title']		= $card->title;
+			$output[$key]['img_url']	= $card->img_url;
 			$output[$key]['card_strong']= $card->card_strong;
-			$output[$key]['card_value'] = $card->card_value;
-			$output[$key]['is_leader']  = $card->is_leader;
+			$output[$key]['card_value']	= $card->card_value;
+			$output[$key]['is_leader']	= $card->is_leader;
 			$output[$key]['allowed_rows']= $allowed_rows;
-			$output[$key]['groups']     = $in_group;
-			$output[$key]['actions']    = $actions;
-			$output[$key]['price_gold'] = $card->price_gold;
+			$output[$key]['groups']		= $in_group;
+			$output[$key]['actions']	= $actions;
+			$output[$key]['price_gold']	= $card->price_gold;
 			$output[$key]['price_silver']= $card->price_silver;
-			$output[$key]['created']    = date('Y/m/d  H:i', strtotime($card->created_at));
-			$output[$key]['updated']    = date('Y/m/d  H:i', strtotime($card->updated_at));
+			$output[$key]['created']	= date('Y/m/d  H:i', strtotime($card->created_at));
+			$output[$key]['updated']	= date('Y/m/d  H:i', strtotime($card->updated_at));
 
 		}
 		return view('admin.cards', [
@@ -187,9 +188,9 @@ class AdminPagesController extends BaseController
 		$card_actions = Action::orderBy('title','asc')->get();
 		$card_groups = AdminViews::cardsViewGroupsSelector();
 		return view('admin.layouts.add.cards', [
-			'card_actions' => $card_actions,
-			'card_groups'  => $card_groups,
-			'fractions' => $fractions
+			'card_actions'	=> $card_actions,
+			'card_groups'	=> $card_groups,
+			'fractions'		=> $fractions
 		]);
 	}
 
@@ -208,12 +209,12 @@ class AdminPagesController extends BaseController
 		$card_current_groups = AdminViews::cardsViewGetCardGroups($card->card_groups, $type='table');
 
 		return view('admin.layouts.edit.cards', [
-			'card'                  => $card,
-			'card_actions'          => $card_actions,
-			'card_current_actions'  => $card_current_actions,
-			'card_groups'           => $card_groups,
-			'card_current_groups'   => $card_current_groups,
-			'fractions'             => $fractions
+			'card'					=> $card,
+			'card_actions'			=> $card_actions,
+			'card_current_actions'	=> $card_current_actions,
+			'card_groups'			=> $card_groups,
+			'card_current_groups'	=> $card_current_groups,
+			'fractions'				=> $fractions
 		]);
 	}
 	//END OF Карты
@@ -224,10 +225,10 @@ class AdminPagesController extends BaseController
 
 		$output = [];
 		foreach($card_groups as $key => $group){
-			$output[$key]['id']     = $group->id;
-			$output[$key]['title']  = $group->title;
-			$output[$key]['slug']   = $group->slug;
-			$output[$key]['cards']  = AdminViews::cardsViewCardsList($group->id, 'link');
+			$output[$key]['id']		= $group->id;
+			$output[$key]['title']	= $group->title;
+			$output[$key]['slug']	= $group->slug;
+			$output[$key]['cards']	= AdminViews::cardsViewCardsList($group->id, 'link');
 			$output[$key]['created']= date('Y/m/d  H:i', strtotime($group->created_at));
 			$output[$key]['updated']= date('Y/m/d  H:i', strtotime($group->updated_at));
 		}
@@ -260,18 +261,18 @@ class AdminPagesController extends BaseController
 			$actions = AdminViews::getCardActions($value->effect_actions);
 			$league = AdminViews::getLeagueById($value->min_league);
 
-			$output[$key]['id']         = $value->id;
-			$output[$key]['title']      = $value->title;
-			$output[$key]['img_url']    = $value->img_url;
-			$output[$key]['fraction']   = $fraction[0]->title;
+			$output[$key]['id']			= $value->id;
+			$output[$key]['title']		= $value->title;
+			$output[$key]['img_url']	= $value->img_url;
+			$output[$key]['fraction']	= $fraction[0]->title;
 			$output[$key]['description']= $value->description;
-			$output[$key]['actions']    = $actions;
-			$output[$key]['price_gold'] = $value->price_gold;
+			$output[$key]['actions']	= $actions;
+			$output[$key]['price_gold']	= $value->price_gold;
 			$output[$key]['price_silver']= $value->price_silver;
 			$output[$key]['energy_cost']= $value->energy_cost;
-			$output[$key]['league']     = $league;
-			$output[$key]['created']    = date('Y/m/d  H:i', strtotime($value->created_at));
-			$output[$key]['updated']    = date('Y/m/d  H:i', strtotime($value->updated_at));
+			$output[$key]['league']		= $league;
+			$output[$key]['created']	= date('Y/m/d  H:i', strtotime($value->created_at));
+			$output[$key]['updated']	= date('Y/m/d  H:i', strtotime($value->updated_at));
 		}
 		return view('admin.magic', ['magic' => $output]);
 	}
@@ -286,9 +287,9 @@ class AdminPagesController extends BaseController
 		$actions = Action::orderBy('title','asc')->get();
 		$leagues = \DB::table('tbl_league')->select('id','title','min_lvl','max_lvl')->orderBy('min_lvl')->get();
 		return view('admin.layouts.add.magic', [
-			'fractions' => $fractions,
-			'actions'   => $actions,
-			'leagues'   => $leagues
+			'fractions'	=> $fractions,
+			'actions'	=> $actions,
+			'leagues'	=> $leagues
 		]);
 	}
 
@@ -304,11 +305,11 @@ class AdminPagesController extends BaseController
 		$current_actions = AdminViews::cardsViewGetCardActions($magic->effect_actions, 'magic');
 		$leagues = \DB::table('tbl_league')->select('id','title','min_lvl','max_lvl')->orderBy('min_lvl')->get();
 		return view('admin.layouts.edit.magic', [
-			'magic'     => $magic,
-			'fractions' => $fractions,
-			'actions'   => $actions,
+			'magic'		=> $magic,
+			'fractions'	=> $fractions,
+			'actions'	=> $actions,
 			'current_actions' => $current_actions,
-			'leagues'   => $leagues
+			'leagues'	=> $leagues
 		]);
 	}
 	//END OF Магия
@@ -324,12 +325,12 @@ class AdminPagesController extends BaseController
 				$html .='<p>'.$html_options[$i][0].'</p>'.$html_options[$i][1].'<hr>';
 			}
 
-			$output[$key]['id']         = $action->id;
-			$output[$key]['title']      = $action->title;
-			$output[$key]['slug']       = $action->slug;
+			$output[$key]['id']			= $action->id;
+			$output[$key]['title']		= $action->title;
+			$output[$key]['slug']		= $action->slug;
 			$output[$key]['description']= $action->description;
-			$output[$key]['created']    = date('Y/m/d  H:i', strtotime($action->created_at));
-			$output[$key]['updated']    = date('Y/m/d  H:i', strtotime($action->updated_at));
+			$output[$key]['created']	= date('Y/m/d  H:i', strtotime($action->created_at));
+			$output[$key]['updated']	= date('Y/m/d  H:i', strtotime($action->updated_at));
 			$output[$key]['html_options']= $html;
 		}
 		return view('admin.actions', ['actions' => $output]);
@@ -360,17 +361,17 @@ class AdminPagesController extends BaseController
 				? 'Простой смертный'
 				: 'Администратор';
 
-			$output[$key]['id']     = $user -> id;
-			$output[$key]['login']  = $user -> login;
-			$output[$key]['email']  = $user -> email;
-			$output[$key]['name']   = $user -> name;
+			$output[$key]['id']		= $user -> id;
+			$output[$key]['login']	= $user -> login;
+			$output[$key]['email']	= $user -> email;
+			$output[$key]['name']	= $user -> name;
 			$output[$key]['img_url']= $img;
-			$output[$key]['gold']   = $user -> user_gold;
-			$output[$key]['silver'] = $user -> user_silver;
-			$output[$key]['energy'] = $user -> user_energy;
+			$output[$key]['gold']	= $user -> user_gold;
+			$output[$key]['silver']	= $user -> user_silver;
+			$output[$key]['energy']	= $user -> user_energy;
 			$output[$key]['created']= date('Y/m/d  H:i', strtotime($user->created_at));
 			$output[$key]['updated']= date('Y/m/d  H:i', strtotime($user->updated_at));
-			$output[$key]['ban']    = $ban;
+			$output[$key]['ban']	= $ban;
 			$output[$key]['admin_status'] = $admin_status;
 		}
 		return view('admin.users', ['users' => $output]);
@@ -378,7 +379,6 @@ class AdminPagesController extends BaseController
 
 	public function editUser($id){
 		$user = User::find($id);
-
 		$payments = Payment::where('user_id','=',$user['id'])->orderBy('updated_at','desc')->get();
 		return view('admin.layouts.edit.user', ['user' => $user, 'payments'=>$payments]);
 	}
@@ -397,17 +397,17 @@ class AdminPagesController extends BaseController
 		$data = $request->all();
 		$pages = Page::where('slug','=',$data['slug'])->get();
 		return json_encode([
-			'title' => $pages[0]->title,
-			'slug'  => $pages[0]->slug,
-			'text'  => $pages[0]->text
+			'title'	=> $pages[0]->title,
+			'slug'	=> $pages[0]->slug,
+			'text'	=> $pages[0]->text
 		]);
 	}
 
 	public function editPage(Request $request){
 		$data = $request->all();
 		$result = Page::where('slug','=',$data['slug'])->update([
-			'title' => $data['title'],
-			'text'  => $data['text']
+			'title'	=> $data['title'],
+			'text'	=> $data['text']
 		]);
 		return 'success';
 	}
@@ -427,8 +427,8 @@ class AdminPagesController extends BaseController
 		$data = $request->all();
 		$slug = AdminFunctions::str2url($data['title']).'_'.uniqid();
 		$result = Rubric::create([
-			'title' => $data['title'],
-			'slug'  => $slug
+			'title'	=> $data['title'],
+			'slug'	=> $slug
 		]);
 		if($result){
 			return json_encode(['message'=>'success', 'id'=>$result->id]);
