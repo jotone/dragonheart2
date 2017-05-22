@@ -163,7 +163,8 @@ foreach($battle_members as $key => $value){
 			'user_nickname'	=> $player_data[0] -> login,
 			'user_ready'	=> $value -> user_ready,
 			'wins_count'	=> count($round_status[$user_field_identificator]),
-			'fear_rows'		=> [false,false,false],
+			'fear_rows'		=> [['',''],['',''],['','']],
+			'inspir_rows'	=> [['',''],['',''],['','']],
 		];
 		$players[$user_field_identificator] = &$players['allied'];
 	}else{
@@ -179,11 +180,18 @@ foreach($battle_members as $key => $value){
 			'user_magic'	=> $user_magic,
 			'user_nickname'	=> $player_data[0] -> login,
 			'wins_count'	=> count($round_status[$opponent_field_identificator]),
-			'fear_rows'		=> [false,false,false],
+			'fear_rows'		=> [['',''],['',''],['','']],
+			'inspir_rows'	=> [['',''],['',''],['','']],
 		];
 		$players[$opponent_field_identificator] = &$players['enemy'];
 	}
 }
+$buff_classes = [
+	'terrify_wrap' => 'terify-debuff-wrap',
+	'terrify' => 'terify-debuff',
+	'insp_wrap' => 'inspiration-buff-wrap',
+	'insp' => 'inspiration-buff'
+];
 //fear counts
 foreach($battle_field as $field => $data){
 	if($field == 'mid'){
@@ -191,29 +199,40 @@ foreach($battle_field as $field => $data){
 			foreach($card['card']['actions'] as $action){
 				if($action->action == 18){
 					foreach($action->fear_ActionRow as $fear_row){
-						$players['enemy']['fear_rows'][$fear_row] = true;
-						$players['allied']['fear_rows'][$fear_row] = true;
+						$players['enemy']['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify']];
+						$players['allied']['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify']];
 					}
 				}
 			}
 		}
 	}else{
 		foreach($data as $row => $row_data){
+			if(!empty($row_data['special'])){
+				foreach($row_data['special']['card']['actions'] as $action){
+					if($action->action == 4){
+						$players[$field]['inspir_rows'][$row] = [$buff_classes['insp_wrap'],$buff_classes['insp']];
+					}
+				}
+			}
+
 			foreach($row_data['warrior'] as $card){
 				foreach($card['card']['actions'] as $action){
 					if($action->action == 18){
 						foreach($action->fear_ActionRow as $fear_row){
 							if($action->fear_actionTeamate == 0){
 								if($field == $opponent_field_identificator){
-									$players[$user_field_identificator]['fear_rows'][$fear_row] = true;
+									$players[$user_field_identificator]['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify']];
 								}else{
-									$players[$opponent_field_identificator]['fear_rows'][$fear_row] = true;
+									$players[$opponent_field_identificator]['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify']];
 								}
 							}else{
-								$players['enemy']['fear_rows'][$fear_row] = true;
-								$players['allied']['fear_rows'][$fear_row] = true;
+								$players['enemy']['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify']];
+								$players['allied']['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify']];
 							}
 						}
+					}
+					if($action->action == 4){
+						$players[$field]['inspir_rows'][$row] = [$buff_classes['insp_wrap'],$buff_classes['insp']];
 					}
 				}
 			}
@@ -341,7 +360,13 @@ foreach($battle_field as $field => $data){
 			<div class="convert-cards oponent" @if(isset($players['enemy']['user_nickname']))data-user="{{ $players['enemy']['user_nickname'] }}"@endif id="{{$opponent_field_identificator}}">
 				<div class="convert-card-box">
 					<!-- Сверхдальние Юниты противника -->
-					<div class="convert-stuff @if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][2] === true) ) terrify-debuff debuff @endif">
+					<?php
+					$classes = '';
+					if(isset($players['enemy']['user_nickname'])){
+						$classes .= $players['enemy']['fear_rows'][2][0].' '.$players['enemy']['inspir_rows'][2][0];
+					}
+					?>
+					<div class="convert-stuff {{$classes}}">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="superRange">
 								<div class="image-inside-line">
@@ -359,8 +384,11 @@ foreach($battle_field as $field => $data){
 									</ul>
 									<!-- END OF Список сверхдальних карт-->
 								</div>
-								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][2] === true) )
-									<div class="debuff-or-buff-anim active"></div>
+								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][2][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['enemy']['fear_rows'][2][1]}} active"></div>
+								@endif
+								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['inspir_rows'][2][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['enemy']['inspir_rows'][2][1]}} active"></div>
 								@endif
 								<!-- END OF Поле размещения сверхдальних карт -->
 							</div>
@@ -370,7 +398,13 @@ foreach($battle_field as $field => $data){
 					<!-- END OF Сверхдальние Юниты противника -->
 
 					<!-- Дальние Юниты противника -->
-					<div class="convert-stuff @if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][1] === true) ) terrify-debuff debuff @endif">
+					<?php
+					$classes = '';
+					if(isset($players['enemy']['user_nickname'])){
+						$classes .= $players['enemy']['fear_rows'][1][0].' '.$players['enemy']['inspir_rows'][1][0];
+					}
+					?>
+					<div class="convert-stuff {{$classes}}">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="range">
 								<div class="image-inside-line">
@@ -389,8 +423,11 @@ foreach($battle_field as $field => $data){
 									</ul>
 									<!-- END OF Список дальних карт-->
 								</div>
-								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][1] === true) )
-									<div class="debuff-or-buff-anim active"></div>
+								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][1][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['enemy']['fear_rows'][1][1]}} active"></div>
+								@endif
+								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['inspir_rows'][1][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['enemy']['inspir_rows'][1][1]}} active"></div>
 								@endif
 								<!-- END OF Поле размещения дальних карт -->
 							</div>
@@ -400,7 +437,13 @@ foreach($battle_field as $field => $data){
 					<!-- END OF Дальние Юниты противника -->
 
 					<!-- Ближние Юниты противника -->
-					<div class="convert-stuff @if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][0] === true) ) terrify-debuff debuff @endif">
+					<?php
+					$classes = '';
+					if(isset($players['enemy']['user_nickname'])){
+						$classes .= $players['enemy']['fear_rows'][0][0].' '.$players['enemy']['inspir_rows'][0][0];
+					}
+					?>
+					<div class="convert-stuff {{$classes}}">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="meele">
 								<div class="image-inside-line">
@@ -418,8 +461,11 @@ foreach($battle_field as $field => $data){
 									</ul>
 									<!-- END OF Список ближних карт-->
 								</div>
-								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][0] === true) )
-									<div class="debuff-or-buff-anim active"></div>
+								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][0][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['enemy']['fear_rows'][0][1]}} active"></div>
+								@endif
+								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['inspir_rows'][0][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['enemy']['inspir_rows'][0][1]}} active"></div>
 								@endif
 							</div>
 						</div>
@@ -436,8 +482,13 @@ foreach($battle_field as $field => $data){
 			<div class="convert-cards user" data-user="{{ (isset($players['allied']['user_nickname'])?$players['allied']['user_nickname']:'') }}" id="{{$user_field_identificator}}">
 				<div class="convert-card-box">
 					<!-- Ближние Юниты пользователя -->
-
-					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][0] === true) ) terrify-debuff debuff @endif">
+					<?php
+					$classes = '';
+					if(isset($players['allied']['user_nickname'])){
+						$classes .= $players['allied']['fear_rows'][0][0].' '.$players['allied']['inspir_rows'][0][0];
+					}
+					?>
+					<div class="convert-stuff {{$classes}}">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="meele">
 								<div class="image-inside-line">
@@ -455,8 +506,11 @@ foreach($battle_field as $field => $data){
 									</ul>
 									<!-- END OF Список ближних карт-->
 								</div>
-								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][0] === true) )
-									<div class="debuff-or-buff-anim active"></div>
+								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][0][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['allied']['fear_rows'][0][1]}} active"></div>
+								@endif
+								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['inspir_rows'][0][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['allied']['inspir_rows'][0][1]}} active"></div>
 								@endif
 							</div>
 						</div>
@@ -465,6 +519,12 @@ foreach($battle_field as $field => $data){
 					<!-- END OF Ближние Юниты пользователя -->
 
 					<!-- Дальние Юниты пользователя -->
+					<?php
+					$classes = '';
+					if(isset($players['allied']['user_nickname'])){
+						$classes .= $players['allied']['fear_rows'][1][0].' '.$players['allied']['inspir_rows'][1][0];
+					}
+					?>
 					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][1] === true) ) terrify-debuff debuff @endif">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="range">
@@ -483,8 +543,11 @@ foreach($battle_field as $field => $data){
 									</ul>
 									<!-- END OF Список дальних карт-->
 								</div>
-								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][1] === true) )
-									<div class="debuff-or-buff-anim active"></div>
+								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][1][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['allied']['fear_rows'][1][1]}} active"></div>
+								@endif
+								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['inspir_rows'][1][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['allied']['inspir_rows'][1][1]}} active"></div>
 								@endif
 							</div>
 						</div>
@@ -493,7 +556,13 @@ foreach($battle_field as $field => $data){
 					<!-- END OF Дальние Юниты пользователя -->
 
 					<!-- Сверхдальние юниты пользователя -->
-					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][2] === true) ) terrify-debuff debuff @endif">
+					<?php
+					$classes = '';
+					if(isset($players['allied']['user_nickname'])){
+						$classes .= $players['allied']['fear_rows'][2][0].' '.$players['allied']['inspir_rows'][2][0];
+					}
+					?>
+					<div class="convert-stuff {{$classes}}">
 						<div class="convert-one-field">
 							<div class="field-for-cards" id="superRange">
 								<div class="image-inside-line">
@@ -511,8 +580,11 @@ foreach($battle_field as $field => $data){
 									</ul>
 									<!-- END OF Список сверхдальнихдальних карт-->
 								</div>
-								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][2] === true) )
-									<div class="debuff-or-buff-anim active"></div>
+								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][2][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['allied']['fear_rows'][2][1]}} active"></div>
+								@endif
+								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['inspir_rows'][2][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['allied']['inspir_rows'][2][1]}} active"></div>
 								@endif
 							</div>
 						</div>

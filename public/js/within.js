@@ -125,6 +125,8 @@ $(window).load(function() {
 		formData.append('img_url', $('input[name=fractionAddImg]').prop('files')[0] );             //Изображение
 		formData.append('bg_img', $('input[name=fractionBGAddImg]').prop('files')[0] );            //Изображение фона фракции
 		formData.append('card_img', $('input[name=fractionCardBG]').prop('files')[0] );            //Изображение рубашки фракции
+		formData.append('descr_shop', tinymce.get('fraction_shop').getContent());
+		formData.append('descr_magic', tinymce.get('fraction_magic').getContent());
 		$.ajax({
 			url:		'/admin/fraction/add',
 			headers:	{'X-CSRF-TOKEN': token},
@@ -156,6 +158,8 @@ $(window).load(function() {
 		formData.append('img_url', $('input[name=fractionAddImg]').prop('files')[0] );             //Новый файл изображения
 		formData.append('bg_img', $('input[name=fractionBGAddImg]').prop('files')[0] );            //Изображение фона фракции
 		formData.append('card_img', $('input[name=fractionCardBG]').prop('files')[0] );            //Изображение рубашки фракции
+		formData.append('descr_shop', tinymce.get('fraction_shop').getContent());
+		formData.append('descr_magic', tinymce.get('fraction_magic').getContent());
 		$.ajax({
 			url:		'/admin/fraction/edit',
 			headers:	{'X-CSRF-TOKEN': token},
@@ -550,6 +554,8 @@ $(window).load(function() {
 	tinyMCE('textarea[name=card_full_descr]');
 	tinyMCE('textarea[name=magic_descr]');
 	tinyMCE('textarea[name=pageText]');
+	tinyMCE('textarea[name=fraction_shop]');
+	tinyMCE('textarea[name=fraction_magic]');
 
 	/*
 	 * Страницы
@@ -565,9 +571,9 @@ $(window).load(function() {
 				data = JSON.parse(data);
 				$('#sitePagesTexts input[name=pageTitle]').val(data['title']);
 				$('#sitePagesTexts textarea[name=pageText]').val(data['text']);
-                tinymce.get('pageText').setContent(data['text']);
+				tinymce.get('pageText').setContent(data['text']);
 				$('#sitePagesTexts input[name=applyPage]').attr('data-slug',data['slug']);
-                tinyMCE('textarea[name=pageText]');
+				tinyMCE('textarea[name=pageText]');
 			}
 		});
 	});
