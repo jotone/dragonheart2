@@ -633,7 +633,8 @@ function showCardActiveRow( card, type, conn, ident ) {
 
 					illuminateOpponent();
 
-				} else {
+				}
+				else {
 
 					illuminateOpponent();
 					illuminateSelf();
@@ -1268,7 +1269,7 @@ function animationDeleteSpecialCard(player,rowId) {
 //animationDeleteSpecialCard('p1','#meele')
 
 //Смена идентификатора хода пользователя
-function changeTurnIndicator(login){
+function changeTurnIndicator(login) {
 	if(login == $('.user-describer').attr('id')){
 		$('.user-turn-wrap .turn-indicator').addClass('active');
 	}else{
@@ -1716,7 +1717,7 @@ function startBattle() {
 
 					if(typeof result.turnDescript != "undefined") turnDescript = result.turnDescript;
 
-					changeTurnIndicator(result.login);//смена индикатора хода
+					changeTurnIndicator(result.login); //смена индикатора хода
 
 					var resultLogin  = result.login;
 					var thisUser = $('.user-describer .name').text();
@@ -1761,16 +1762,41 @@ function startBattle() {
 
 									if ( resultLogin == thisUser ) {
 
-										buffingDebuffingAnimOnRows( 'user', debuffRows, debuffValue, 'debuff', 'terrify' );
+										buffingDebuffingAnimOnRows({
+											side: 'user',
+											rows: debuffRows,
+											value: debuffValue,
+											type: 'debuff',
+											effectName: 'terrify'
+										});
 										if ( debuffTeamates == 1 ) {
-											buffingDebuffingAnimOnRows( 'oponent', debuffRows, debuffValue, 'debuff', 'terrify' );
+											buffingDebuffingAnimOnRows({
+												side: 'oponent',
+												rows: debuffRows,
+												value: debuffValue,
+												type: 'debuff',
+												effectName: 'terrify'
+											});
 										}
 										console.log('enemy turn', result);
-									} else {
+									}
+									else {
 
-										buffingDebuffingAnimOnRows( 'oponent', debuffRows, debuffValue, 'debuff', 'terrify' );
+										buffingDebuffingAnimOnRows({
+											side: 'oponent',
+											rows: debuffRows,
+											value: debuffValue,
+											type: 'debuff',
+											effectName: 'terrify'
+										});
 										if ( debuffTeamates == 1 ) {
-											buffingDebuffingAnimOnRows( 'user', debuffRows, debuffValue, 'debuff', 'terrify' );
+											buffingDebuffingAnimOnRows({
+												side: 'user',
+												rows: debuffRows,
+												value: debuffValue,
+												type: 'debuff',
+												effectName: 'terrify'
+											});
 										}
 										console.log('your turn', result);
 									}
@@ -1814,6 +1840,36 @@ function startBattle() {
 								}
 								//Воодушевление карта
 								else if ( item == '4' ) {
+
+									var params = {
+										side: '',
+										rows: [],
+										value: 'x2',
+										type: 'buff',
+										effectName: 'inspiration'
+									};
+
+									var played_card = result.step_status.played_card;
+									if ( played_card.card.fraction == 'special' ) {
+										// remove if in future gona be
+										// special card that buff all
+										// rows in inspiration
+										params.rows.push( played_card.move_to.row );
+									}
+									else {
+										params.rows = played_card.card.action_row;
+									}
+
+									if ( resultLogin == thisUser ) {
+										params.side = 'oponent';
+									}
+									else {
+										params.side = 'user';
+									}
+
+									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+									buffingDebuffingAnimOnRows( params );
+
 									recalculateBattleField();
 								}
 								//Функционал карты одурманивание
@@ -1904,12 +1960,12 @@ function startBattle() {
 							// 2) Убийца (удаляет карту с доски),
 
 							//то запустить функцию перещета силы на столе - recalculateBattleField()
-							var recalculateDecksCheck = actions.some(function(element, index){
+							var recalculateDecksCheck = actions.some(function(element, index) {
 							  if (element == '18' || element == '19') {
 							      return true;
 							  }
 							});
-							if (!recalculateDecksCheck){
+							if (!recalculateDecksCheck) {
 								recalculateBattleField();
 							}
 
@@ -2081,7 +2137,7 @@ function startBattle() {
 
 				var resPop = $('#endGamePopup');
 				var resMessage = 'По результатам боя Вы ';
-				switch(result.resources.gameResult){
+				switch(result.resources.gameResult) {
 					case 'loose':
 						resPop.find('h5').text(res.lose);
 						resMessage += 'получили <img class="resource" src="/images/header_logo_silver.png" alt="">'+res.silver+' серебра, но потеряли '+res.ranking+' очков рейтинга.';
@@ -2292,14 +2348,14 @@ function startBattle() {
 	* effectName - any effect class that gona be added to .convert-one-field
 	* (you must write it animation in scss or js)
 	*/
-	function buffingDebuffingAnimOnRows( side, rows, value, type, effectName ) {
+	function buffingDebuffingAnimOnRows( params ) {
 
-		rows.forEach(function( item ) {
+		params.rows.forEach(function( item ) {
 			var rowId = intRowToField(item);
-			var row = $('.' + side + ' .field-for-cards' + rowId);
+			var row = $('.' + params.side + ' .field-for-cards' + rowId);
 			var parent = row.parents('.convert-stuff');
 			var pointsSum = parent.find('.field-for-sum');
-			parent.addClass(effectName + '-' + type);
+			parent.addClass(params.effectName + '-' + params.type);
 			var effectMarkup = '<div class="debuff-or-buff-anim"></div>';
 			row.append(effectMarkup);
 			var effectObjects = row.find('.debuff-or-buff-anim');
@@ -2321,16 +2377,16 @@ function startBattle() {
 					cards.each(function() {
 						var card = $(this);
 						if (
-							( type == 'debuff' && !card.is('[data-immune=true]') && !card.is('[data-full-immune=true]') ) ||
-							( type == 'buff' && !card.is('.full-immune') )
+							( params.type == 'debuff' && !card.is('[data-immune=true]') && !card.is('[data-full-immune=true]') ) ||
+							( params.type == 'buff' && !card.is('.full-immune') )
 						) {
 
-							cardStrengthPulsing( card, type, value );
+							cardStrengthPulsing( card, params.type, params.value );
 
 						}
 					});
 
-					parent.addClass(type);
+					parent.addClass(params.type);
 					clearInterval(timer);
 
 				}
@@ -2362,8 +2418,16 @@ function startBattle() {
 			var cardStrengthNew = cardStrength;
 
 			if ( type == 'buff' ) {
-				cardStrengthNew = cardStrength + value;
-				card.find('.buff-debuff-value').attr('data-math-simb', '+');
+				if ( isNaN(value) && value.indexOf('x') !== (-1) ) {
+					value = value.replace('x', '');
+					value = parseInt(value);
+					cardStrengthNew = cardStrength * value;
+					card.find('.buff-debuff-value').attr('data-math-simb', 'x');
+				}
+				else {
+					cardStrengthNew = cardStrength + value;
+					card.find('.buff-debuff-value').attr('data-math-simb', '+');
+				}
 
 				if ( typeof cardBuffed !== 'undefined' ) {
 					card.addClass('buffed');
@@ -2371,11 +2435,23 @@ function startBattle() {
 
 			}
 			else {
-				cardStrengthNew = cardStrength - value;
-				if ( cardStrengthNew < 1 ) {
-					cardStrengthNew = 1;
+				if ( isNaN(value) && value.indexOf('/') !== (-1) ) {
+					value = value.replace('/', '');
+					value = parseInt(value);
+					cardStrengthNew = cardStrength / value;
+					if ( cardStrengthNew < 1 ) {
+						cardStrengthNew = 1;
+					}
+					card.find('.buff-debuff-value').attr('data-math-simb', '/');
 				}
-				card.find('.buff-debuff-value').attr('data-math-simb', '-');
+				else {
+					cardStrengthNew = cardStrength - value;
+					if ( cardStrengthNew < 1 ) {
+						cardStrengthNew = 1;
+					}
+					card.find('.buff-debuff-value').attr('data-math-simb', '-');
+				}
+
 
 				if ( typeof cardBuffed !== 'undefined' ) {
 					card.addClass('debuffed');
@@ -2405,7 +2481,8 @@ function startBattle() {
 				cardsItems.each(function(index) {
 					if ( index !== (cardsItems.length - 1) ) {
 						cardStrengthPulsing( $(this), params.type, params.value, true );
-					} else {
+					}
+					else {
 						params.value = params.value * index;
 						cardStrengthPulsing( $(this), params.type, params.value, true );
 					}
