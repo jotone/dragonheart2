@@ -187,8 +187,8 @@ foreach($battle_members as $key => $value){
 	}
 }
 $buff_classes = [
-	'terrify_wrap' => 'terify-debuff-wrap',
-	'terrify' => 'terify-debuff',
+	'terrify_wrap' => 'terrify-debuff-wrap',
+	'terrify' => 'terrify-debuff',
 	'insp_wrap' => 'inspiration-buff-wrap',
 	'insp' => 'inspiration-buff'
 ];
