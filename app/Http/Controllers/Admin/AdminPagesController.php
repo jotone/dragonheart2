@@ -10,6 +10,7 @@ use App\Fraction;
 use App\League;
 use App\MagicEffect;
 use App\Page;
+use App\Payment;
 use App\Rubric;
 use App\User;
 use App\Http\Controllers\Admin\AdminViews;
@@ -514,7 +515,8 @@ class AdminPagesController extends BaseController
 
     public function usersPayment(Request $request){
         $data = $request->all();
-        return view('admin.payments');
+        $payments = Payment::where('pay_status','=',1)->orderBy('updated_at','asc')->get();
+        return view('admin.payments', ['payments' => $payments]);
     }
     //END OF Страницы
 }
