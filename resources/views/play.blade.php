@@ -163,7 +163,7 @@ foreach($battle_members as $key => $value){
 			'user_nickname'	=> $player_data[0] -> login,
 			'user_ready'	=> $value -> user_ready,
 			'wins_count'	=> count($round_status[$user_field_identificator]),
-			'fear_rows'		=> [['',''],['',''],['','']],
+			'fear_rows'		=> [['','',0],['','',0],['','',0]],
 			'inspir_rows'	=> [['',''],['',''],['','']],
 		];
 		$players[$user_field_identificator] = &$players['allied'];
@@ -180,7 +180,7 @@ foreach($battle_members as $key => $value){
 			'user_magic'	=> $user_magic,
 			'user_nickname'	=> $player_data[0] -> login,
 			'wins_count'	=> count($round_status[$opponent_field_identificator]),
-			'fear_rows'		=> [['',''],['',''],['','']],
+			'fear_rows'		=> [['','',0],['','',0],['','',0]],
 			'inspir_rows'	=> [['',''],['',''],['','']],
 		];
 		$players[$opponent_field_identificator] = &$players['enemy'];
@@ -192,6 +192,7 @@ $buff_classes = [
 	'insp_wrap' => 'inspiration-buff-wrap buff',
 	'insp' => 'inspiration-buff'
 ];
+
 //fear counts
 foreach($battle_field as $field => $data){
 	if($field == 'mid'){
@@ -199,8 +200,18 @@ foreach($battle_field as $field => $data){
 			foreach($card['card']['actions'] as $action){
 				if($action->action == 18){
 					foreach($action->fear_ActionRow as $fear_row){
-						$players['enemy']['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify']];
-						$players['allied']['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify']];
+						$count_enemy = $players['enemy']['fear_rows'][$fear_row][2] +1;
+						$count_allied = $players['allied']['fear_rows'][$fear_row][2] +1;
+						$players['enemy']['fear_rows'][$fear_row] = [
+							$buff_classes['terrify_wrap'],
+							$buff_classes['terrify'],
+							$count_enemy
+						];
+						$players['allied']['fear_rows'][$fear_row] = [
+							$buff_classes['terrify_wrap'],
+							$buff_classes['terrify'],
+							$count_allied
+						];
 					}
 				}
 			}
@@ -221,13 +232,29 @@ foreach($battle_field as $field => $data){
 						foreach($action->fear_ActionRow as $fear_row){
 							if($action->fear_actionTeamate == 0){
 								if($field == $opponent_field_identificator){
-									$players[$user_field_identificator]['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify']];
+									$count = $players[$user_field_identificator]['fear_rows'][$fear_row][2] +1;
+									$players[$user_field_identificator]['fear_rows'][$fear_row] = [
+										$buff_classes['terrify_wrap'],
+										$buff_classes['terrify'],
+										$count
+									];
 								}else{
-									$players[$opponent_field_identificator]['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify']];
+									$count = $players[$opponent_field_identificator]['fear_rows'][$fear_row][2] +1;
+									$players[$opponent_field_identificator]['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify'], $count];
 								}
 							}else{
-								$players['enemy']['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify']];
-								$players['allied']['fear_rows'][$fear_row] = [$buff_classes['terrify_wrap'],$buff_classes['terrify']];
+								$count_enemy = $players['enemy']['fear_rows'][$fear_row][2] +1;
+								$count_allied = $players['allied']['fear_rows'][$fear_row][2] +1;
+								$players['enemy']['fear_rows'][$fear_row] = [
+									$buff_classes['terrify_wrap'],
+									$buff_classes['terrify'],
+									$count_enemy
+								];
+								$players['allied']['fear_rows'][$fear_row] = [
+									$buff_classes['terrify_wrap'],
+									$buff_classes['terrify'],
+									$count_allied
+								];
 							}
 						}
 					}
@@ -385,7 +412,7 @@ foreach($battle_field as $field => $data){
 									<!-- END OF Список сверхдальних карт-->
 								</div>
 								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][2][1] != '') )
-									<div class="debuff-or-buff-anim {{$players['enemy']['fear_rows'][2][1]}} active"></div>
+									<div class="debuff-or-buff-anim {{$players['enemy']['fear_rows'][2][1]}} active" data-count="{{$players['enemy']['fear_rows'][2][2]}}"></div>
 								@endif
 								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['inspir_rows'][2][1] != '') )
 									<div class="debuff-or-buff-anim {{$players['enemy']['inspir_rows'][2][1]}} active"></div>
@@ -424,7 +451,7 @@ foreach($battle_field as $field => $data){
 									<!-- END OF Список дальних карт-->
 								</div>
 								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][1][1] != '') )
-									<div class="debuff-or-buff-anim {{$players['enemy']['fear_rows'][1][1]}} active"></div>
+									<div class="debuff-or-buff-anim {{$players['enemy']['fear_rows'][1][1]}} active" data-count="{{$players['enemy']['fear_rows'][1][2]}}"></div>
 								@endif
 								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['inspir_rows'][1][1] != '') )
 									<div class="debuff-or-buff-anim {{$players['enemy']['inspir_rows'][1][1]}} active"></div>
@@ -462,7 +489,7 @@ foreach($battle_field as $field => $data){
 									<!-- END OF Список ближних карт-->
 								</div>
 								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['fear_rows'][0][1] != '') )
-									<div class="debuff-or-buff-anim {{$players['enemy']['fear_rows'][0][1]}} active"></div>
+									<div class="debuff-or-buff-anim {{$players['enemy']['fear_rows'][0][1]}} active" data-count="{{$players['enemy']['fear_rows'][0][2]}}"></div>
 								@endif
 								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['inspir_rows'][0][1] != '') )
 									<div class="debuff-or-buff-anim {{$players['enemy']['inspir_rows'][0][1]}} active"></div>
@@ -507,7 +534,7 @@ foreach($battle_field as $field => $data){
 									<!-- END OF Список ближних карт-->
 								</div>
 								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][0][1] != '') )
-									<div class="debuff-or-buff-anim {{$players['allied']['fear_rows'][0][1]}} active"></div>
+									<div class="debuff-or-buff-anim {{$players['allied']['fear_rows'][0][1]}} active" data-count="{{$players['allied']['fear_rows'][0][2]}}"></div>
 								@endif
 								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['inspir_rows'][0][1] != '') )
 									<div class="debuff-or-buff-anim {{$players['allied']['inspir_rows'][0][1]}} active"></div>
@@ -544,7 +571,7 @@ foreach($battle_field as $field => $data){
 									<!-- END OF Список дальних карт-->
 								</div>
 								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][1][1] != '') )
-									<div class="debuff-or-buff-anim {{$players['allied']['fear_rows'][1][1]}} active"></div>
+									<div class="debuff-or-buff-anim {{$players['allied']['fear_rows'][1][1]}} active" data-count="{{$players['allied']['fear_rows'][1][2]}}"></div>
 								@endif
 								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['inspir_rows'][1][1] != '') )
 									<div class="debuff-or-buff-anim {{$players['allied']['inspir_rows'][1][1]}} active"></div>
@@ -581,7 +608,7 @@ foreach($battle_field as $field => $data){
 									<!-- END OF Список сверхдальнихдальних карт-->
 								</div>
 								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][2][1] != '') )
-									<div class="debuff-or-buff-anim {{$players['allied']['fear_rows'][2][1]}} active"></div>
+									<div class="debuff-or-buff-anim {{$players['allied']['fear_rows'][2][1]}} active" data-count="{{$players['allied']['fear_rows'][2][2]}}"></div>
 								@endif
 								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['inspir_rows'][2][1] != '') )
 									<div class="debuff-or-buff-anim {{$players['allied']['inspir_rows'][2][1]}} active"></div>
