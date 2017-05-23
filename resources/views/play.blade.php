@@ -187,9 +187,9 @@ foreach($battle_members as $key => $value){
 	}
 }
 $buff_classes = [
-	'terrify_wrap' => 'terrify-debuff-wrap',
+	'terrify_wrap' => 'terrify-debuff-wrap debuff',
 	'terrify' => 'terrify-debuff',
-	'insp_wrap' => 'inspiration-buff-wrap',
+	'insp_wrap' => 'inspiration-buff-wrap buff',
 	'insp' => 'inspiration-buff'
 ];
 //fear counts
