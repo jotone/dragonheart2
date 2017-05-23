@@ -2145,19 +2145,22 @@ function startBattle() {
 				$('.rounds-counts.oponent .rounds-counts-count').text(win_status[1]);
 
 				$('.convert-stuff').removeAttr('class').addClass('convert-stuff');
+				$('.debuff-or-buff-anim').remove();
 
 				recalculateDecks(result);
 
 				circleRoundIndicator();
 
 				if (typeof result.magicUsage != "undefined") {
-					magicReview(result)
+					magicReview(result);
 				}
 
 				//Очищение полей
 				$('.mezhdyblock #sortable-cards-field-more, .convert-battle-front .image-inside-line, .convert-battle-front .cards-row-wrap').children().fadeOut(500,function(){
 					$('.mezhdyblock #sortable-cards-field-more, .convert-battle-front .image-inside-line, .convert-battle-front .cards-row-wrap').empty();
 				});
+
+
 
 				setTimeout(function() {
 
@@ -2456,6 +2459,7 @@ function startBattle() {
 
 	}
 
+	// card pusling
 	function cardStrengthPulsing( card, type, value, cardBuffed ) {
 
 		setTimeout(function() {
@@ -2524,6 +2528,7 @@ function startBattle() {
 
 	}
 
+	// buffing or debuffing group of cards by their id
 	function buffDebuffGroupOfCards(params) {
 
 		setTimeout(function() {
@@ -2545,6 +2550,7 @@ function startBattle() {
 
 	}
 
+	// pretty card moving
 	function cardMovingFromTo( side, from, count ) {
 
 		var wrapper = null;
@@ -2640,7 +2646,7 @@ function startBattle() {
 
 	};
 
-	/* side, effectName, type, rows */
+	// remove buffs or debuffs from row
 	function removeBuffsOrDebuffFromRow(params) {
 
 		var sideClass = '';
