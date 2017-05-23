@@ -1019,16 +1019,18 @@ function fieldBuilding(step_status, addingAnim, recalcCallback) {
 							default:
 								var rowId = intRowToField(row);
 
-								if(card['type'] == 'special'){
+								if ( card['type'] == 'special' ) {
 
 									animationDeleteSpecialCard(player,rowId);
 
-								}else{
+								}
+								else {
 
 									// Узнаю какие карты нужно удалить и даю им класс ready-to-die
 									var currentCardDelate = $('.convert-battle-front #'+player+'.convert-cards '+rowId+' .cards-row-wrap li[data-cardid="'+card['id']+'"]:not(.ready-to-die)').first();
 									currentCardDelate.addClass('ready-to-die');
 									console.log('currentCardDelate',currentCardDelate);
+
 								}
 						}
 					}
@@ -1036,18 +1038,19 @@ function fieldBuilding(step_status, addingAnim, recalcCallback) {
 			}
 			// После всех циклов запускаю функцию анимации удаления карты
 
-			if(typeof step_status.actions != "undefined" && step_status.actions.length){
+			if ( typeof step_status.actions != "undefined" && step_status.actions.length ) {
 
-				step_status.actions.forEach(function(item){
+				step_status.actions.forEach(function(item) {
 					switch(item){
 						case '9':
-							//console.log("одурманивание");
+							console.log("одурманивание");
 							//animationBurningCardEndDeleting('fade');
-
 						break;
 						case '7':
 							console.log("Лекарь");
-
+						break;
+						case '10':
+							console.log('Перегрупировка');
 						break;
 						case '19':
 							console.log("Убийца");
@@ -1058,6 +1061,33 @@ function fieldBuilding(step_status, addingAnim, recalcCallback) {
 			} else if (typeof window.card_overloadingUsage != "undefined" && window.card_overloadingUsage == true){
 				// проверка на розыгрыш карты "перегрупировка"
 				animationBurningCardEndDeleting('fade');
+				var addedCardSide = step_status.added_cards;
+
+				var side = null;
+				var cards = null;
+
+				if ( addedCardSide.hasOwnProperty('p1') ) {
+					if ( $('.convert-cards#p1').is('.user') ) {
+						side = 'oponent';
+					}
+					else {
+						side = 'user';
+					}
+					cards = addedCardSide.p1.hand;
+				}
+				else {
+					if ( $('.convert-cards#p2').is('.user') ) {
+						side = 'oponent';
+					}
+					else {
+						side = 'user';
+					}
+					cards = addedCardSide.p2.hand;
+				}
+
+				cards.forEach(function(item) {
+					removeCardEffectsFromField(item, side, step_status);
+				});
 				delete window['card_overloadingUsage'];
 			}
 			else{
@@ -1600,7 +1630,6 @@ function startBattle() {
 
 			case 'changeCardInHand':
 				hidePreloader();
-				console.log('---hope it trigger on 10 event---');
 				$('#selecthandCardsPopup #handCards .change-card.clicked').parents('li').addClass('animator-out');
 				setTimeout(function(){
 					$('#selecthandCardsPopup #handCards .animator-out').remove();
@@ -1802,7 +1831,10 @@ function startBattle() {
 										console.log('your turn', result);
 									}
 
-									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], {
+										callbackFunctionName: recalculateCardsStrength,
+										callbackFunctionParams: result.step_status
+									});
 
 								}
 								//Анимация лекаря ( ефект лечения)
@@ -1891,7 +1923,8 @@ function startBattle() {
 										rows: [],
 										type: 'buff',
 										effectName: 'inspiration',
-										value: '/2'
+										value: '/2',
+										step_status: result.step_status
 									};
 
 									var played_card = result.step_status.played_card;
@@ -2105,7 +2138,9 @@ function startBattle() {
 								);
 
 							}
+
 						}
+
 						delete window['card_overloading'];
 					}
 
@@ -2420,10 +2455,16 @@ function startBattle() {
 			var parent = row.parents('.convert-stuff');
 			var pointsSum = parent.find('.field-for-sum');
 			parent.addClass(params.effectName + '-' + params.type + '-wrap');
-			var effectMarkup = '<div class="debuff-or-buff-anim ' + params.effectName + '-' + params.type + '"></div>';
-			row.append(effectMarkup);
-			var effectObjects = row.find('.debuff-or-buff-anim');
-			var effectObjectAdded = row.find('.debuff-or-buff-anim:not(active)');
+			var effectMarkup = '<div class="debuff-or-buff-anim ' + params.effectName + '-' + params.type + '" data-count=1></div>';
+
+			if ( row.find('.' + params.effectName + '-' + params.type).length ) {
+				var field = row.find('.' + params.effectName + '-' + params.type);
+				var countPlus = parseInt( field.attr('data-count') ) + 1;
+			}
+			else {
+				row.append(effectMarkup);
+			}
+			var effectObjectsAdded = row.find('.' + params.effectName + '-' + params.type);
 
 			var timer = setInterval(function() {
 				if ( !$('.troll-popup.show').length ) {
@@ -2438,7 +2479,7 @@ function startBattle() {
 						}, 500);
 					}, 0);
 
-					cards.each(function() {
+					cards.each(function(index) {
 						var card = $(this);
 						if (
 							( params.type == 'debuff' && !card.is('[data-immune=true]') && !card.is('[data-full-immune=true]') ) ||
@@ -2477,11 +2518,9 @@ function startBattle() {
 				if ( isNaN(value) && value.indexOf('x') !== (-1) ) {
 					value = value.replace('x', '');
 					value = parseInt(value);
-					cardStrengthNew = cardStrength * value;
 					card.find('.buff-debuff-value').attr('data-math-simb', 'x');
 				}
 				else {
-					cardStrengthNew = cardStrength + value;
 					card.find('.buff-debuff-value').attr('data-math-simb', '+');
 				}
 
@@ -2516,7 +2555,6 @@ function startBattle() {
 			}
 
 			card.find('.buff-debuff-value').text(value);
-			card.find('.card-current-value').text(cardStrengthNew);
 
 			setTimeout(function() {
 				card.removeClass('pulsed');
@@ -2529,7 +2567,7 @@ function startBattle() {
 	}
 
 	// buffing or debuffing group of cards by their id
-	function buffDebuffGroupOfCards(params) {
+	function buffDebuffGroupOfCards( params ) {
 
 		setTimeout(function() {
 
@@ -2647,7 +2685,7 @@ function startBattle() {
 	};
 
 	// remove buffs or debuffs from row
-	function removeBuffsOrDebuffFromRow(params) {
+	function removeBuffsOrDebuffFromRow( params ) {
 
 		var sideClass = '';
 		if (params.side !== 'both') {
@@ -2660,39 +2698,85 @@ function startBattle() {
 			var row = intRowToField(item);
 			var theRow = $(sideClass + ' .field-for-cards' + row);
 
-			theRow.each(function() {
-				if ( $(this).find('.' + effectFullName).length ) {
+			if ( theRow.find('.' + effectFullName).length ) {
 
-					var rowAnim = $(this);
-					var animElement = rowAnim.find('.' + effectFullName);
+				var rowAnim = theRow;
+				var animElement = rowAnim.find('.' + effectFullName);
+				var animElementCount = parseInt( animElement.attr('data-count') );
+				var cards = rowAnim.find('.content-card-item');
+				animElementCount--;
+				if ( animElementCount === 0 ) {
 					animElement.addClass('removing');
+				}
 
-					setTimeout(function(){
+				setTimeout(function(){
 
+					if ( animElementCount === 0 ) {
 						animElement.remove();
-						var cards = rowAnim.find('.content-card-item');
+					}
 
-						cards.each(function() {
-							var card = $(this);
-							cardStrengthPulsing( card, 'debuff', params.value );
-						});
-						rowAnim.parents('.convert-stuff').removeClass(effectFullName + '-wrap');
-						if ( rowAnim.find('[class$="-' + params.type + '"]').length === 0 ) {
-							rowAnim.parents('.convert-stuff').removeClass(params.type);
+					cards.each(function(index) {
+						var card = $(this);
+						var pulsingType = '';
+						if ( params.type == 'buff' ) {
+							pulsingType = 'debuff';
+							if ( card.attr('data-immune') == 'false' && card.attr('data-full-immune') == 'false' ) {
+								cardStrengthPulsing( card, pulsingType, params.value );
+							}
+						}
+						else {
+							pulsingType = 'buff';
+							if ( card.attr('data-full-immune') == 'false' ) {
+								cardStrengthPulsing( card, pulsingType, params.value );
+							}
 						}
 
-					}, 1500);
+						if ( index == (cards.length - 1) ) {
+							recalculateBattleField();
+							recalculateCardsStrength(params.step_status);
+						}
+
+					});
+
+					if ( rowAnim.find('[class$="-' + params.type + '"]').length === 0 ) {
+						rowAnim.parents('.convert-stuff').removeClass(effectFullName + '-wrap');
+						if ( rowAnim.parents('[class$="-' + params.type + '"]').length === 0 ) {
+							rowAnim.parents('.convert-stuff').removeClass(params.type);
+						}
+					}
+
+				}, 1500);
+
+			}
+		});
+
+	}
+
+	// remove card efects from field
+	function removeCardEffectsFromField( card, side, step_status ) {
+
+		if ( card.hasOwnProperty('actions') && card.actions.length > 0 ) {
+			card.actions.forEach(function( item ) {
+
+				//remove terrify-debuff
+				if ( item.action == '18' ) {
+
+					var rowParams = {
+						side: side,
+						effectName: 'terrify',
+						type: 'debuff',
+						rows: item.fear_ActionRow,
+						value: parseInt(item.fear_strenghtValue),
+						step_status: step_status
+					};
+
+					removeBuffsOrDebuffFromRow( rowParams );
 
 				}
+
 			});
 
-			if ( index === (params.rows.length - 1) ) {
-				setTimeout(function() {
-					recalculateBattleField();
-				}, 2500);
-			}
-
-		});
+		}
 
 	}
 
