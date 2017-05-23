@@ -1600,7 +1600,7 @@ function startBattle() {
 
 			case 'changeCardInHand':
 				hidePreloader();
-
+				console.log('---hope it trigger on 10 event---');
 				$('#selecthandCardsPopup #handCards .change-card.clicked').parents('li').addClass('animator-out');
 				setTimeout(function(){
 					$('#selecthandCardsPopup #handCards .animator-out').remove();
@@ -2452,15 +2452,6 @@ function startBattle() {
 
 				}
 			}, 500);
-			if ( effectObjects.length > 1 ) {
-				setTimeout(function() {
-					effectObjects.each(function(index) {
-						if (index != 0) {
-							$(this).remove();
-						}
-					});
-				},1000)
-			}
 		});
 
 	}
