@@ -1785,20 +1785,21 @@ function startBattle() {
 									var debuffValue = 0;
 									var debuffTeamates = 0;
 
+									for ( var i = 0; i < playedCard.actions.length; i++ ) {
+
+										if ( playedCard.actions[i].action == item ) {
+											debuffRows = playedCard.actions[i].fear_ActionRow;
+											debuffValue = playedCard.actions[i].fear_strenghtValue;
+											debuffTeamates = parseInt( playedCard.actions[i].fear_actionTeamate );
+										}
+
+									}
+
 									var cardInMid = $('.mezhdyblock [data-cardid=' + cardId + ']');
 									var cardInMidLength = cardInMid.length;
 									// required if we has special card in field with this id
+
 									if ( cardInMidLength <= 1 ) {
-
-										for ( var i = 0; i < playedCard.actions.length; i++ ) {
-
-											if ( playedCard.actions[i].action == item ) {
-												debuffRows = playedCard.actions[i].fear_ActionRow;
-												debuffValue = playedCard.actions[i].fear_strenghtValue;
-												debuffTeamates = parseInt( playedCard.actions[i].fear_actionTeamate );
-											}
-
-										}
 
 										if ( resultLogin == thisUser ) {
 
@@ -1863,6 +1864,43 @@ function startBattle() {
 											cardInMid.prepend('<div class="count">2</div>');
 										}
 
+										debuffRows.forEach(function(item) {
+
+											var rowId = intRowToField(item);
+
+											if ( resultLogin == thisUser ) {
+
+												var userTeriffyField = $('.user .field-for-cards' + rowId + ' .terrify-debuff');
+												var userCount = parseInt( userTeriffyField.attr('data-count') ) + 1;
+												userTeriffyField.attr('data-count', userCount);
+
+												if ( debuffTeamates == 1 ) {
+
+													var oponentTeriffyField = $('.oponent .field-for-cards' + rowId + ' .terrify-debuff');
+													var oponentCount = parseInt( oponentTeriffyField.attr('data-count') ) + 1;
+													oponentTeriffyField.attr('data-count', oponentCount);
+
+												}
+
+											}
+											else {
+
+												var oponentTeriffyField = $('.oponent .field-for-cards' + rowId + ' .terrify-debuff');
+												var oponentCount = parseInt( oponentTeriffyField.attr('data-count') ) + 1;
+												oponentTeriffyField.attr('data-count', oponentCount);
+
+												if ( debuffTeamates == 1 ) {
+
+													var userTeriffyField = $('.user .field-for-cards' + rowId + ' .terrify-debuff');
+													var userCount = parseInt( userTeriffyField.attr('data-count') ) + 1;
+													userTeriffyField.attr('data-count', userCount);
+
+												}
+
+											}
+
+										});
+										
 										detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
 
 									}
@@ -2751,7 +2789,7 @@ function startBattle() {
 			theRow.each(function(index) {
 
 				var rowAnim = $(this);
-				console.log(rowAnim.find('.' + effectFullName).length, rowAnim, rowAnim.find('.' + effectFullName));
+
 				if ( rowAnim.find('.' + effectFullName).length ) {
 
 					var animElement = rowAnim.find('.' + effectFullName);
