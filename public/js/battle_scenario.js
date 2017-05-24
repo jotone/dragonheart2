@@ -1900,7 +1900,7 @@ function startBattle() {
 											}
 
 										});
-										
+
 										detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
 
 									}
@@ -1943,7 +1943,8 @@ function startBattle() {
 										callbackFunctionParams: {
 											type: 'buff',
 											cards: cards,
-											value: value
+											value: value,
+											step_status: result.step_status
 										}
 									};
 
@@ -1997,7 +1998,10 @@ function startBattle() {
 										addInspirationParams.side = 'user';
 									}
 
-									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], {
+										callbackFunctionName: recalculateCardsStrength,
+										callbackFunctionParams: result.step_status
+									});
 									buffingDebuffingAnimOnRows( addInspirationParams );
 
 									recalculateBattleField();
@@ -2669,6 +2673,12 @@ function startBattle() {
 						params.value = params.value * index;
 						cardStrengthPulsing( $(this), params.type, params.value, true );
 					}
+
+					if (index == (cardsItems.length - 1) ) {
+						recalculateBattleField();
+						recalculateCardsStrength(params.step_status);
+					}
+
 				});
 			}
 
@@ -2838,11 +2848,13 @@ function startBattle() {
 
 					}, 1500);
 
-					if ( index == (theRow.length - 1) ) {
+				}
+
+				if ( index == (theRow.length - 1) ) {
+					setTimeout(function() {
 						recalculateBattleField();
 						recalculateCardsStrength(params.step_status);
-					}
-
+					},1000);
 				}
 
 			});
