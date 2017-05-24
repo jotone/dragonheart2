@@ -473,8 +473,8 @@ class GwentSocket extends BaseSocket
 						if($card['type'] == 'special'){
 							if($card_row == 3){
 								$battle_field['mid'][] = ['card' => $card, 'strength' => $card['strength'], 'login' => $users_data['user']['login']];
-								//Если карт на поле спец карт больше 6ти
-								if(count($battle_field['mid']) > 6){
+								//Если карт на поле спец карт больше 999 ти
+								if(count($battle_field['mid']) > 999){
 									//Кидает первую карту в отбой
 									if($users_data['user']['login'] == $battle_field['mid'][0]['login']){
 										$users_data['user']['discard'][] = $battle_field['mid'][0]['card'];
@@ -1346,7 +1346,7 @@ class GwentSocket extends BaseSocket
 				foreach($battle_field['mid'] as $card_iter => $card_data){
 					$user_type = ($users_data['user']['login'] == $card_data['login'])? 'user': 'opponent';
 					$users_data[$user_type]['discard'][] = $card_data['card'];
-					$step_status['dropped_cards'][$users_data[$user_type]['player']]['mid'] = '';
+					$step_status['dropped_cards'][$users_data[$user_type]['player']]['mid'][] = $card_data['card'];
 				}
 				$battle_field['mid'] = [];
 			break;
