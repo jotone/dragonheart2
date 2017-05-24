@@ -2056,7 +2056,7 @@ function startBattle() {
 							//то запустить функцию перещета силы на столе - recalculateBattleField()
 							var recalculateDecksCheck = actions.some(function(element, index) {
 							  if (element == '18' || element == '19') {
-							      return true;
+								  return true;
 							  }
 							});
 							if (!recalculateDecksCheck) {

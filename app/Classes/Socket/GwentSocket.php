@@ -104,9 +104,9 @@ class GwentSocket extends BaseSocket
 
 	//Обработчик каждого сообщения
 	public function onMessage(ConnectionInterface $from, $msg){
-
 		$msg = json_decode($msg); // сообщение от пользователя arr[action, ident[battleId, UserId, Hash]]
-
+		var_dump(date('Y-m-d H:i:s'));
+		var_dump($msg);
 		if(!isset($this->battles[$msg->ident->battleId])){
 			$this->battles[$msg->ident->battleId] = new \SplObjectStorage; 
 		}
@@ -584,7 +584,6 @@ class GwentSocket extends BaseSocket
 								}
 							}
 						}
-
 					}
 					if($add_time === true){
 						$turn_expire = $msg->timing + $timing_settings['additional_time'];
@@ -680,6 +679,16 @@ class GwentSocket extends BaseSocket
 							unset($battle_field[$player][$row]['warrior'][$card_iter]);
 							$battle_field[$player][$row]['warrior'] = array_values($battle_field[$player][$row]['warrior']);
 							break 2;
+						}
+					}
+				}
+				$battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+				foreach($battle_field as $player => $rows) {
+					if($player != 'mid'){
+						foreach ($rows as $row => $row_data) {
+							foreach ($row_data['warrior'] as $card_iter => $card_data) {
+								$this->step_status['cards_strength'][$player][$row][$card_iter] = $card_data['strength'];
+							}
 						}
 					}
 				}
@@ -2431,7 +2440,6 @@ class GwentSocket extends BaseSocket
 
 		$oponent_discard_count = count($users_data['opponent']['discard']);
 		$oponent_deck_count = count($users_data['opponent']['deck']);
-
 		$result = [
 			'message'		=> 'userMadeAction',
 			'timing'		=> $timing+time(),
