@@ -1590,7 +1590,9 @@ function startBattle() {
 	};
 	conn.onmessage = function (e) {
 		var result = JSON.parse(e.data);
+
 		console.log(result);
+
 		var allowPopups = true;
 		switch(result.message) {
 			//Пользователи присоединились к игре
