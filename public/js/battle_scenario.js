@@ -1124,6 +1124,15 @@ function recalculateCardsStrength(step_status) {
 
 }
 
+// recalculateCardsStrength with timeout
+function recalculateCardsStrengthTimeout (params) {
+
+	setTimeout(function() {
+		recalculateCardsStrength(params.step_status);
+	}, params.time);
+
+}
+
 function sortCards() {
 	var arrayToSort = {
 		special: [],
@@ -1843,8 +1852,11 @@ function startBattle() {
 										}
 
 										detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], {
-											callbackFunctionName: recalculateCardsStrength,
-											callbackFunctionParams: result.step_status
+											callbackFunctionName: recalculateCardsStrengthTimeout,
+											callbackFunctionParams: {
+												time: 2000,
+												step_status: result.step_status
+											}
 										});
 
 									}
@@ -2828,7 +2840,9 @@ function startBattle() {
 							}
 							else {
 								pulsingType = 'buff';
-								if ( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'true' ) {
+								if (
+									( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'true' ) || ( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'false' ) 
+								) {
 									cardStrengthPulsing( card, pulsingType, params.value );
 								}
 							}
@@ -2854,7 +2868,7 @@ function startBattle() {
 					setTimeout(function() {
 						recalculateBattleField();
 						recalculateCardsStrength(params.step_status);
-					},1000);
+					}, 3000);
 				}
 
 			});
