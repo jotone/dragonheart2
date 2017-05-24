@@ -253,7 +253,7 @@ function animateHandCard() {
 }
 
 function createUserDescriber(userLogin, user_img, userRace) {
-	if ( user_img != '' ) {
+	if ( user_img !== '' ) {
 		$('.convert-right-info #'+userLogin+' .stash-about .image-oponent-ork').css({'background':'url(/img/user_images/'+user_img+') 50% 50% no-repeat'});
 	}
 	$('.convert-right-info #'+userLogin+' .stash-about .naming-oponent .name').text(userLogin);
@@ -282,7 +282,7 @@ function createFieldCardView(cardData, strength, titleView) {
 			}
 		}
 	});
-
+	console.log('cardData when building card markup: ', cardData);
 	return '' +
 		'<li class="content-card-item disable-select loading animation" data-cardid="'+cardData['id']+'" data-relative="'+cardData['type']+'" data-immune=' + immune + ' data-full-immune=' + full_immune + ' >'+
 		createCardDescriptionView(cardData, strength, titleView)+
@@ -1328,7 +1328,7 @@ function buildBattleField(fieldData) {
 	for(var fieldType in fieldData){
 		if(fieldType == 'mid'){
 			for(var i=0; i<fieldData['mid'].length; i++){
-				$('.mezhdyblock #sortable-cards-field-more').append(createFieldCardView(fieldData['mid'][i]['card'], 0, false));
+				$('.mezhdyblock #sortable-cards-field-more').append( createFieldCardView( fieldData['mid'][i]['card'], 0, false) );
 			}
 		}else{
 			for(var i=0; i<fieldData[fieldType].length; i++){
@@ -1590,7 +1590,7 @@ function startBattle() {
 	};
 	conn.onmessage = function (e) {
 		var result = JSON.parse(e.data);
-		//console.log(result);
+		console.log(result);
 		var allowPopups = true;
 		switch(result.message) {
 			//Пользователи присоединились к игре
@@ -1747,7 +1747,7 @@ function startBattle() {
 
 					if(typeof result.turnDescript != "undefined") turnDescript = result.turnDescript;
 
-					changeTurnIndicator(result.login); //смена индикатора хода
+					changeTurnIndicator('User made action (result): ', result.login); //смена индикатора хода
 
 					var resultLogin  = result.login;
 					var thisUser = $('.user-describer .name').text();
@@ -1755,9 +1755,11 @@ function startBattle() {
 					fieldBuilding(result.step_status, true);
 
 					if ( result.step_status.played_card['card'] ) {
-
+						console.log('card played');
 						var actions = result.step_status.actions;
 						var playedCard = result.step_status.played_card.card;
+						var cardId = playedCard.id;
+						var cardType =  playedCard.fraction;
 
 						if (actions.length) {
 
@@ -1780,46 +1782,20 @@ function startBattle() {
 									var debuffValue = 0;
 									var debuffTeamates = 0;
 
-									for ( var i = 0; i < playedCard.actions.length; i++ ) {
+									if ( cardType !== 'special' ) {
 
-										if ( playedCard.actions[i].action == item ) {
-											debuffRows = playedCard.actions[i].fear_ActionRow;
-											debuffValue = playedCard.actions[i].fear_strenghtValue;
-											debuffTeamates = parseInt( playedCard.actions[i].fear_actionTeamate );
+										for ( var i = 0; i < playedCard.actions.length; i++ ) {
+
+											if ( playedCard.actions[i].action == item ) {
+												debuffRows = playedCard.actions[i].fear_ActionRow;
+												debuffValue = playedCard.actions[i].fear_strenghtValue;
+												debuffTeamates = parseInt( playedCard.actions[i].fear_actionTeamate );
+											}
+
 										}
 
-									}
+										if ( resultLogin == thisUser ) {
 
-									if ( resultLogin == thisUser ) {
-
-										buffingDebuffingAnimOnRows({
-											side: 'user',
-											rows: debuffRows,
-											value: debuffValue,
-											type: 'debuff',
-											effectName: 'terrify'
-										});
-										if ( debuffTeamates == 1 ) {
-											buffingDebuffingAnimOnRows({
-												side: 'oponent',
-												rows: debuffRows,
-												value: debuffValue,
-												type: 'debuff',
-												effectName: 'terrify'
-											});
-										}
-										console.log('enemy turn', result);
-									}
-									else {
-
-										buffingDebuffingAnimOnRows({
-											side: 'oponent',
-											rows: debuffRows,
-											value: debuffValue,
-											type: 'debuff',
-											effectName: 'terrify'
-										});
-										if ( debuffTeamates == 1 ) {
 											buffingDebuffingAnimOnRows({
 												side: 'user',
 												rows: debuffRows,
@@ -1827,14 +1803,44 @@ function startBattle() {
 												type: 'debuff',
 												effectName: 'terrify'
 											});
+											if ( debuffTeamates == 1 ) {
+												buffingDebuffingAnimOnRows({
+													side: 'oponent',
+													rows: debuffRows,
+													value: debuffValue,
+													type: 'debuff',
+													effectName: 'terrify'
+												});
+											}
+											console.log('Event 18. Enemy turn', result);
 										}
-										console.log('your turn', result);
-									}
+										else {
 
-									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], {
-										callbackFunctionName: recalculateCardsStrength,
-										callbackFunctionParams: result.step_status
-									});
+											buffingDebuffingAnimOnRows({
+												side: 'oponent',
+												rows: debuffRows,
+												value: debuffValue,
+												type: 'debuff',
+												effectName: 'terrify'
+											});
+											if ( debuffTeamates == 1 ) {
+												buffingDebuffingAnimOnRows({
+													side: 'user',
+													rows: debuffRows,
+													value: debuffValue,
+													type: 'debuff',
+													effectName: 'terrify'
+												});
+											}
+											console.log('Event 18. Your turn', result);
+										}
+
+										detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], {
+											callbackFunctionName: recalculateCardsStrength,
+											callbackFunctionParams: result.step_status
+										});
+
+									}
 
 								}
 								//Анимация лекаря ( ефект лечения)
@@ -1887,7 +1893,7 @@ function startBattle() {
 									for ( var i = 0; i < played_card.card.actions.length; i++ ) {
 										if ( played_card.card.actions[i].action === '4' ) {
 											var inspirationAction = played_card.card.actions[i];
-											console.log(inspirationAction);
+											console.log('Inspiration action: ', inspirationAction);
 											inspirationAction.inspiration_ActionRow.forEach(function(item) {
 												addInspirationParams.rows.push(item);
 											});
@@ -1933,7 +1939,7 @@ function startBattle() {
 									for ( var i = 0; i < played_card.card.actions.length; i++ ) {
 										if ( played_card.card.actions[i].action === '11' ) {
 											var sorrowAction = played_card.card.actions[i];
-											console.log(sorrowAction);
+											console.log('Sorrow actions: ', sorrowAction);
 											sorrowAction.sorrow_ActionRow.forEach(function(item) {
 												removeInspirationParams.rows.push(item);
 											});
@@ -2073,7 +2079,7 @@ function startBattle() {
 
 					}
 					else if ( typeof result.step_status.played_magic === 'object' ) {
-
+						console.log('magic played');
 						var magicActions = result.step_status.actions;
 
 						var playerArray = Object.keys(result.step_status.played_magic);
