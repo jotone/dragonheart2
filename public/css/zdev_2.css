@@ -56,7 +56,6 @@
 
 /* /buff & debuff anim */
 
-
 @keyframes pulseAnim {
 	0% { transform: scale(1) translate(0, 0px) translateZ(0px); }
 	50% { transform: scale(2) translate(5px, 8px) translateZ(0px); }
@@ -109,6 +108,12 @@
 
 /* /card buffed-debuffed */
 
+/* mezhdyblock */
+
+	#sortable-cards-field-more .content-card-item .count { position: absolute; z-index: 1; left: 5px; top: 5px; font-size: 14px; font-weight: 700; color: gold; text-shadow: 0 0 20px rgba(0, 0, 0, .75); }
+	#sortable-cards-field-more .content-card-item .content-card-item-main { z-index: 0; }
+
+/* /mezhdyblock */
 
 .mbox{
 	-webkit-box-sizing:border-box;

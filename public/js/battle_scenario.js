@@ -426,6 +426,7 @@ function userMakeAction(conn, turnDescript, allowToAction) {
 				);
 				allowToAction = false;
 			}
+
 		});
 		//Пользователь нажал "Пас"
 		$('.buttons-block-play button[name=userPassed]').unbind();
@@ -1784,7 +1785,10 @@ function startBattle() {
 									var debuffValue = 0;
 									var debuffTeamates = 0;
 
-									if ( cardType !== 'special' ) {
+									var cardInMid = $('.mezhdyblock [data-cardid=' + cardId + ']');
+									var cardInMidLength = cardInMid.length;
+									// required if we has special card in field with this id
+									if ( cardInMidLength <= 1 ) {
 
 										for ( var i = 0; i < playedCard.actions.length; i++ ) {
 
@@ -1843,14 +1847,51 @@ function startBattle() {
 										});
 
 									}
+									// if  we used same special card
+									else {
+
+										cardInMid.eq(1).remove();
+
+										var counter = cardInMid.find('.count');
+										var counterLength = counter.length;
+
+										if ( counterLength != 0 ) {
+											var value = parseInt( counter.text() ) + 1;
+											counter.text(value);
+										}
+										else {
+											cardInMid.prepend('<div class="count">2</div>');
+										}
+
+										detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+
+									}
 
 								}
 								//Анимация лекаря ( ефект лечения)
 								else if ( item == '6' ) {
 
 									secondTrollPopupCustomImgAndTitle('Исцеление!','/img/card_images/magic_istselenie_582b19299d5e2.png');
+									console.log('Healing: ', result.step_status);
+									for ( var key in result.step_status.dropped_cards ) {
 
-									recalculateCardsStrength(result.step_status);
+										result.step_status.dropped_cards[key].mid.forEach(function(item) {
+											// WERY WERY WERY BAD PARAMS INITALIZATION
+											var removeDebuffsParams = {
+												side: 'both',
+												rows: item.actions[0].fear_ActionRow,
+												type: 'debuff',
+												effectName: 'terrify',
+												value: parseInt( item.actions[0].fear_strenghtValue ),
+												step_status: result.step_status
+											};
+
+											removeBuffsOrDebuffFromRow(removeDebuffsParams);
+
+										});
+									}
+
+									//recalculateCardsStrength(result.step_status);
 
 								}
 								//Боевое братство
@@ -2270,7 +2311,7 @@ function startBattle() {
 			break;
 		}
 
-		if( (result.message == 'allUsersAreReady') || (result.message == 'userMadeAction') ){
+		if ( (result.message == 'allUsersAreReady') || (result.message == 'userMadeAction') ) {
 			calculateRightMarginCardHands();
 			hidePreloader();
 
@@ -2707,59 +2748,67 @@ function startBattle() {
 			var row = intRowToField(item);
 			var theRow = $(sideClass + ' .field-for-cards' + row);
 
-			if ( theRow.find('.' + effectFullName).length ) {
+			theRow.each(function(index) {
 
-				var rowAnim = theRow;
-				var animElement = rowAnim.find('.' + effectFullName);
-				var animElementCount = parseInt( animElement.attr('data-count') );
-				var cards = rowAnim.find('.content-card-item');
-				animElementCount--;
-				animElement.attr('data-count', animElementCount);
-				if ( animElementCount === 0 ) {
-					animElement.addClass('removing');
+				var rowAnim = $(this);
+				console.log(rowAnim.find('.' + effectFullName).length, rowAnim, rowAnim.find('.' + effectFullName));
+				if ( rowAnim.find('.' + effectFullName).length ) {
+
+					var animElement = rowAnim.find('.' + effectFullName);
+					var animElementCount = parseInt( animElement.attr('data-count') );
+					var cards = rowAnim.find('.content-card-item');
+					animElementCount--;
+					animElement.attr('data-count', animElementCount);
+					if ( animElementCount === 0 ) {
+						animElement.addClass('removing');
+					}
+
+					setTimeout(function() {
+
+						if ( animElementCount === 0 ) {
+							animElement.remove();
+						}
+
+						cards.each(function(index) {
+							var card = $(this);
+							var pulsingType = '';
+							if ( params.type == 'buff' ) {
+								pulsingType = 'debuff';
+								if ( card.attr('data-full-immune') == 'false' ) {
+									cardStrengthPulsing( card, pulsingType, params.value );
+								}
+							}
+							else {
+								pulsingType = 'buff';
+								if ( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'true' ) {
+									cardStrengthPulsing( card, pulsingType, params.value );
+								}
+							}
+
+
+
+						});
+
+						if ( rowAnim.find('.' + effectFullName).length === 0 ) {
+							rowAnim.parents('.convert-stuff').removeClass(effectFullName + '-wrap');
+							// on time when it write we has only one debuff, so i hope it's work
+							if ( rowAnim.parents('[class$="-' + params.type + '"]').length === 0 ) {
+								rowAnim.parents('.convert-stuff').removeClass(params.type);
+							}
+
+						}
+
+					}, 1500);
+
+					if ( index == (theRow.length - 1) ) {
+						recalculateBattleField();
+						recalculateCardsStrength(params.step_status);
+					}
+
 				}
 
-				setTimeout(function(){
+			});
 
-					if ( animElementCount === 0 ) {
-						animElement.remove();
-					}
-
-					cards.each(function(index) {
-						var card = $(this);
-						var pulsingType = '';
-						if ( params.type == 'buff' ) {
-							pulsingType = 'debuff';
-							if ( card.attr('data-full-immune') == 'false' ) {
-								cardStrengthPulsing( card, pulsingType, params.value );
-							}
-						}
-						else {
-							pulsingType = 'buff';
-							if ( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'true' ) {
-								cardStrengthPulsing( card, pulsingType, params.value );
-							}
-						}
-
-						if ( index == (cards.length - 1) ) {
-							recalculateBattleField();
-							recalculateCardsStrength(params.step_status);
-						}
-
-					});
-
-					if ( rowAnim.find('.' + effectFullName).length === 0 ) {
-						rowAnim.parents('.convert-stuff').removeClass(effectFullName + '-wrap');
-						// on time when it write we has only one debuff, so i hope it's work
-						if ( rowAnim.parents('[class$="-' + params.type + '"]').length === 0 ) {
-							rowAnim.parents('.convert-stuff').removeClass(params.type);
-						}
-
-					}
-
-				}, 1500);
-
-			}
 		});
 
 	}
