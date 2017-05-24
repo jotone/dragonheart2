@@ -1084,7 +1084,7 @@ function fieldBuilding(step_status, addingAnim, recalcCallback) {
 					}
 					cards = addedCardSide.p2.hand;
 				}
-
+				console.log(step_status);
 				cards.forEach(function(item) {
 					removeCardEffectsFromField(item, side, step_status);
 				});
@@ -2460,11 +2460,12 @@ function startBattle() {
 			if ( row.find('.' + params.effectName + '-' + params.type).length ) {
 				var field = row.find('.' + params.effectName + '-' + params.type);
 				var countPlus = parseInt( field.attr('data-count') ) + 1;
+				field.attr('data-count', countPlus);
 			}
 			else {
 				row.append(effectMarkup);
 			}
-			var effectObjectsAdded = row.find('.' + params.effectName + '-' + params.type);
+			var effectObjectAdded = row.find('.' + params.effectName + '-' + params.type);
 
 			var timer = setInterval(function() {
 				if ( !$('.troll-popup.show').length ) {
@@ -2705,6 +2706,7 @@ function startBattle() {
 				var animElementCount = parseInt( animElement.attr('data-count') );
 				var cards = rowAnim.find('.content-card-item');
 				animElementCount--;
+				animElement.attr('data-count', animElementCount);
 				if ( animElementCount === 0 ) {
 					animElement.addClass('removing');
 				}
@@ -2720,13 +2722,13 @@ function startBattle() {
 						var pulsingType = '';
 						if ( params.type == 'buff' ) {
 							pulsingType = 'debuff';
-							if ( card.attr('data-immune') == 'false' && card.attr('data-full-immune') == 'false' ) {
+							if ( card.attr('data-full-immune') == 'false' ) {
 								cardStrengthPulsing( card, pulsingType, params.value );
 							}
 						}
 						else {
 							pulsingType = 'buff';
-							if ( card.attr('data-full-immune') == 'false' ) {
+							if ( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'true' ) {
 								cardStrengthPulsing( card, pulsingType, params.value );
 							}
 						}
@@ -2738,11 +2740,13 @@ function startBattle() {
 
 					});
 
-					if ( rowAnim.find('[class$="-' + params.type + '"]').length === 0 ) {
+					if ( rowAnim.find('.' + effectFullName).length === 0 ) {
 						rowAnim.parents('.convert-stuff').removeClass(effectFullName + '-wrap');
+						// on time when it write we has only one debuff, so i hope it's work
 						if ( rowAnim.parents('[class$="-' + params.type + '"]').length === 0 ) {
 							rowAnim.parents('.convert-stuff').removeClass(params.type);
 						}
+
 					}
 
 				}, 1500);
