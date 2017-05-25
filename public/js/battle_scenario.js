@@ -1947,14 +1947,14 @@ function startBattle() {
 								//Боевое братство
 								else if ( item == '3' ) {
 
-									var cards = parseInt( result.step_status.played_card.card.id );
+									var cardsId = parseInt( result.step_status.played_card.card.id );
 									var value = parseInt( result.step_status.played_card.strength );
 
 									var detailShowPopupCallback = {
 										callbackFunctionName: buffDebuffGroupOfCards,
 										callbackFunctionParams: {
 											type: 'buff',
-											cards: cards,
+											name: 'brotherhood',
 											value: value,
 											step_status: result.step_status
 										}
@@ -1967,6 +1967,12 @@ function startBattle() {
 										console.log('Battte brotherhood. ', 'Your turn. ', result);
 										detailShowPopupCallback.callbackFunctionParams.side = 'user';
 									}
+
+									var cards = $('.' + detailShowPopupCallback.callbackFunctionParams.side + ' [data-cardid=' + cardsId + ']');
+									detailShowPopupCallback.callbackFunctionParams.cards = [];
+									cards.each(function() {
+										detailShowPopupCallback.callbackFunctionParams.cards.push( $(this) );
+									});
 
 									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], detailShowPopupCallback );
 
@@ -2129,6 +2135,67 @@ function startBattle() {
 
 									recalculateCardsStrength(result.step_status);
 									showCardOnDesc();
+
+								}
+								// поддержка
+								else if ( item == '13' ) {
+									console.log('Support used: ', result.step_status);
+									var rowAction = null;
+									var selfBuff = false;
+
+									var moveRow = result.step_status.played_card.move_to.row;
+
+									var detailShowPopupCallback = {
+										callbackFunctionName: buffDebuffGroupOfCards,
+										callbackFunctionParams: {
+											type: 'buff',
+											name: 'support',
+											step_status: result.step_status
+										}
+									};
+
+									for ( var i = 0; i < playedCard.actions.length; i++ ) {
+										if ( playedCard.actions[i].action == '13' ) {
+											detailShowPopupCallback.callbackFunctionParams.value = parseInt( playedCard.actions[i].support_strenghtValue );
+											rowAction = playedCard.actions[i].support_ActionRow;
+											if ( playedCard.actions[i].support_selfCast == '1' ) {
+												selfBuff = true;
+											}
+											break;
+										}
+									}
+
+									if (resultLogin == thisUser) {
+										console.log('Support. ', 'Enemy turn. ', result);
+										detailShowPopupCallback.callbackFunctionParams.side = 'oponent';
+									} else {
+										console.log('Support. ', 'Your turn. ', result);
+										detailShowPopupCallback.callbackFunctionParams.side = 'user';
+									}
+
+									detailShowPopupCallback.callbackFunctionParams.cards = [];
+									var cardId = parseInt( playedCard.id );
+									var moveRowId = intRowToField(moveRow);
+									var thisAndSameCards = $('.' + detailShowPopupCallback.callbackFunctionParams.side + ' .field-for-cards' + moveRowId + ' [data-cardid=' + cardId + ']');
+									var thisCard = thisAndSameCards.eq(thisAndSameCards.length - 1);
+									console.log('this card: ', thisCard);
+									rowAction.forEach(function(item) {
+										var rowId = intRowToField(item);
+										var theRow = $('.' + detailShowPopupCallback.callbackFunctionParams.side + ' .field-for-cards' + rowId);
+										theRow.find('.content-card-item').each(function() {
+											var thisId = parseInt( $(this).attr('data-cardid') );
+											if ( thisId === cardId && rowId == moveRowId && thisCard.is('.loading') ) {
+												if ( selfBuff ) {
+													detailShowPopupCallback.callbackFunctionParams.cards.push( $(this) );
+												}
+											}
+											else {
+												detailShowPopupCallback.callbackFunctionParams.cards.push( $(this) );
+											}
+										});
+									});
+
+									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], detailShowPopupCallback );
 
 								}
 								// удаление карты противника с руки в отбой
@@ -2590,7 +2657,7 @@ function startBattle() {
 							( params.type == 'buff' && !card.is('.full-immune') )
 						) {
 
-							cardStrengthPulsing( card, params.type, params.value );
+							cardStrengthPulsing( card, params.effectName, params.type, params.value );
 
 						}
 					});
@@ -2605,7 +2672,7 @@ function startBattle() {
 	}
 
 	// card pusling
-	function cardStrengthPulsing( card, type, value, cardBuffed ) {
+	function cardStrengthPulsing( card, name, type, value, cardBuffed ) {
 
 		setTimeout(function() {
 
@@ -2629,7 +2696,8 @@ function startBattle() {
 				}
 
 				if ( typeof cardBuffed !== 'undefined' ) {
-					card.addClass('buffed');
+					card.addClass('buffed ' + name + '-buffed');
+
 				}
 
 			}
@@ -2653,7 +2721,7 @@ function startBattle() {
 
 
 				if ( typeof cardBuffed !== 'undefined' ) {
-					card.addClass('debuffed');
+					card.addClass('debuffed ' + name + '-debuffed');
 				}
 
 			}
@@ -2675,23 +2743,35 @@ function startBattle() {
 
 		setTimeout(function() {
 
-			var cardsItems = $('.' + params.side + ' [data-cardid=' + params.cards + ']');
+			var cardsItems = params.cards;
 			if (cardsItems.length > 1) {
-				cardsItems.each(function(index) {
-					if ( index !== (cardsItems.length - 1) ) {
-						cardStrengthPulsing( $(this), params.type, params.value, true );
+				cardsItems.forEach(function(item, index) {
+					if ( params.name == 'brotherhood' ) {
+						if ( index !== (cardsItems.length - 1) ) {
+							cardStrengthPulsing( item, params.name, params.type, params.value, true );
+						}
+						else {
+							params.value = params.value * index;
+							cardStrengthPulsing( item, params.name, params.type, params.value, true );
+						}
 					}
 					else {
-						params.value = params.value * index;
-						cardStrengthPulsing( $(this), params.type, params.value, true );
+						cardStrengthPulsing( item, params.name, params.type, params.value, true );
 					}
 
-					if (index == (cardsItems.length - 1) ) {
+					if ( index == (cardsItems.length - 1) ) {
 						recalculateBattleField();
-						recalculateCardsStrength(params.step_status);
+						recalculateCardsStrengthTimeout({
+							step_status: params.step_status,
+							time: 300
+						});
 					}
 
 				});
+			}
+			else {
+				recalculateBattleField();
+				recalculateCardsStrength(params.step_status);
 			}
 
 		}, 0);
@@ -2835,15 +2915,15 @@ function startBattle() {
 							if ( params.type == 'buff' ) {
 								pulsingType = 'debuff';
 								if ( card.attr('data-full-immune') == 'false' ) {
-									cardStrengthPulsing( card, pulsingType, params.value );
+									cardStrengthPulsing( card, params.effectName, pulsingType, params.value );
 								}
 							}
 							else {
 								pulsingType = 'buff';
 								if (
-									( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'true' ) || ( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'false' ) 
+									( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'true' ) || ( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'false' )
 								) {
-									cardStrengthPulsing( card, pulsingType, params.value );
+									cardStrengthPulsing( card, params.effectName, pulsingType, params.value );
 								}
 							}
 
