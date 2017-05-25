@@ -1124,6 +1124,15 @@ function recalculateCardsStrength(step_status) {
 
 }
 
+// recalculateCardsStrength with timeout
+function recalculateCardsStrengthTimeout (params) {
+
+	setTimeout(function() {
+		recalculateCardsStrength(params.step_status);
+	}, params.time);
+
+}
+
 function sortCards() {
 	var arrayToSort = {
 		special: [],
@@ -1843,8 +1852,11 @@ function startBattle() {
 										}
 
 										detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], {
-											callbackFunctionName: recalculateCardsStrength,
-											callbackFunctionParams: result.step_status
+											callbackFunctionName: recalculateCardsStrengthTimeout,
+											callbackFunctionParams: {
+												time: 2000,
+												step_status: result.step_status
+											}
 										});
 
 									}
@@ -1900,7 +1912,7 @@ function startBattle() {
 											}
 
 										});
-										
+
 										detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
 
 									}
@@ -1943,7 +1955,8 @@ function startBattle() {
 										callbackFunctionParams: {
 											type: 'buff',
 											cards: cards,
-											value: value
+											value: value,
+											step_status: result.step_status
 										}
 									};
 
@@ -1997,7 +2010,10 @@ function startBattle() {
 										addInspirationParams.side = 'user';
 									}
 
-									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
+									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], {
+										callbackFunctionName: recalculateCardsStrength,
+										callbackFunctionParams: result.step_status
+									});
 									buffingDebuffingAnimOnRows( addInspirationParams );
 
 									recalculateBattleField();
@@ -2669,6 +2685,12 @@ function startBattle() {
 						params.value = params.value * index;
 						cardStrengthPulsing( $(this), params.type, params.value, true );
 					}
+
+					if (index == (cardsItems.length - 1) ) {
+						recalculateBattleField();
+						recalculateCardsStrength(params.step_status);
+					}
+
 				});
 			}
 
@@ -2818,7 +2840,9 @@ function startBattle() {
 							}
 							else {
 								pulsingType = 'buff';
-								if ( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'true' ) {
+								if (
+									( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'true' ) || ( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'false' ) 
+								) {
 									cardStrengthPulsing( card, pulsingType, params.value );
 								}
 							}
@@ -2838,11 +2862,13 @@ function startBattle() {
 
 					}, 1500);
 
-					if ( index == (theRow.length - 1) ) {
+				}
+
+				if ( index == (theRow.length - 1) ) {
+					setTimeout(function() {
 						recalculateBattleField();
 						recalculateCardsStrength(params.step_status);
-					}
-
+					}, 3000);
 				}
 
 			});
