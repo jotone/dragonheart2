@@ -9,7 +9,7 @@
 @endif
 
 <?php
-function cardView($card){
+function cardView($card, $quantity = 1){
 	if(isset($card['card'])){
 		if(!is_array($card['card'])) $card['card'] = get_object_vars($card['card']);
 		$card_data  = $card['card'];
@@ -46,7 +46,11 @@ function cardView($card){
 		}
 	}
 	$card_view = '
-	<li class="content-card-item disable-select show" data-cardid="'.$card_data['id'].'" data-relative="'.$card_data['type'].'" data-immune="'.$has_immune.'" data-full-immune="'.$has_full_immune.'">
+	<li class="content-card-item disable-select show" data-cardid="'.$card_data['id'].'" data-relative="'.$card_data['type'].'" data-immune="'.$has_immune.'" data-full-immune="'.$has_full_immune.'">';
+	if($quantity > 1){
+		$card_view .= '<div class="count">'.$quantity.'</div>';
+	}
+	$card_view .= '
 		<div class="content-card-item-main '.$race_class.' '.$leader_class.' '.$special_class.'" style="background-image: url('.URL::asset('/img/card_images/'.$card_data['img_url']).')" data-leader="'.$card_data['is_leader'].'" data-type="'.$card_data['type'].'">
 			<div class="card-load-info card-popup">
 				<div class="info-img">
@@ -795,8 +799,23 @@ foreach($battle_field as $field => $data){
 		<div class="mezhdyblock">
 			<div class="bor-beutifull-box">
 				<ul id="sortable-cards-field-more" class="can-i-use-useless sort">
-				@foreach($battle_field['mid'] as $i => $card)
-					{!! cardView($card) !!}
+					<?php
+					$mid_cards = [];
+					foreach($battle_field['mid'] as $i => $card){
+						if(!isset($mid_cards[$card['card']['id']])){
+							$mid_cards[$card['card']['id']] = [
+								'card' => $card['card'],
+								'strength' => $card['strength'],
+								'login' => $card['login'],
+								'quantity' => 1
+							];
+						}else{
+							$mid_cards[$card['card']['id']]['quantity']++;
+						}
+					}
+					?>
+				@foreach($mid_cards as $i => $card)
+					{!! cardView($card, $card['quantity']) !!}
 				@endforeach
 				</ul>
 			</div>
