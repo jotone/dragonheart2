@@ -2139,67 +2139,67 @@ function startBattle() {
 								}
 								// поддержка
 								else if ( item == '13' ) {
-									console.log('Support used: ', result.step_status);
-									var rowAction = null;
-									var selfBuff = false;
 
-									var moveRow = result.step_status.played_card.move_to.row;
-
-									var detailShowPopupCallback = {
-										callbackFunctionName: buffDebuffGroupOfCards,
-										callbackFunctionParams: {
-											type: 'buff',
-											name: 'support',
-											step_status: result.step_status
-										}
+									var addSupportParams = {
+										side: '',
+										rows: [],
+										value: '',
+										type: 'buff',
+										effectName: 'support'
 									};
 
-									for ( var i = 0; i < playedCard.actions.length; i++ ) {
-										if ( playedCard.actions[i].action == '13' ) {
-											detailShowPopupCallback.callbackFunctionParams.value = parseInt( playedCard.actions[i].support_strenghtValue );
-											rowAction = playedCard.actions[i].support_ActionRow;
-											if ( playedCard.actions[i].support_selfCast == '1' ) {
-												selfBuff = true;
-											}
+									var played_card = result.step_status.played_card;
+
+									var selfUse = false;
+
+									for ( var i = 0; i < played_card.card.actions.length; i++ ) {
+										if ( played_card.card.actions[i].action === '13' ) {
+											var supportAction = played_card.card.actions[i];
+											addSupportParams.rows = supportAction.support_ActionRow;
+											addSupportParams.value = parseInt( supportAction.support_strenghtValue );
+											selfUse = supportAction.support_selfCast;
 											break;
 										}
 									}
 
-									if (resultLogin == thisUser) {
-										console.log('Support. ', 'Enemy turn. ', result);
-										detailShowPopupCallback.callbackFunctionParams.side = 'oponent';
-									} else {
-										console.log('Support. ', 'Your turn. ', result);
-										detailShowPopupCallback.callbackFunctionParams.side = 'user';
+									if ( played_card.card.fraction == 'special' ) {
+										// remove if in future gona be
+										// special card that buff all
+										// rows in support
+										addSupportParams.rows = [played_card.move_to.row];
 									}
 
-									detailShowPopupCallback.callbackFunctionParams.cards = [];
-									var cardId = parseInt( playedCard.id );
-									var moveRowId = intRowToField(moveRow);
-									var thisAndSameCards = $('.' + detailShowPopupCallback.callbackFunctionParams.side + ' .field-for-cards' + moveRowId + ' [data-cardid=' + cardId + ']');
-									var thisCard = thisAndSameCards.eq(thisAndSameCards.length - 1);
-									var thisCardIndex = thisCard.index();
 
-									rowAction.forEach(function(item) {
-										var rowId = intRowToField(item);
-										var theRow = $('.' + detailShowPopupCallback.callbackFunctionParams.side + ' .field-for-cards' + rowId);
-										theRow.find('.content-card-item').each(function(index) {
-											var thisId = parseInt( $(this).attr('data-cardid') );
-											console.log('id: ', thisId === cardId, ' rowId: ', rowId == moveRowId, 'cardIndex: ', index == thisCardIndex);
-											if ( thisId === cardId && rowId == moveRowId && index == thisCardIndex ) {
-												console.log(selfBuff);
-												if ( selfBuff ) {
-													console.log('adding');
-													detailShowPopupCallback.callbackFunctionParams.cards.push( $(this) );
-												}
-											}
-											else {
-												detailShowPopupCallback.callbackFunctionParams.cards.push( $(this) );
+									if ( resultLogin == thisUser ) {
+										addSupportParams.side = 'oponent';
+									}
+									else {
+										addSupportParams.side = 'user';
+									}
+									console.log(selfUse);
+									if ( selfUse == 0 ) {
+
+										var cardMoveRow = played_card.move_to.row;
+										var cardMoveRowId = intRowToField(cardMoveRow);
+
+										addSupportParams.rows.forEach(function(item) {
+											var rowId = intRowToField(item);
+											if ( cardMoveRowId == rowId && !$('.' + addSupportParams.side + ' ' + cardMoveRowId).parents('.convert-stuff').is('.support-buff-wrap') ) {
+												addSupportParams.selfUse = parseInt( playedCard.id );
 											}
 										});
+									}
+									console.log(addSupportParams);
+									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], {
+										callbackFunctionName: recalculateCardsStrengthTimeout,
+										callbackFunctionParams: {
+											step_status: result.step_status,
+											time: 300
+										}
 									});
+									buffingDebuffingAnimOnRows( addSupportParams );
 
-									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], detailShowPopupCallback );
+									recalculateBattleField();
 
 								}
 								// удаление карты противника с руки в отбой
@@ -2658,9 +2658,15 @@ function buffingDebuffingAnimOnRows( params ) {
 						( params.type == 'debuff' && !card.is('[data-immune=true]') && !card.is('[data-full-immune=true]') ) ||
 						( params.type == 'buff' && !card.is('.full-immune') )
 					) {
-
-						cardStrengthPulsing( card, params.effectName, params.type, params.value );
-
+						console.log(params);
+						if ( !params.hasOwnProperty('selfUse') ) {
+							cardStrengthPulsing( card, params.effectName, params.type, params.value );
+						}
+						else {
+							if ( params.selfUse != card.attr('data-cardid') ) {
+								cardStrengthPulsing( card, params.effectName, params.type, params.value );
+							}
+						}
 					}
 				});
 
@@ -2746,15 +2752,17 @@ function buffDebuffGroupOfCards( params ) {
 	setTimeout(function() {
 
 		var cardsItems = params.cards;
-		if (cardsItems.length > 1) {
+
 			cardsItems.forEach(function(item, index) {
 				if ( params.name == 'brotherhood' ) {
-					if ( index !== (cardsItems.length - 1) ) {
-						cardStrengthPulsing( item, params.name, params.type, params.value, true );
-					}
-					else {
-						params.value = params.value * index;
-						cardStrengthPulsing( item, params.name, params.type, params.value, true );
+					if (cardsItems.length > 1) {
+						if ( index !== (cardsItems.length - 1) ) {
+							cardStrengthPulsing( item, params.name, params.type, params.value, true );
+						}
+						else {
+							params.value = params.value * index;
+							cardStrengthPulsing( item, params.name, params.type, params.value, true );
+						}
 					}
 				}
 				else {
@@ -2775,11 +2783,7 @@ function buffDebuffGroupOfCards( params ) {
 				}
 
 			});
-		}
-		else {
-			recalculateBattleField();
-			recalculateCardsStrength(params.step_status);
-		}
+
 
 	}, 0);
 
