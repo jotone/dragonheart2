@@ -2176,7 +2176,7 @@ function startBattle() {
 									else {
 										addSupportParams.side = 'user';
 									}
-									console.log(selfUse);
+
 									if ( selfUse == 0 ) {
 
 										var cardMoveRow = played_card.move_to.row;
@@ -2189,7 +2189,7 @@ function startBattle() {
 											}
 										});
 									}
-									console.log(addSupportParams);
+
 									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], {
 										callbackFunctionName: recalculateCardsStrengthTimeout,
 										callbackFunctionParams: {
@@ -2658,7 +2658,7 @@ function buffingDebuffingAnimOnRows( params ) {
 						( params.type == 'debuff' && !card.is('[data-immune=true]') && !card.is('[data-full-immune=true]') ) ||
 						( params.type == 'buff' && !card.is('.full-immune') )
 					) {
-						console.log(params);
+
 						if ( !params.hasOwnProperty('selfUse') ) {
 							cardStrengthPulsing( card, params.effectName, params.type, params.value );
 						}
@@ -2667,6 +2667,7 @@ function buffingDebuffingAnimOnRows( params ) {
 								cardStrengthPulsing( card, params.effectName, params.type, params.value );
 							}
 						}
+						
 					}
 				});
 
