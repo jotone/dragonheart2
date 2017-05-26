@@ -2782,12 +2782,8 @@ function buffDebuffGroupOfCards( params ) {
 						time: 300
 					});
 				}
-
 			});
-
-
 	}, 0);
-
 }
 
 // pretty card moving

@@ -183,20 +183,21 @@ class GwentSocket extends BaseSocket
 		}
 
 		$this->step_status = [
-			'added_cards'   => [],
-			'played_card'   => [
+			'added_cards'	=> [],
+			'played_card'	=> [
 				'card' => '',
 				'move_to' => [
 						'player'=> '',
-						'row'   => '',
-						'user'  => ''
+						'row'	=> '',
+						'user'	=> ''
 					],
-				'strength' => ''
+				'strength'	=> ''
 			],
-			'dropped_cards' => [],
-			'played_magic'  => '',
+			'dropped_cards'	=> [],
+			'played_magic'	=> '',
 			'cards_strength'=> [],
-			'actions'       => []
+			'actions'		=> [],
+			'field_status'	=> []
 		];
 		if(isset($msg->timing)) $users_data['user']['turn_expire'] = $msg->timing - $users_data['user']['time_shift'];
 
@@ -561,8 +562,9 @@ class GwentSocket extends BaseSocket
 					//Сортировка колод
 					$users_data = self::sortDecksByStrength($users_data);
 					//Обработка действий
-					$battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
-
+					$temp = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+					$battle_field = $temp['battle_field'];
+					$this->step_status['field_status'] = $temp['field_status'];
 					foreach($battle_field as $player => $rows) {
 						if($player != 'mid'){
 							foreach ($rows as $row => $row_data) {
@@ -682,7 +684,9 @@ class GwentSocket extends BaseSocket
 						}
 					}
 				}
-				$battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+				$temp = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+				$battle_field = $temp['battle_field'];
+				$this->step_status['field_status'] = $temp['field_status'];
 				foreach($battle_field as $player => $rows) {
 					if($player != 'mid'){
 						foreach ($rows as $row => $row_data) {
@@ -735,7 +739,9 @@ class GwentSocket extends BaseSocket
 
 				//Если спасовало 2 пользователя
 				if($users_passed_count == 2){
-					$battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+					$temp = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+					$battle_field = $temp['battle_field'];
+					$this->step_status['field_status'] = $temp['field_status'];
 
 					//Подсчет результатп раунда по очкам
 					$total_str = self::calcStrByPlayers($battle_field);
@@ -911,7 +917,9 @@ class GwentSocket extends BaseSocket
 							$user_turn = $users_data['user']['login'];
 						}
 						$users_data = self::sortDecksByStrength($users_data);
-						$battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+						$temp = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+						$battle_field = $temp['battle_field'];
+						$this->step_status['field_status'] = $temp['field_status'];
 
 						//timing
 						foreach($users_data as $type => $user_data){
@@ -1128,7 +1136,9 @@ class GwentSocket extends BaseSocket
 
 		$battle_field['mid'] = [];
 
-		$battle_field = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+		$temp = self::recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage);
+		$battle_field = $temp['battle_field'];
+		$step_status['field_status'] = $temp['field_status'];
 		return [
 			'battle_field'	=> $battle_field,
 			'users_data'	=> $users_data,
@@ -1224,7 +1234,9 @@ class GwentSocket extends BaseSocket
 				if($battle->pass_count > 1) {
 					$battle_field = unserialize($battle->battle_field);
 
-					$battle_field = self::recalculateCardsStrength($battle, $battle_field, $_this->users_data, $_this->magic_usage);
+					$temp = self::recalculateCardsStrength($battle, $battle_field, $_this->users_data, $_this->magic_usage);
+					$battle_field = $temp['battle_field'];
+					$_this->step_status['field_status'] = $temp['field_status'];
 					//Подсчет результатп раунда по очкам
 					$total_str = self::calcStrByPlayers($battle_field);
 					//Статус битвы (очки раундов)
@@ -1942,8 +1954,35 @@ class GwentSocket extends BaseSocket
 		];
 	}
 
+	public static function createFieldStatus($battle_field){
+		$field_status = [];
+		foreach($battle_field as $field => $rows){
+			if($field != 'mid') {
+				foreach ($rows as $row => $cards) {
+					$field_status[$field][$row] = [
+						'buffs'		=> [],
+						'debuffs'	=> [],
+						'cards'		=> []
+					];
 
-	protected static function resetBattleFieldCardsStrength($battle_field){
+					foreach($cards['warrior'] as $i => $card_data){
+						$field_status[$field][$row]['cards'][] = [
+							'buffs'			=> [],
+							'debuffs'		=> [],
+							'strength'		=> $card_data['card']['strength'],
+							'strengthModified' => $card_data['card']['strength'],
+							'groups'		=> [],
+							'id'			=> $card_data['card']['id'],
+							'title' => $card_data['card']['title']
+						];
+					}
+				}
+			}
+		}
+		return $field_status;
+	}
+
+	public static function resetBattleFieldCardsStrength($battle_field){
 		foreach($battle_field as $field => $rows){
 			if($field != 'mid'){
 				foreach($rows as $row => $cards){
@@ -1957,8 +1996,9 @@ class GwentSocket extends BaseSocket
 	}
 
 
-	protected static function recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage){
+	public static function recalculateCardsStrength($battle, $battle_field, $users_data, $magic_usage){
 		$battle_field = self::resetBattleFieldCardsStrength($battle_field);//Сброс значений силы
+		$field_status = self::createFieldStatus($battle_field);
 
 		$actions_array_support = [];//Массив действий "Поддержка"
 		$actions_array_fury = [];//Массив действий "Неистовство"
@@ -2012,6 +2052,7 @@ class GwentSocket extends BaseSocket
 					$groups = ( (isset($action_data->support_actionToGroupOrAll)) && ($action_data->support_actionToGroupOrAll != 0))? $action_data->support_actionToGroupOrAll: [];
 
 					foreach($action_data->support_ActionRow as $row_iter => $row){
+						$field_status[$player][$row]['buffs'][] = 'support';
 						foreach($battle_field[$player][$row]['warrior'] as $card_iter => $card_data){
 							$allow_support = true;
 							if($action_data->support_ignoreImmunity == 0){
@@ -2039,6 +2080,13 @@ class GwentSocket extends BaseSocket
 												$strength = $card_data['strength'] + $action_data->support_strenghtValue;
 											}
 											$battle_field[$player][$row]['warrior'][$card_iter]['strength'] = $strength;
+
+											$field_status[$player][$row]['cards'][$card_iter]['buffs'][]= 'support';
+											$field_status[$player][$row]['cards'][$card_iter]['groups'][] = $group_id;
+											$field_status[$player][$row]['cards'][$card_iter]['strengthModified'] = $strength;
+
+											$field_status[$player][$row]['cards'][$card_iter]['buffs'] = array_values(array_unique($field_status[$player][$row]['cards'][$card_iter]['buffs']));
+											$field_status[$player][$row]['cards'][$card_iter]['groups'] = array_values(array_unique($field_status[$player][$row]['cards'][$card_iter]['groups']));
 										}
 									}
 								}else{
@@ -2053,9 +2101,14 @@ class GwentSocket extends BaseSocket
 										$strength = $card_data['strength'] + $action_data->support_strenghtValue;
 									}
 									$battle_field[$player][$row]['warrior'][$card_iter]['strength'] = $strength;
+
+									$field_status[$player][$row]['cards'][$card_iter]['buffs'][]= 'support';
+									$field_status[$player][$row]['cards'][$card_iter]['strengthModified'] = $strength;
+									$field_status[$player][$row]['cards'][$card_iter]['buffs'] = array_values(array_unique($field_status[$player][$row]['cards'][$card_iter]['buffs']));
 								}
 							}
 						}
+						$field_status[$player][$row]['buffs'] = array_values(array_unique($field_status[$player][$row]['buffs']));
 					}
 				}
 			}
@@ -2086,6 +2139,10 @@ class GwentSocket extends BaseSocket
 
 										if($allow_magic){
 											$battle_field[$player][$row]['warrior'][$card_iter]['strength'] = $card['strength'] + $action_data->support_strenghtValue;
+
+											$field_status[$player][$row]['cards'][$card_iter]['buffs'][]= 'support';
+											$field_status[$player][$row]['cards'][$card_iter]['strengthModified'] = $strength;
+											$field_status[$player][$row]['cards'][$card_iter]['buffs'] = array_values(array_unique($field_status[$player][$row]['cards'][$card_iter]['buffs']));
 										}
 									}
 								}
@@ -2149,6 +2206,14 @@ class GwentSocket extends BaseSocket
 					if(($allow_fury_by_row) || ($allow_fury_by_race) || ($allow_fury_by_magic) || ($allow_fury_by_group)){
 						$card_destination = explode('_',$card_id);
 						$battle_field[$card_destination[0]][$card_destination[1]]['warrior'][$card_destination[2]]['strength'] += $action->fury_strenghtVal;
+						if($action->fury_strenghtVal >= 0){
+							$field_status[$card_destination[0]][$card_destination[1]]['cards'][$card_destination[2]]['buffs'][]= 'fury';
+							$field_status[$card_destination[0]][$card_destination[1]]['cards'][$card_destination[2]]['buffs'] = array_values(array_unique($field_status[$card_destination[0]][$card_destination[1]]['cards'][$card_destination[2]]['buffs']));
+						}else{
+							$field_status[$card_destination[0]][$card_destination[1]]['cards'][$card_destination[2]]['debuffs'][]= 'fury';
+							$field_status[$card_destination[0]][$card_destination[1]]['cards'][$card_destination[2]]['debuffs'] = array_values(array_unique($field_status[$card_destination[0]][$card_destination[1]]['cards'][$card_destination[2]]['debuffs']));
+						}
+						$field_status[$card_destination[0]][$card_destination[1]]['cards'][$card_destination[2]]['strengthModified'] += $action->fury_strenghtVal;
 					}
 				}
 			}
@@ -2174,6 +2239,7 @@ class GwentSocket extends BaseSocket
 						foreach($players as $player_iter => $player){
 							if(!in_array($users_data[$player]['current_deck'], $action->fear_enemyRace)){
 								foreach($action->fear_ActionRow as $action_row_iter => $action_row){
+									$field_status[$player][$action_row]['debuffs'][] = 'terrify';
 									foreach($battle_field[$player][$action_row]['warrior'] as $card_iter => $card_data){
 										$allow_fear = self::checkForSimpleImmune($action->fear_ignoreImmunity, $card_data['card']['actions']);
 
@@ -2186,6 +2252,13 @@ class GwentSocket extends BaseSocket
 															$strength = 1;
 														}
 														$battle_field[$player][$action_row]['warrior'][$card_iter]['strength'] = $strength;
+
+														$field_status[$player][$action_row]['cards'][$card_iter]['groups'][] = $group_id;
+														$field_status[$player][$action_row]['cards'][$card_iter]['debuffs'][] = 'terrify';
+														$field_status[$player][$action_row]['cards'][$card_iter]['strengthModified'] = $strength;
+
+														$field_status[$player][$action_row]['cards'][$card_iter]['groups'] = array_values(array_unique($field_status[$player][$action_row]['cards']['groups']));
+														$field_status[$player][$action_row]['cards'][$card_iter]['debuffs'] = array_values(array_unique($field_status[$player][$action_row]['cards'][$card_iter]['debuffs']));
 													}
 												}
 											}else{
@@ -2194,9 +2267,14 @@ class GwentSocket extends BaseSocket
 													$strength = 1;
 												}
 												$battle_field[$player][$action_row]['warrior'][$card_iter]['strength'] = $strength;
+
+												$field_status[$player][$action_row]['cards'][$card_iter]['debuffs'][] = 'terrify';
+												$field_status[$player][$action_row]['cards'][$card_iter]['debuffs'] = array_values(array_unique($field_status[$player][$action_row]['cards'][$card_iter]['debuffs']));
+												$field_status[$player][$action_row]['cards'][$card_iter]['strengthModified'] = $strength;
 											}
 										}
 									}
+									$field_status[$player][$action_row]['debuffs'] = array_values(array_unique($field_status[$player][$action_row]['debuffs']));
 								}
 							}
 						}
@@ -2217,6 +2295,7 @@ class GwentSocket extends BaseSocket
 							if($action->action == '18'){
 								if(!in_array($users_data[$opponent_player]['current_deck'], $action->fear_enemyRace)){
 									foreach($action->fear_ActionRow as $action_row_iter => $action_row){
+										$field_status[$player][$action_row]['debuffs'] = 'terrify';
 										foreach($battle_field[$opponent_player][$action_row]['warrior'] as $card_iter => $card_data){
 											$allow_fear = self::checkForSimpleImmune($action->fear_ignoreImmunity, $card_data['card']['actions']);
 
@@ -2226,8 +2305,13 @@ class GwentSocket extends BaseSocket
 													$strength = 1;
 												}
 												$battle_field[$opponent_player][$action_row]['warrior'][$card_iter]['strength'] = $strength;
+
+												$field_status[$player][$action_row]['cards'][$card_iter]['debuffs'][] = 'terrify';
+												$field_status[$player][$action_row]['cards'][$card_iter]['debuffs'] = array_values(array_unique($field_status[$player][$action_row]['cards'][$card_iter]['debuffs']));
+												$field_status[$player][$action_row]['cards'][$card_iter]['strengthModified'] = $strength;
 											}
 										}
+										$field_status[$player][$action_row]['debuffs'] = array_values(array_unique($field_status[$player][$action_row]['debuffs']));
 									}
 								}
 							}
@@ -2312,6 +2396,10 @@ class GwentSocket extends BaseSocket
 						foreach($cards['warrior'] as $card_iter => $card){
 							if(in_array($card['card']['id'], $cards_ids)){
 								$battle_field[$player][$row]['warrior'][$card_iter]['strength'] *= $mult_group;
+
+								$field_status[$player][$row]['cards'][$card_iter]['buffs'][] = 'brotherhood';
+								$field_status[$player][$row]['cards'][$card_iter]['buffs'] = array_values(array_unique($field_status[$player][$row]['cards'][$card_iter]['buffs']));
+								$field_status[$player][$row]['cards'][$card_iter]['strengthModified'] = $battle_field[$player][$row]['warrior'][$card_iter]['strength'];
 							}
 						}
 					}
@@ -2322,6 +2410,7 @@ class GwentSocket extends BaseSocket
 		//Применение Воодушевления
 		foreach($actions_array_inspiration as $player => $row_data){
 			foreach($row_data as $row => $cards){
+				$field_status[$player][$row]['buffs'][] = 'inspiration';
 				foreach($cards['actions'] as $action_iter => $action_data){
 					if($action_data->action == '4'){
 						foreach($battle_field[$player][$row]['warrior'] as $card_iter => $card_data){
@@ -2337,10 +2426,15 @@ class GwentSocket extends BaseSocket
 							}
 							if($allow_inspiration){
 								$battle_field[$player][$row]['warrior'][$card_iter]['strength'] *= $action_data->inspiration_multValue;
+
+								$field_status[$player][$row]['cards'][$card_iter]['buffs'][] = 'inspiration';
+								$field_status[$player][$row]['cards'][$card_iter]['buffs'] = array_values(array_unique($field_status[$player][$row]['cards'][$card_iter]['buffs']));
+								$field_status[$player][$row]['cards'][$card_iter]['strengthModified'] = $battle_field[$player][$row]['warrior'][$card_iter]['strength'];
 							}
 						}
 					}
 				}
+				$field_status[$player][$row]['buffs'] = array_values(array_unique($field_status[$player][$row]['buffs']));
 			}
 		}
 
@@ -2353,6 +2447,7 @@ class GwentSocket extends BaseSocket
 						foreach($magic->actions as $action_iter => $action_data){
 							if($action_data->action == '4'){
 								foreach($action_data->inspiration_ActionRow as $row_iter => $row){
+									$field_status[$player][$row]['buffs'][] = 'inspiration';
 									if( (!isset($actions_array_inspiration[$player][$row])) || (empty($actions_array_inspiration[$player][$row])) ){
 										foreach($battle_field[$player][$row]['warrior'] as $card_iter => $card_data){
 											$allow_inspiration = true;
@@ -2374,9 +2469,14 @@ class GwentSocket extends BaseSocket
 											}
 											if($allow_inspiration){
 												$battle_field[$player][$row]['warrior'][$card_iter]['strength'] *= $action_data->inspiration_multValue;
+
+												$field_status[$player][$row]['cards'][$card_iter]['buffs'][] = 'inspiration';
+												$field_status[$player][$row]['cards'][$card_iter]['buffs'] = array_values(array_unique($field_status[$player][$row]['cards'][$card_iter]['buffs']));
+												$field_status[$player][$row]['cards'][$card_iter]['strengthModified'] = $battle_field[$player][$row]['warrior'][$card_iter]['strength'];
 											}
 										}
 									}
+									$field_status[$player][$row]['buffs'] = array_values(array_unique($field_status[$player][$row]['buffs']));
 								}
 							}
 						}
@@ -2384,7 +2484,10 @@ class GwentSocket extends BaseSocket
 				}
 			}
 		}
-		return $battle_field;
+		return [
+			'battle_field' => $battle_field,
+			'field_status' => $field_status
+		];
 	}
 
 	protected static function dropCardFromDeck($deck, $card){
