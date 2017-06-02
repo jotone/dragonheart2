@@ -1711,4 +1711,15 @@ $(document).ready(function(){
 		$(this).closest('.pay-buttons-wrap').find('label').removeClass('active');
 		$(this).addClass('active');
 	})
+
+	$('.select-rase-img').click(function(){
+		$.ajax({
+			url:	'/get_fraction_description',
+			type:	'GET',
+			data:	{fraction:$('select.selection-rase-select').val()},
+			success:function(data){
+				console.log(data)
+			}
+		});
+	})
 });
