@@ -370,7 +370,6 @@ function createCardDescriptionView(cardData, strength, titleView) {
 //Информация о карте
 function infoCardStart() {
 	$(document).on('click', '.info-img',function () {
-		debugger;
 		var popup = $('#card-info');
 		$('#card-info .content-card-info').empty();
 		popup.removeClass('mdesc');
@@ -392,9 +391,17 @@ function infoCardStart() {
 
 	function infoCardChangeInfoImg(){
 		var contentCard = $('#card-info .content-card-item-main');
-		var contentCardImg = contentCard.css('background-image');
-		debugger;
-		console.log(contentCardImg);
+		var contentCardImg = contentCard.css('background-image').replace('url(','').replace(')','').replace(/\"/gi, "");
+
+		contentCard.removeAttr('style');
+		contentCard.find('.card-load-info').prepend('<div class="card-info-image"><img src="'+contentCardImg+'" alt=""></div>');
+
+		var maxImgWidth = contentCard.find('.card-load-info .card-info-image img').width();
+		if (maxImgWidth <= 0){
+			maxImgWidth = '100%'
+		}
+		contentCard.find('.hovered-items').css('max-width',maxImgWidth);
+
 	}
 
 }

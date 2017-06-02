@@ -300,9 +300,7 @@ function infoCardStart() { // dubl from battle_scenario.js
 		openTrollPopup(popup);
 		setTimeout(function () {
 			var jsp = popup.find('.jsp-cont-descr');
-			if (jsp.find('p').height() >= 69){
-				jsp.jScrollPane();
-			}
+			jsp.jScrollPane();
 
 		}, 100);
 	});
@@ -315,6 +313,9 @@ function infoCardStart() { // dubl from battle_scenario.js
 		contentCard.find('.card-load-info').prepend('<div class="card-info-image"><img src="'+contentCardImg+'" alt=""></div>');
 
 		var maxImgWidth = contentCard.find('.card-load-info .card-info-image img').width();
+		if (maxImgWidth <= 0){
+			maxImgWidth = '100%'
+		}
 		contentCard.find('.hovered-items').css('max-width',maxImgWidth);
 
 	}
@@ -798,12 +799,6 @@ function marketSelection(){
 	if($('.selection-rase select').length > 0){
 		$('.selection-rase select').styler({
 			selectSmartPositioning:'-1'
-		});
-		$('.selection-rase-img').click(function() {
-			$('.selection-rase .jq-selectbox__dropdown').show();
-			setTimeout(function(){
-				$('.selection-rase .jq-selectbox').addClass('opened');
-			},200);
 		});
 	}
 }
@@ -1612,7 +1607,44 @@ function birdthDatePicker() {
 
 // Попап при клике на иконку расы (в магазине и в волшебстве)
 function showPopRaseInfo() {
-	//$(document).on('');
+	var ajaxVariable = null;
+	$(document).on('click','.selection-rase-img',function (e) {
+		e.preventDefault();
+
+		if ( ajaxVariable !== null ) {
+		    ajaxVariable.abort();
+		}
+
+		ajaxVariable = $.ajax({
+			url:	'/get_fraction_description',
+			type:	'GET',
+			data:	{fraction:$('select.selection-rase-select').val()},
+			success:function(data){
+				data = JSON.parse(data);
+				$('#card-info .content-card-info').empty();
+				var pageId = $('.market-page').attr('id');
+
+				var popupText = (pageId == 'market') ? data.shop_text : data.magic_text;
+
+				var popup = $('#card-info .content-card-info');
+
+				var popMarkup = '<div class="chose-rase-popup">'+
+									'<div class="top-img"><img src="'+data.img_url+'" alt="" ></div>'+
+									'<div class="description">'+
+										'<div class="title-rase">'+data.title+'</div>'+
+										'<div class="des-text">'+popupText+'</div>'+
+									'</div>'+
+								'</div>';
+
+				popup.append(popMarkup);
+
+				$('.chose-rase-popup .description').jScrollPane();
+
+				openTrollPopup($('#card-info'));
+			}
+		});
+
+	});
 }
 
 
@@ -1710,16 +1742,5 @@ $(document).ready(function(){
 	$('#buySomeGold .pay-buttons-wrap label').click(function(){
 		$(this).closest('.pay-buttons-wrap').find('label').removeClass('active');
 		$(this).addClass('active');
-	})
-
-	$('.select-rase-img').click(function(){
-		$.ajax({
-			url:	'/get_fraction_description',
-			type:	'GET',
-			data:	{fraction:$('select.selection-rase-select').val()},
-			success:function(data){
-				console.log(data)
-			}
-		});
 	})
 });
