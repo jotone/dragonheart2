@@ -288,17 +288,36 @@ function buildCardDeckView(cardData, wraper){
 	return result;
 }
 
-function infoCardStart() {
+function infoCardStart() { // dubl from battle_scenario.js
 	var popup = $('#card-info');
 	$(document).on('click', '.info-img',function () {
 		closeAllTrollPopup();
 		var content =  $(this).closest('.content-card-item-main').parent().html();
 		popup.find('.content-card-info').html(content);
+
+		infoCardChangeInfoImg();
+
 		openTrollPopup(popup);
 		setTimeout(function () {
-			var jsp = popup.find('.jsp-cont-descr').jScrollPane();
+			var jsp = popup.find('.jsp-cont-descr');
+			if (jsp.find('p').height() >= 69){
+				jsp.jScrollPane();
+			}
+
 		}, 100);
 	});
+
+	function infoCardChangeInfoImg(){
+		var contentCard = $('#card-info .content-card-item-main');
+		var contentCardImg = contentCard.css('background-image').replace('url(','').replace(')','').replace(/\"/gi, "");
+
+		contentCard.removeAttr('style');
+		contentCard.find('.card-load-info').prepend('<div class="card-info-image"><img src="'+contentCardImg+'" alt=""></div>');
+
+		var maxImgWidth = contentCard.find('.card-load-info .card-info-image img').width();
+		contentCard.find('.hovered-items').css('max-width',maxImgWidth);
+
+	}
 }
 
 //Формирование колод пользователя и свободных карт
@@ -1590,6 +1609,13 @@ var start = false;
 function birdthDatePicker() {
 	if($( "#datepicker" ).length>0){$( "#datepicker" ).datepicker();}
 }
+
+// Попап при клике на иконку расы (в магазине и в волшебстве)
+function showPopRaseInfo() {
+	//$(document).on('');
+}
+
+
 $(document).ready(function(){
 	if( (!$('.login-page').length>0) && (!$('.registration-main-page').length > 0) ) getUserData();  //Получить данные пользователя (по идее должна не работать только после логинизации)
 	showFormOnMain();                       //Украшение формы логина на главной
@@ -1620,6 +1646,7 @@ $(document).ready(function(){
 	birdthDatePicker();
 	dblDraggCards();
 	changeChekInputInFilterDeck();
+	showPopRaseInfo();
 	if($('a.log_out_menu').length > 0){logoutUser();}
 	$('.male-select').styler({
 		selectPlaceholder: 'Выбор фракции'

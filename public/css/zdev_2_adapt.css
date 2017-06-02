@@ -22,6 +22,9 @@
     padding-bottom: 5px; }
     .mbox .header-box .rating .convert-resurses .resurses:last-child {
       display: block; }
+
+  /*popup info*/
+  #card-info .card-info-image{max-height: 120vh;}
 }
 
 @media screen and (max-width: 1280px) {

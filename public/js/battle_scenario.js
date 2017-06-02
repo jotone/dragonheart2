@@ -370,22 +370,33 @@ function createCardDescriptionView(cardData, strength, titleView) {
 //Информация о карте
 function infoCardStart() {
 	$(document).on('click', '.info-img',function () {
+		debugger;
 		var popup = $('#card-info');
 		$('#card-info .content-card-info').empty();
 		popup.removeClass('mdesc');
 		if($(this).closest('ul').hasClass('magic-effects-wrap')){
 			popup.addClass('mdesc');
 			$(this).closest('li').clone().appendTo('#card-info .content-card-info');
+			infoCardChangeInfoImg();
 			openTrollPopup(popup);
 		}else{
 			var content =  $(this).closest('.content-card-item-main').parent().html();
 			popup.find('.content-card-info').html(content);
+			infoCardChangeInfoImg();
 			openTrollPopup(popup);
 			setTimeout(function () {
 				var jsp = popup.find('.jsp-cont-descr').jScrollPane();
 			}, 100);
 		}
 	});
+
+	function infoCardChangeInfoImg(){
+		var contentCard = $('#card-info .content-card-item-main');
+		var contentCardImg = contentCard.css('background-image');
+		debugger;
+		console.log(contentCardImg);
+	}
+
 }
 
 //Функция проведения действия картой / МЭ / Пас
@@ -2667,7 +2678,7 @@ function buffingDebuffingAnimOnRows( params ) {
 								cardStrengthPulsing( card, params.effectName, params.type, params.value );
 							}
 						}
-						
+
 					}
 				});
 
