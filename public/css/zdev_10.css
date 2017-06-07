@@ -1935,6 +1935,9 @@ ul.user-hand-cards-wrap li{
     right: -25px;
     bottom: -5px;
     background-color: rgba(0, 255, 0, 0.1);
+    animation-name: mezhdyblockActiveAnim;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
 }
 .field-for-cards.active:before, .mezhdyblock ul.active:before{
     content: '';
@@ -1949,8 +1952,15 @@ ul.user-hand-cards-wrap li{
     -o-background-size: 100% 130px;
     background-size: 100% 130px;
     background-repeat: no-repeat;
+    animation-name: mezhdyblockActiveAnim;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
 }
-
+@keyframes mezhdyblockActiveAnim {
+  0%{transform: scale(1,1);}
+  50%{transform: scale(1.01,1);}
+  100%{transform: scale(1,1);}
+}
 .mezhdyblock ul.active:after{
     left: -6px;
     right: -36px;
