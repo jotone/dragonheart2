@@ -294,7 +294,7 @@
 .mbox .header-box .rating .convert-resurses .resurses div{
 	position:relative;
 	top:-8px;
-	font-size: 15px;
+	font-size: 17px;
 	}
 .mbox .header-box .rating .convert-resurses .resurses .gold{
 	color:#fef502;
@@ -3248,13 +3248,15 @@ div.troll-popup#card-info.mdesc li{ list-style-type:none; }
 div.troll-popup#card-info.mdesc .magic-description{ display:block; color:#714026;
 	font-size:16px;
 	font-weight:500; }
-div.troll-popup#card-info{ padding:20px; width:590px; height:920px; z-index:1010; }
-#card-info .content-card-item-main{ background-size:100%; width:550px; height:880px; background-position:50% top; }
+div.troll-popup#card-info{ padding:20px;width: auto; z-index:1010;height: auto; }
+#card-info .content-card-item-main{ background-size:100%;background-position:50% top; width:100%;height:100%;  }
 #card-info .market-card-item-buy,
 #card-info .market-card-item-price,
 #card-info .info-img,
 #card-info .maxCountInDeck-wrap{ display:none; }
-#card-info .card-description-hidden{ display:block; }
+#card-info .card-description-hidden{ display:block;height: auto;padding-bottom: 0; }
+#card-info .card-description-hidden .jsp-cont-descr{height: auto;position: static;width: auto;max-height: 112px;}
+#card-info .content-card-item-main .hovered-items{position: relative;}
 #card-info .content-card-item-main .hovered-items .card-game-status{ bottom:100%; }
 #card-info .content-card-item-main .hovered-items .card-name-property{ top:0; bottom:auto; }
 #card-info .content-card-item-main .label-power-card{ background-size:72px 99px; width:72px; height:99px; padding-top:24px; font-size:26px; top:-2px; }
@@ -3268,6 +3270,9 @@ div.troll-popup#card-info{ padding:20px; width:590px; height:920px; z-index:1010
 	top:0;
 	left:14px;
 }
+#card-info .card-info-image{display: -webkit-flex;display: -moz-flex;display: -ms-flex;display: -o-flex;display: flex;-ms-align-items: center;
+align-items: center;justify-content: center;max-height: 90vh;}
+#card-info .card-info-image img{box-shadow: none;border-radius:0px;max-height: 700px;}
 .content-card-item-main.special-type .jsp-cont-descr img{ display:none; }
 #card-info .content-card-item-main.special-type .label-power-card{
 	background-size:101px 120px;
@@ -3784,3 +3789,10 @@ div.troll-popup.custom-img-and-title{box-shadow: none;}
 .pay-buttons-wrap label:last-child{border: 1px solid rgba(153,122,0, .5);}
 .pay-buttons-wrap label input[type=radio]{display: none;}
 .payment-title{color: #fff; padding-right: 20px; font-size: 14px;}
+
+/*попап краткого описания рассы*/
+.chose-rase-popup{width: 500px;}
+.chose-rase-popup .top-img{background-image: url(../images/super-bg-main.jpg);background-color: transparent;-webkit-border-radius: 50%;-moz-border-radius: 50%;border-radius: 50%;width: 141px;height: 141px;margin: -50px auto 0;box-shadow: 0 0 15px 5px #714026;display: -webkit-flex;display: -moz-flex;display: -ms-flex;display: -o-flex;display: flex;-ms-align-items: center;align-items: center;justify-content: center;}
+.chose-rase-popup .description{max-height: 200px;text-align: left;}
+.chose-rase-popup .description .title-rase{border-bottom: 1px solid #714026;color: #714026;font-weight: 700;font-size: 18px;padding-bottom: 5px;text-transform: uppercase;font-family: 'indisplay', sans-serif;}
+.chose-rase-popup .description .des-text{padding-top: 10px;color: #714026;font-size: 16px;font-weight: 400;font-family: 'indisplay', sans-serif;line-height: 1;}

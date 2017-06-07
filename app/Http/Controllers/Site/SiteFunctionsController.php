@@ -5,6 +5,7 @@ use App\Battle;
 use App\BattleMembers;
 use App\Card;
 use App\EtcData;
+use App\Fraction;
 use App\MagicEffect;
 use App\User;
 use Illuminate\Routing\Controller as BaseController;
@@ -29,13 +30,13 @@ class SiteFunctionsController extends BaseController
 		$exchanges = EtcData::where('label_data', '=', 'exchange_options')->get();
 
 		if($user){
-            $result = [
-                'avatar'    => $user->img_url,
-                'gold'      => $user->user_gold,
-                'silver'    => $user->user_silver,
-                'energy'    => $user->user_energy,
-            ];
-        }
+			$result = [
+				'avatar'    => $user->img_url,
+				'gold'      => $user->user_gold,
+				'silver'    => $user->user_silver,
+				'energy'    => $user->user_energy,
+			];
+		}
 
 		foreach ($etc_data as $key => $value) {
 			$result[$value->meta_key] = $value->meta_value;
@@ -299,48 +300,48 @@ class SiteFunctionsController extends BaseController
 		}
 	}
 
-    public function getUsersRatingByScroll(Request $request){
-        $data = $request -> all();
+	public function getUsersRatingByScroll(Request $request){
+		$data = $request -> all();
 
-        $current_user = Auth::user();
-        $user = (isset($data['user_login']))? User::where('login', '=', $data['user_login'])->get(): User::where('login', '=', $current_user['login'])->get();
+		$current_user = Auth::user();
+		$user = (isset($data['user_login']))? User::where('login', '=', $data['user_login'])->get(): User::where('login', '=', $current_user['login'])->get();
 
-        if(!empty($user[0])){
-            $users_rates = [];
-            $users = User::select('login','user_rating')->get();
+		if(!empty($user[0])){
+			$users_rates = [];
+			$users = User::select('login','user_rating')->get();
 
-            foreach($users as $user_to_rate_data){
-                $users_rates[] = self::calcUserRating($data['league'], $user_to_rate_data);
-            }
+			foreach($users as $user_to_rate_data){
+				$users_rates[] = self::calcUserRating($data['league'], $user_to_rate_data);
+			}
 
-            usort($users_rates, function($a, $b){return ($b['rating'] - $a['rating']);});
+			usort($users_rates, function($a, $b){return ($b['rating'] - $a['rating']);});
 
-            $user_rates_count = count($users_rates);
-            for($i = 0; $i < $user_rates_count; $i++){
-                $users_rates[$i]['position'] = $i+1;
-            }
+			$user_rates_count = count($users_rates);
+			for($i = 0; $i < $user_rates_count; $i++){
+				$users_rates[$i]['position'] = $i+1;
+			}
 
-            $users_out = [];
-            if($data['direction'] == 1){
-                $n = ($data['position'] +10 <= $user_rates_count)? $data['position'] +10: $user_rates_count;
-                for($i = $data['position']; $i < $n; $i++){
-                    $users_out[] = $users_rates[$i];
-                }
-            }else{
-                $n = ($data['position'] -10 >= 3)? $data['position'] -10: 3;
-                for($i = $n; $i < $data['position']-1 ; $i++){
-                    $users_out[] = $users_rates[$i];
-                }
-            }
+			$users_out = [];
+			if($data['direction'] == 1){
+				$n = ($data['position'] +10 <= $user_rates_count)? $data['position'] +10: $user_rates_count;
+				for($i = $data['position']; $i < $n; $i++){
+					$users_out[] = $users_rates[$i];
+				}
+			}else{
+				$n = ($data['position'] -10 >= 3)? $data['position'] -10: 3;
+				for($i = $n; $i < $data['position']-1 ; $i++){
+					$users_out[] = $users_rates[$i];
+				}
+			}
 
-            return json_encode([
-                'message' => 'success',
-                'users'   => $users_out
-            ]);
-        }else{
-            return json_encode(['message' => 'Данного пользователя не существует']);
-        }
-    }
+			return json_encode([
+				'message' => 'success',
+				'users'   => $users_out
+			]);
+		}else{
+			return json_encode(['message' => 'Данного пользователя не существует']);
+		}
+	}
 	/*
 	 * END OF Рейтинг
 	*/
@@ -367,10 +368,10 @@ class SiteFunctionsController extends BaseController
 		$user = Auth::user();
 		$status = \DB::table('users')->select('login','user_busy')->where('login','=', $user->login)->get();
 		if($status[0]->user_busy > 0){
-            return json_encode(['message' => 'Операция невозможна. Вы находитесь в битве.']);
-        }else{
-            return $status[0]->user_busy;
-        }
+			return json_encode(['message' => 'Операция невозможна. Вы находитесь в битве.']);
+		}else{
+			return $status[0]->user_busy;
+		}
 	}
 
 	//Получить кол-во активных пользователей
@@ -1116,4 +1117,17 @@ class SiteFunctionsController extends BaseController
 	/*
 	*  END OF Волшебство
 	*/
+
+	public function getFractionDescription(Request $request){
+		$data = $request->all();
+		$fraction = Fraction::select('title','img_url','descr_shop','descr_magic')->where('slug','=',$data['fraction'])->first();
+		if(!empty($fraction)){
+			return json_encode([
+				'title'=>$fraction->title,
+				'img_url'=>'/img/fractions_images/'.$fraction->img_url,
+				'shop_text'=>$fraction->descr_shop,
+				'magic_text'=>$fraction->descr_magic,
+			]);
+		}
+	}
 }

@@ -288,17 +288,37 @@ function buildCardDeckView(cardData, wraper){
 	return result;
 }
 
-function infoCardStart() {
+function infoCardStart() { // dubl from battle_scenario.js
 	var popup = $('#card-info');
 	$(document).on('click', '.info-img',function () {
 		closeAllTrollPopup();
 		var content =  $(this).closest('.content-card-item-main').parent().html();
 		popup.find('.content-card-info').html(content);
+
+		infoCardChangeInfoImg();
+
 		openTrollPopup(popup);
 		setTimeout(function () {
-			var jsp = popup.find('.jsp-cont-descr').jScrollPane();
+			var jsp = popup.find('.jsp-cont-descr');
+			jsp.jScrollPane();
+
 		}, 100);
 	});
+
+	function infoCardChangeInfoImg(){
+		var contentCard = $('#card-info .content-card-item-main');
+		var contentCardImg = contentCard.css('background-image').replace('url(','').replace(')','').replace(/\"/gi, "");
+
+		contentCard.removeAttr('style');
+		contentCard.find('.card-load-info').prepend('<div class="card-info-image"><img src="'+contentCardImg+'" alt=""></div>');
+
+		var maxImgWidth = contentCard.find('.card-load-info .card-info-image img').width();
+		if (maxImgWidth <= 0){
+			maxImgWidth = '100%'
+		}
+		contentCard.find('.hovered-items').css('max-width',maxImgWidth);
+
+	}
 }
 
 //Формирование колод пользователя и свободных карт
@@ -779,12 +799,6 @@ function marketSelection(){
 	if($('.selection-rase select').length > 0){
 		$('.selection-rase select').styler({
 			selectSmartPositioning:'-1'
-		});
-		$('.selection-rase-img').click(function() {
-			$('.selection-rase .jq-selectbox__dropdown').show();
-			setTimeout(function(){
-				$('.selection-rase .jq-selectbox').addClass('opened');
-			},200);
 		});
 	}
 }
@@ -1590,6 +1604,50 @@ var start = false;
 function birdthDatePicker() {
 	if($( "#datepicker" ).length>0){$( "#datepicker" ).datepicker();}
 }
+
+// Попап при клике на иконку расы (в магазине и в волшебстве)
+function showPopRaseInfo() {
+	var ajaxVariable = null;
+	$(document).on('click','.selection-rase-img',function (e) {
+		e.preventDefault();
+
+		if ( ajaxVariable !== null ) {
+		    ajaxVariable.abort();
+		}
+
+		ajaxVariable = $.ajax({
+			url:	'/get_fraction_description',
+			type:	'GET',
+			data:	{fraction:$('select.selection-rase-select').val()},
+			success:function(data){
+				data = JSON.parse(data);
+				$('#card-info .content-card-info').empty();
+				var pageId = $('.market-page').attr('id');
+
+				var popupText = (pageId == 'market') ? data.shop_text : data.magic_text;
+
+				var popup = $('#card-info .content-card-info');
+
+				var popMarkup = '<div class="chose-rase-popup">'+
+									'<div class="top-img"><img src="'+data.img_url+'" alt="" ></div>'+
+									'<div class="description">'+
+										'<div class="title-rase">'+data.title+'</div>'+
+										'<div class="des-text">'+popupText+'</div>'+
+									'</div>'+
+								'</div>';
+
+				popup.append(popMarkup);
+
+				$('.chose-rase-popup .description').jScrollPane();
+
+				openTrollPopup($('#card-info'));
+			}
+		});
+
+	});
+}
+
+
 $(document).ready(function(){
 	if( (!$('.login-page').length>0) && (!$('.registration-main-page').length > 0) ) getUserData();  //Получить данные пользователя (по идее должна не работать только после логинизации)
 	showFormOnMain();                       //Украшение формы логина на главной
@@ -1620,6 +1678,7 @@ $(document).ready(function(){
 	birdthDatePicker();
 	dblDraggCards();
 	changeChekInputInFilterDeck();
+	showPopRaseInfo();
 	if($('a.log_out_menu').length > 0){logoutUser();}
 	$('.male-select').styler({
 		selectPlaceholder: 'Выбор фракции'

@@ -169,6 +169,7 @@ foreach($battle_members as $key => $value){
 			'wins_count'	=> count($round_status[$user_field_identificator]),
 			'fear_rows'		=> [['','',0],['','',0],['','',0]],
 			'inspir_rows'	=> [['',''],['',''],['','']],
+			'support_rows'	=> [['',''],['',''],['','']]
 		];
 		$players[$user_field_identificator] = &$players['allied'];
 	}else{
@@ -186,6 +187,7 @@ foreach($battle_members as $key => $value){
 			'wins_count'	=> count($round_status[$opponent_field_identificator]),
 			'fear_rows'		=> [['','',0],['','',0],['','',0]],
 			'inspir_rows'	=> [['',''],['',''],['','']],
+			'support_rows'	=> [['',''],['',''],['','']]
 		];
 		$players[$opponent_field_identificator] = &$players['enemy'];
 	}
@@ -194,7 +196,9 @@ $buff_classes = [
 	'terrify_wrap' => 'terrify-debuff-wrap debuff',
 	'terrify' => 'terrify-debuff',
 	'insp_wrap' => 'inspiration-buff-wrap buff',
-	'insp' => 'inspiration-buff'
+	'insp' => 'inspiration-buff',
+	'support_wrap' => 'support-buff-wrap buff',
+	'support' => 'support-buff'
 ];
 
 //fear counts
@@ -261,6 +265,9 @@ foreach($battle_field as $field => $data){
 								];
 							}
 						}
+					}
+					if($action->action == 13){
+						$players[$field]['support_rows'][$row] = [$buff_classes['support_wrap'],$buff_classes['support']];
 					}
 					if($action->action == 4){
 						$players[$field]['inspir_rows'][$row] = [$buff_classes['insp_wrap'],$buff_classes['insp']];
@@ -394,7 +401,7 @@ foreach($battle_field as $field => $data){
 					<?php
 					$classes = '';
 					if(isset($players['enemy']['user_nickname'])){
-						$classes .= $players['enemy']['fear_rows'][2][0].' '.$players['enemy']['inspir_rows'][2][0];
+						$classes .= $players['enemy']['fear_rows'][2][0].' '.$players['enemy']['inspir_rows'][2][0].' '.$players['enemy']['support_rows'][2][0];
 					}
 					?>
 					<div class="convert-stuff {{$classes}}">
@@ -421,6 +428,9 @@ foreach($battle_field as $field => $data){
 								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['inspir_rows'][2][1] != '') )
 									<div class="debuff-or-buff-anim {{$players['enemy']['inspir_rows'][2][1]}} active"></div>
 								@endif
+								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['support_rows'][2][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['enemy']['support_rows'][2][1]}} active"></div>
+								@endif
 								<!-- END OF Поле размещения сверхдальних карт -->
 							</div>
 						</div>
@@ -432,7 +442,7 @@ foreach($battle_field as $field => $data){
 					<?php
 					$classes = '';
 					if(isset($players['enemy']['user_nickname'])){
-						$classes .= $players['enemy']['fear_rows'][1][0].' '.$players['enemy']['inspir_rows'][1][0];
+						$classes .= $players['enemy']['fear_rows'][1][0].' '.$players['enemy']['inspir_rows'][1][0].' '.$players['enemy']['support_rows'][1][0];
 					}
 					?>
 					<div class="convert-stuff {{$classes}}">
@@ -460,6 +470,9 @@ foreach($battle_field as $field => $data){
 								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['inspir_rows'][1][1] != '') )
 									<div class="debuff-or-buff-anim {{$players['enemy']['inspir_rows'][1][1]}} active"></div>
 								@endif
+								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['support_rows'][1][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['enemy']['support_rows'][1][1]}} active"></div>
+								@endif
 								<!-- END OF Поле размещения дальних карт -->
 							</div>
 						</div>
@@ -471,7 +484,7 @@ foreach($battle_field as $field => $data){
 					<?php
 					$classes = '';
 					if(isset($players['enemy']['user_nickname'])){
-						$classes .= $players['enemy']['fear_rows'][0][0].' '.$players['enemy']['inspir_rows'][0][0];
+						$classes .= $players['enemy']['fear_rows'][0][0].' '.$players['enemy']['inspir_rows'][0][0].' '.$players['enemy']['support_rows'][0][0];
 					}
 					?>
 					<div class="convert-stuff {{$classes}}">
@@ -498,6 +511,9 @@ foreach($battle_field as $field => $data){
 								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['inspir_rows'][0][1] != '') )
 									<div class="debuff-or-buff-anim {{$players['enemy']['inspir_rows'][0][1]}} active"></div>
 								@endif
+								@if( (isset($players['enemy']['user_nickname'])) && ($players['enemy']['support_rows'][0][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['enemy']['support_rows'][0][1]}} active"></div>
+								@endif
 							</div>
 						</div>
 						<div class="field-for-sum"><!-- Сумарная сила воинов в ближнем ряду --></div>
@@ -516,7 +532,7 @@ foreach($battle_field as $field => $data){
 					<?php
 					$classes = '';
 					if(isset($players['allied']['user_nickname'])){
-						$classes .= $players['allied']['fear_rows'][0][0].' '.$players['allied']['inspir_rows'][0][0];
+						$classes .= $players['allied']['fear_rows'][0][0].' '.$players['allied']['inspir_rows'][0][0].' '.$players['allied']['support_rows'][0][0];
 					}
 					?>
 					<div class="convert-stuff {{$classes}}">
@@ -543,6 +559,9 @@ foreach($battle_field as $field => $data){
 								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['inspir_rows'][0][1] != '') )
 									<div class="debuff-or-buff-anim {{$players['allied']['inspir_rows'][0][1]}} active"></div>
 								@endif
+								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['support_rows'][0][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['allied']['support_rows'][0][1]}} active"></div>
+								@endif
 							</div>
 						</div>
 						<div class="field-for-sum"><!-- Сила воинов в ближнем ряду--></div>
@@ -553,7 +572,7 @@ foreach($battle_field as $field => $data){
 					<?php
 					$classes = '';
 					if(isset($players['allied']['user_nickname'])){
-						$classes .= $players['allied']['fear_rows'][1][0].' '.$players['allied']['inspir_rows'][1][0];
+						$classes .= $players['allied']['fear_rows'][1][0].' '.$players['allied']['inspir_rows'][1][0].' '.$players['allied']['support_rows'][1][0];
 					}
 					?>
 					<div class="convert-stuff @if( (isset($players['allied']['user_nickname'])) && ($players['allied']['fear_rows'][1] === true) ) terrify-debuff debuff @endif">
@@ -580,6 +599,9 @@ foreach($battle_field as $field => $data){
 								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['inspir_rows'][1][1] != '') )
 									<div class="debuff-or-buff-anim {{$players['allied']['inspir_rows'][1][1]}} active"></div>
 								@endif
+								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['support_rows'][1][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['allied']['support_rows'][1][1]}} active"></div>
+								@endif
 							</div>
 						</div>
 						<div class="field-for-sum"></div>
@@ -590,7 +612,7 @@ foreach($battle_field as $field => $data){
 					<?php
 					$classes = '';
 					if(isset($players['allied']['user_nickname'])){
-						$classes .= $players['allied']['fear_rows'][2][0].' '.$players['allied']['inspir_rows'][2][0];
+						$classes .= $players['allied']['fear_rows'][2][0].' '.$players['allied']['inspir_rows'][2][0].' '.$players['allied']['support_rows'][2][0];
 					}
 					?>
 					<div class="convert-stuff {{$classes}}">
@@ -616,6 +638,9 @@ foreach($battle_field as $field => $data){
 								@endif
 								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['inspir_rows'][2][1] != '') )
 									<div class="debuff-or-buff-anim {{$players['allied']['inspir_rows'][2][1]}} active"></div>
+								@endif
+								@if( (isset($players['allied']['user_nickname'])) && ($players['allied']['support_rows'][2][1] != '') )
+									<div class="debuff-or-buff-anim {{$players['allied']['support_rows'][2][1]}} active"></div>
 								@endif
 							</div>
 						</div>

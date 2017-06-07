@@ -376,16 +376,34 @@ function infoCardStart() {
 		if($(this).closest('ul').hasClass('magic-effects-wrap')){
 			popup.addClass('mdesc');
 			$(this).closest('li').clone().appendTo('#card-info .content-card-info');
+			infoCardChangeInfoImg();
 			openTrollPopup(popup);
 		}else{
 			var content =  $(this).closest('.content-card-item-main').parent().html();
 			popup.find('.content-card-info').html(content);
+			infoCardChangeInfoImg();
 			openTrollPopup(popup);
 			setTimeout(function () {
 				var jsp = popup.find('.jsp-cont-descr').jScrollPane();
 			}, 100);
 		}
 	});
+
+	function infoCardChangeInfoImg(){
+		var contentCard = $('#card-info .content-card-item-main');
+		var contentCardImg = contentCard.css('background-image').replace('url(','').replace(')','').replace(/\"/gi, "");
+
+		contentCard.removeAttr('style');
+		contentCard.find('.card-load-info').prepend('<div class="card-info-image"><img src="'+contentCardImg+'" alt=""></div>');
+
+		var maxImgWidth = contentCard.find('.card-load-info .card-info-image img').width();
+		if (maxImgWidth <= 0){
+			maxImgWidth = '100%'
+		}
+		contentCard.find('.hovered-items').css('max-width',maxImgWidth);
+
+	}
+
 }
 
 //Функция проведения действия картой / МЭ / Пас
@@ -2667,7 +2685,7 @@ function buffingDebuffingAnimOnRows( params ) {
 								cardStrengthPulsing( card, params.effectName, params.type, params.value );
 							}
 						}
-						
+
 					}
 				});
 
@@ -2782,12 +2800,8 @@ function buffDebuffGroupOfCards( params ) {
 						time: 300
 					});
 				}
-
 			});
-
-
 	}, 0);
-
 }
 
 // pretty card moving

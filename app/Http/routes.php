@@ -214,6 +214,10 @@ Route::get('/get_user_data', [
 Route::get('/get_socket_settings', [
 	'uses'	=> 'Site\SiteGameController@socketSettings'
 ]);
+//Получить описание рассы
+Route::get('/get_fraction_description',[
+	'uses'	=> 'Site\SiteFunctionsController@getFractionDescription'
+]);
 
 
 //Yadnex Money
