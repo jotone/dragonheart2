@@ -1,12 +1,18 @@
 .convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards { transition: all 300ms ease; }
 .convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards.can-debuff { box-shadow: inset 0 0 50px 25px rgba(190, 0, 0, .75); }
 
+/*when click on cart and in game field add class can-debuf*/
+.convert-battle-front .convert-cards .convert-card-box .convert-stuff.convert-stuff.buff .convert-one-field .field-for-cards.can-debuff{box-shadow: inset 0 0 50px 25px rgba(227, 115, 0, 0.5);}
+.convert-battle-front .convert-cards .convert-card-box .convert-stuff.convert-stuff.buff .convert-one-field .field-for-cards.can-debuff .debuff-or-buff-anim.support-buff.active{
+	opacity:0;}
+
+
 .convert-battle-front .convert-cards .convert-card-box .convert-stuff .convert-one-field .field-for-cards { position: relative; }
 
 .convert-battle-front .convert-cards .convert-card-box .convert-stuff .field-for-sum { transition: all 300ms ease; }
 .convert-battle-front .convert-cards .convert-card-box .convert-stuff .field-for-sum.pulsed { animation-name: pulseAnim; animation-duration: 500ms; animation-timing-function: ease; }
 
-.debuff-or-buff-anim { position: absolute; }
+.debuff-or-buff-anim { position: absolute;transition:opacity ease .3s; }
 
 .cards-row-wrap .content-card-item.pulsed .label-power-card { animation-name: pulseAnim; animation-duration: 2000ms; animation-timing-function: ease; }
 .cards-row-wrap .content-card-item.pulsed .label-power-card .card-current-value { opacity: 0; transition: all 0ms ease; }
@@ -69,7 +75,12 @@
 	.convert-battle-front .convert-cards .convert-card-box .convert-stuff.buff.debuff .cards-row-wrap .content-card-item:not([data-immune='true']):not([data-full-immune='true']) .label-power-card-wrap { color: #e37300; }
 
 	/* ?????*/
-	.convert-battle-front .convert-cards .convert-card-box .convert-stuff .debuff-or-buff-anim.support-buff.active + .active.debuff-or-buff-anim.terrify-debuff{background-color: rgba(255, 94, 0, 0.36);z-index:1;box-shadow: inset 0 0 50px 0px rgb(227, 115, 0), -10px 0 50px 20px rgba(180, 0, 0, .0);}
+	/*.convert-battle-front .convert-cards .convert-card-box .convert-stuff .debuff-or-buff-anim.support-buff.active + .active.debuff-or-buff-anim.terrify-debuff{background-color: rgba(255, 94, 0, 0.36);z-index:1;box-shadow: inset 0 0 50px 0px rgb(227, 115, 0), -10px 0 50px 20px rgba(180, 0, 0, .0);}*/
+	/*.active.debuff-or-buff-anim.terrify-debuff + .debuff-or-buff-anim.support-buff.active{background-color: rgba(255, 94, 0, 0.36);z-index:1;box-shadow: inset 0 0 50px 0px rgb(227, 115, 0), -10px 0 50px 20px rgba(180, 0, 0, .0);}*/
+
+	.convert-battle-front .convert-cards .convert-card-box .convert-stuff.support-buff-wrap.terrify-debuff-wrap .debuff-or-buff-anim.support-buff{opacity:0;}
+	.convert-battle-front .convert-cards .convert-card-box .convert-stuff.support-buff-wrap.terrify-debuff-wrap .debuff-or-buff-anim.terrify-debuff{background-color: rgba(0, 0, 0, 0.3);box-shadow: inset 30px 0 50px 0px rgba(222, 96, 21, 1), -10px 0 50px 20px rgba(222, 96, 21, 1);}
+	.convert-battle-front .convert-cards .convert-card-box .convert-stuff.support-buff-wrap.terrify-debuff-wrap .debuff-or-buff-anim.terrify-debuff.active{background-color: rgba(107, 40, 0, 0.41);z-index: 1;box-shadow: inset 0 0 50px 0px rgb(227, 115, 0), -10px 0 50px 20px rgba(180, 0, 0, .0);}
 
 /* /buff & debuff anim */
 
