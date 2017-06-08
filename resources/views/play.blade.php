@@ -75,7 +75,7 @@ function cardView($card, $quantity = 1){
 				<div class="hovered-items">
 					<div class="card-game-status">
 						<div class="card-game-status-role">';
-	if($card_data['type'] == 'special'){
+	if($card_data['type'] != 'special'){
 		foreach($card_data['row_txt'] as $i => $dist){
 			if(!is_array($dist)) $dist = get_object_vars($dist);
 			$card_view .= '
