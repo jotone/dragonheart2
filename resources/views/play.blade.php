@@ -26,12 +26,12 @@ function cardView($card, $quantity = 1){
 	if($card_data['is_leader'] == 1 ){$leader_class = 'leader-type';}
 
 	switch($card_data['fraction']){
-		case 'knight':      $race_class = 'knight-race'; break;
-		case 'highlander':  $race_class = 'highlander-race'; break;
-		case 'monsters':    $race_class = 'monsters-race'; break;
-		case 'undead':      $race_class = 'undead-race'; break;
-		case 'cursed':      $race_class = 'cursed-race'; break;
-		case 'forest':      $race_class = 'forest-race'; break;
+		case 'knight':		$race_class = 'knight-race'; break;
+		case 'highlander':	$race_class = 'highlander-race'; break;
+		case 'monsters':	$race_class = 'monsters-race'; break;
+		case 'undead':		$race_class = 'undead-race'; break;
+		case 'cursed':		$race_class = 'cursed-race'; break;
+		case 'forest':		$race_class = 'forest-race'; break;
 		default:
 			if($card_data['type'] == 'neutrall'){
 				$race_class = 'neutrall-race';
