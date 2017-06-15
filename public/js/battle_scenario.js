@@ -282,7 +282,7 @@ function createFieldCardView(cardData, strength, titleView) {
 			}
 		}
 	});
-	console.log('cardData when building card markup: ', cardData);
+	//console.log('cardData when building card markup: ', cardData);
 	return '' +
 		'<li class="content-card-item disable-select loading animation" data-cardid="'+cardData['id']+'" data-relative="'+cardData['type']+'" data-immune=' + immune + ' data-full-immune=' + full_immune + ' >'+
 		createCardDescriptionView(cardData, strength, titleView)+
@@ -915,15 +915,15 @@ function recalculateDecks(result) {
 			}
 		}
 
-		if(typeof result.counts['opon_hand'] != "undefined"){
-			$('.oponent-stats .greencard-num').text( result.counts['opon_hand'] );
-		}
+		// if(typeof result.counts['opon_hand'] != "undefined"){
+		// 	$('.oponent-stats .greencard-num').text( result.counts['opon_hand'] );
+		// }
 
 	}
 
-	if ( typeof result.user_hand != "undefined" ) {
-		$('.user-stats .greencard-num').text( result.user_hand.length );
-	}
+	// if ( typeof result.user_hand != "undefined" ) {
+	// 	$('.user-stats .greencard-num').text( result.user_hand.length );
+	// }
 	hidePreloader();
 }
 
@@ -1600,10 +1600,10 @@ var currentRound = 1;
 function startBattle() {
 
 	conn = new WebSocket('ws://' + socketResult['dom'] + ':8080');//Создание сокет-соединения
-	console.log(conn);
+	console.warn(conn);
 	//Создание сокет-соединения
 	conn.onopen = function (data) {
-		console.log('Соединение установлено');
+		console.warn('Соединение установлено');
 		conn.send(
 			JSON.stringify({
 				action: 'userJoinedToRoom',//Отправка сообщения о подключения пользователя к столу
@@ -1619,7 +1619,7 @@ function startBattle() {
 	conn.onmessage = function (e) {
 		var result = JSON.parse(e.data);
 
-		console.log(result);
+		console.info(result);
 
 		var allowPopups = true;
 		switch(result.message) {
@@ -2026,13 +2026,16 @@ function startBattle() {
 										addInspirationParams.rows = [played_card.move_to.row];
 									}
 
+									console.log('resultLogin',resultLogin,'      thisUser',thisUser)
 
+									console.log("resultLogin == thisUser", resultLogin == thisUser)
 									if ( resultLogin == thisUser ) {
 										addInspirationParams.side = 'oponent';
 									}
 									else {
 										addInspirationParams.side = 'user';
 									}
+
 
 									detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'], {
 										callbackFunctionName: recalculateCardsStrength,
@@ -2455,6 +2458,7 @@ function startBattle() {
 		}
 
 		if ( (result.message == 'allUsersAreReady') || (result.message == 'userMadeAction') ) {
+
 			calculateRightMarginCardHands();
 			hidePreloader();
 
@@ -2605,6 +2609,8 @@ function startBattle() {
 				allowToAction = false;
 			}
 
+			calculatePowerCounterUser(result)//Подсчет карт(справа,зеленые цифры)
+
 			cardCase(turnDescript, allowToAction);//Функция выбора карт
 			userMakeAction(conn, turnDescript, allowToAction);//Функция разрешает пользователю действие
 			clearRowSelection();//Очистка активированых рядов действий карт
@@ -2639,14 +2645,17 @@ function startBattle() {
 */
 function buffingDebuffingAnimOnRows( params ) {
 
+	console.log('buffingDebuffingAnimOnRows params',params);
+
 	params.rows.forEach(function( item ) {
 		var rowId = intRowToField(item);
 		var row = $('.' + params.side + ' .field-for-cards' + rowId);
+		console.log('row',row);
 		var parent = row.parents('.convert-stuff');
 		var pointsSum = parent.find('.field-for-sum');
 		parent.addClass(params.effectName + '-' + params.type + '-wrap');
 		var effectMarkup = '<div class="debuff-or-buff-anim ' + params.effectName + '-' + params.type + '" data-count=1></div>';
-
+		console.log('effectMarkup',effectMarkup);
 		if ( row.find('.' + params.effectName + '-' + params.type).length ) {
 			var field = row.find('.' + params.effectName + '-' + params.type);
 			var countPlus = parseInt( field.attr('data-count') ) + 1;
@@ -3009,6 +3018,22 @@ function removeCardEffectsFromField( card, side, step_status ) {
 
 	}
 
+}
+
+//Счетчик сил юзеров (справа,зеленый)
+function calculatePowerCounterUser(result) {
+
+	if ( typeof result.counts != "undefined" ) {
+
+		if(typeof result.counts['opon_hand'] != "undefined"){
+			$('.oponent-stats .greencard-num').text( result.counts['opon_hand'] );
+		}
+
+	}
+
+	if ( typeof result.user_hand != "undefined" ) {
+		$('.user-stats .greencard-num').text( result.user_hand.length );
+	}
 }
 
 function setMinWidthInPop(count,popup) {
