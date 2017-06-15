@@ -915,15 +915,7 @@ function recalculateDecks(result) {
 			}
 		}
 
-		// if(typeof result.counts['opon_hand'] != "undefined"){
-		// 	$('.oponent-stats .greencard-num').text( result.counts['opon_hand'] );
-		// }
-
 	}
-
-	// if ( typeof result.user_hand != "undefined" ) {
-	// 	$('.user-stats .greencard-num').text( result.user_hand.length );
-	// }
 	hidePreloader();
 }
 
@@ -2006,34 +1998,40 @@ function startBattle() {
 										effectName: 'inspiration'
 									};
 
+									// old func
+									// for ( var i = 0; i < played_card.card.actions.length; i++ ) {
+									// 	if ( played_card.card.actions[i].action === '4' ) {
+									// 		var inspirationAction = played_card.card.actions[i];
+									// 		console.log('Inspiration action: ', inspirationAction);
+									// 		inspirationAction.inspiration_ActionRow.forEach(function(item) {
+									// 			addInspirationParams.rows.push(item);
+									// 		});
+									// 		break;
+									// 	}
+									// }
+
+									// if ( played_card.card.fraction == 'special' ) {
+									// 	// remove if in future gona be
+									// 	// special card that buff all
+									// 	// rows in inspiration
+									// 	addInspirationParams.rows = [played_card.move_to.row];
+									// }
+									// if ( resultLogin == thisUser ) {
+									// 	addInspirationParams.side = 'oponent';
+									// }
+									// else {
+									// 	addInspirationParams.side = 'user';
+									// }
+
+									//new func 15.06.2017
 									var played_card = result.step_status.played_card;
 
-									for ( var i = 0; i < played_card.card.actions.length; i++ ) {
-										if ( played_card.card.actions[i].action === '4' ) {
-											var inspirationAction = played_card.card.actions[i];
-											console.log('Inspiration action: ', inspirationAction);
-											inspirationAction.inspiration_ActionRow.forEach(function(item) {
-												addInspirationParams.rows.push(item);
-											});
-											break;
-										}
-									}
+									addInspirationParams.rows = [played_card.move_to.row];
 
-									if ( played_card.card.fraction == 'special' ) {
-										// remove if in future gona be
-										// special card that buff all
-										// rows in inspiration
-										addInspirationParams.rows = [played_card.move_to.row];
-									}
-
-									console.log('resultLogin',resultLogin,'      thisUser',thisUser)
-
-									console.log("resultLogin == thisUser", resultLogin == thisUser)
-									if ( resultLogin == thisUser ) {
-										addInspirationParams.side = 'oponent';
-									}
-									else {
+									if ( $('[data-user='+played_card.move_to.user+']').hasClass('user') ){
 										addInspirationParams.side = 'user';
+									} else {
+										addInspirationParams.side = 'oponent';
 									}
 
 
@@ -2340,6 +2338,11 @@ function startBattle() {
 					}
 
 					calculateRightMarginCardHands();
+
+					//Проверка есть ли добаленные/удаленные карты с колоды/руки - запуск перещета для отображения отбоя/колоды
+					if ( !$.isEmptyObject(result.step_status.dropped_cards) || !$.isEmptyObject(result.step_status.added_cards) ) {
+						recalculateDecks(result);//Пересчет колод пользователя и противника
+					}
 
 					//Обработка Маг. Эффектов (МЭ)
 					if ( typeof result.magicUsage != "undefined" ) {
