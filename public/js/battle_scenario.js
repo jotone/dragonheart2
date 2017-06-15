@@ -1375,6 +1375,7 @@ recalculateBattleField();
 
 //Показ попапа с картой которой ходит игрок( открываеться при начале хода )
 function detailCardPopupOnStartStep(card, strength, callback) {
+	closeAllTrollPopup();
 	var holder = $('#card-start-step');
 	holder.find('.content-card-info').empty();
 	var popContent = createCardDescriptionView(card, strength, 'without-description');
