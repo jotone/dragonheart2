@@ -106,9 +106,8 @@ class GwentSocket extends BaseSocket
 	public function onMessage(ConnectionInterface $from, $msg){
 		$msg = json_decode($msg); // сообщение от пользователя arr[action, ident[battleId, UserId, Hash]]
 		var_dump(date('Y-m-d H:i:s'));
-		var_dump($msg);
 		if(!isset($this->battles[$msg->ident->battleId])){
-			$this->battles[$msg->ident->battleId] = new \SplObjectStorage; 
+			$this->battles[$msg->ident->battleId] = new \SplObjectStorage;
 		}
 
 		if(!$this->battles[$msg->ident->battleId]->contains($from)){
@@ -711,11 +710,13 @@ class GwentSocket extends BaseSocket
 			break;
 
 			case 'userPassed':
+				var_dump($msg);
 				$battle_field = unserialize($battle->battle_field);
 				$magic_usage = unserialize($battle->magic_usage);
 				$addition_data = [];
 
-				$users_battle_data = BattleMembers::find($users_data['user']['battle_member_id']);
+				$users_battle_data = ($msg->invert > 0)? BattleMembers::find($users_data['opponent']['battle_member_id']);: BattleMembers::find($users_data['user']['battle_member_id']);
+
 				$users_battle_data['round_passed'] = 1;
 				$users_battle_data['turn_expire'] = $msg->timing;// - $users_data['user']['time_shift'];
 				$users_battle_data->save();

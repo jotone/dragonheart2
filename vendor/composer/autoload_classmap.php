@@ -18,6 +18,7 @@ return array(
     'CreatePagesTable' => $baseDir . '/database/migrations/2017_01_11_100454_create_pages_table.php',
     'CreatePasswordResetsTable' => $baseDir . '/database/migrations/2014_10_12_100000_create_password_resets_table.php',
     'CreateSupportTable' => $baseDir . '/database/migrations/2017_01_11_140456_create_support_table.php',
+    'CreateTablePayment' => $baseDir . '/database/migrations/2017_05_08_150733_create_table_payment.php',
     'CreateUsersTable' => $baseDir . '/database/migrations/2014_10_12_000000_create_users_table.php',
     'DatabaseSeeder' => $baseDir . '/database/seeds/DatabaseSeeder.php',
     'File_Iterator' => $vendorDir . '/phpunit/php-file-iterator/src/Iterator.php',

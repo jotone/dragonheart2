@@ -456,7 +456,8 @@ function userMakeAction(conn, turnDescript, allowToAction) {
 					JSON.stringify({
 						action: 'userPassed',
 						ident: ident,
-						timing: time
+						timing: time,
+						invert: 0
 					})
 				);
 				allowToAction = false;
@@ -1540,7 +1541,8 @@ function startTimer(login) {
 						JSON.stringify({
 							action: 'userPassed',
 							ident: ident,
-							timing: 0
+							timing: 0,
+							invert: 1
 						})
 					);
 				}
