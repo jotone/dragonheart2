@@ -457,7 +457,6 @@ function userMakeAction(conn, turnDescript, allowToAction) {
 						action: 'userPassed',
 						ident: ident,
 						timing: time,
-						invert: 0
 					})
 				);
 				allowToAction = false;
@@ -1542,7 +1541,6 @@ function startTimer(login) {
 							action: 'userPassed',
 							ident: ident,
 							timing: 0,
-							invert: 1
 						})
 					);
 				}

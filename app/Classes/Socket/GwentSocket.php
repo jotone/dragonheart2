@@ -715,8 +715,7 @@ class GwentSocket extends BaseSocket
 				$magic_usage = unserialize($battle->magic_usage);
 				$addition_data = [];
 
-				$users_battle_data = ($msg->invert > 0)? BattleMembers::find($users_data['opponent']['battle_member_id']): BattleMembers::find($users_data['user']['battle_member_id']);
-
+				$users_battle_data = BattleMembers::find($users_data['user']['battle_member_id']);
 				$users_battle_data['round_passed'] = 1;
 				$users_battle_data['turn_expire'] = $msg->timing;// - $users_data['user']['time_shift'];
 				$users_battle_data->save();
