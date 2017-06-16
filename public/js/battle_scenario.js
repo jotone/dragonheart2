@@ -1808,6 +1808,11 @@ function startBattle() {
 					changeTurnIndicator('User made action (result): ', result.login); //смена индикатора хода
 
 					var resultLogin  = result.login;
+
+					// if (typeof result.pas) {
+
+					// }
+
 					var thisUser = $('.user-describer .name').text();
 
 					fieldBuilding(result.step_status, true);
@@ -2508,9 +2513,6 @@ function startBattle() {
 			}
 
 			var expireTime = result.timing - phpTime();
-			console.log(result.timing)
-			console.log(phpTime())
-			console.log(expireTime)
 			convertTimeToStr(expireTime);
 			clearInterval(TimerInterval);
 			if(expireTime > 0){
