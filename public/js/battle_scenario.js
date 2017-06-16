@@ -1245,7 +1245,7 @@ function animationBurningCardEndDeleting(action) {
 			break;
 			default:
 				//console.log('default');
-				card.append('<span class="card-burning-item-main"><img src="/images/card-burning-item-main-2.gif" alt="" /></span');
+				card.append('<span class="card-burning-item-main"><img src="/images/card-burning-item-main-2.gif" alt="" /></span>');
 				setTimeout(function(){
 					card.addClass('card-burning');
 					setTimeout(function(){
@@ -2502,6 +2502,9 @@ function startBattle() {
 			}
 
 			var expireTime = result.timing - phpTime();
+			console.log(result.timing)
+			console.log(phpTime())
+			console.log(expireTime)
 			convertTimeToStr(expireTime);
 			clearInterval(TimerInterval);
 			if(expireTime > 0){

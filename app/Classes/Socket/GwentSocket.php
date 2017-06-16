@@ -152,6 +152,7 @@ class GwentSocket extends BaseSocket
 					'battle_member_id'=> $value->id,						//ID текущей битвы
 					'turn_expire'	=> $value->turn_expire,
 					'time_shift'	=> $value->time_shift,
+					'pseudonim'		=> 'user'
 				];
 				$users_data[$user_identificator] = &$users_data['user'];
 				$users_data[$value->user_id] = &$users_data['user'];
@@ -174,7 +175,8 @@ class GwentSocket extends BaseSocket
 					'addition_data'	=> unserialize($value->addition_data),
 					'battle_member_id'=> $value->id,
 					'turn_expire'	=> $value->turn_expire,
-					'time_shift'	=> $value->time_shift
+					'time_shift'	=> $value->time_shift,
+					'pseudonim'		=> 'opponent'
 				];
 				$users_data[$user_identificator] = &$users_data['opponent'];
 				$users_data[$value->user_id] = &$users_data['opponent'];
@@ -586,13 +588,23 @@ class GwentSocket extends BaseSocket
 							}
 						}
 					}
-					if($add_time === true){
-						$turn_expire = $msg->timing + $timing_settings['additional_time'];
-						$showTimerOfUser = 'opponent';
+
+					$round_passed_summ = $users_data['user']['round_passed'] + $users_data['opponent']['round_passed'];
+
+					if($round_passed_summ < 1){
+						if($add_time === true){
+							$turn_expire = $msg->timing + $timing_settings['additional_time'];
+							$showTimerOfUser = 'opponent';
+						}else{
+							$turn_expire = $msg->timing;
+							$showTimerOfUser = 'user';
+						}
 					}else{
-						$turn_expire = $msg->timing;
-						$showTimerOfUser = 'user';
+						$turn_expire = $users_data[$msg->ident->userId]['turn_expire'] + $timing_settings['additional_time'];
+						$showTimerOfUser = $users_data[$msg->ident->userId]['pseudonim'];
 					}
+					var_dump($turn_expire);
+					var_dump($showTimerOfUser);
 
 					if($turn_expire > $timing_settings['max_step_time']){
 						$turn_expire = $timing_settings['max_step_time'];
@@ -715,19 +727,24 @@ class GwentSocket extends BaseSocket
 				$magic_usage = unserialize($battle->magic_usage);
 				$addition_data = [];
 
-				$users_battle_data = BattleMembers::find($users_data['user']['battle_member_id']);
+				$enemy = ($msg->user == 'p1')? 'p2': 'p1';
+
+				$users_battle_data = BattleMembers::find($users_data[$msg->user]['battle_member_id']);
 				$users_battle_data['round_passed'] = 1;
 				$users_battle_data['turn_expire'] = $msg->timing;// - $users_data['user']['time_shift'];
 				$users_battle_data->save();
 
-				$users_passed_count = $users_data['opponent']['round_passed'] + 1;
+				$users_passed_count = $users_data[$enemy]['round_passed'] + 1;
 
-				$user_turn = $users_data['opponent']['login'];
-				$user_turn_id = $users_data['opponent']['id'];
+				$user_turn = $users_data[$enemy]['login'];
+				$user_turn_id = $users_data[$enemy]['id'];
+				$oppon_turn_expire = $users_data[$enemy]['turn_expire'];
+				var_dump($users_battle_data['turn_expire']);
+				var_dump($oppon_turn_expire);
 
 				$battle->user_id_turn = $user_turn_id;
 				$battle->pass_count++;
-				$battle->turn_expire = $msg->timing + time();
+				$battle->turn_expire = time() + $oppon_turn_expire;//$msg->timing + time();
 				$battle->save();
 
 				//Если только один пасанувший
