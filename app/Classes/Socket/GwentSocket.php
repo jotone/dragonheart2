@@ -105,7 +105,7 @@ class GwentSocket extends BaseSocket
 	//Обработчик каждого сообщения
 	public function onMessage(ConnectionInterface $from, $msg){
 		$msg = json_decode($msg); // сообщение от пользователя arr[action, ident[battleId, UserId, Hash]]
-		var_dump(date('Y-m-d H:i:s'));
+		//var_dump(date('Y-m-d H:i:s'));
 		if(!isset($this->battles[$msg->ident->battleId])){
 			$this->battles[$msg->ident->battleId] = new \SplObjectStorage;
 		}
@@ -603,8 +603,6 @@ class GwentSocket extends BaseSocket
 						$turn_expire = $users_data[$msg->ident->userId]['turn_expire'] + $timing_settings['additional_time'];
 						$showTimerOfUser = $users_data[$msg->ident->userId]['pseudonim'];
 					}
-					var_dump($turn_expire);
-					var_dump($showTimerOfUser);
 
 					if($turn_expire > $timing_settings['max_step_time']){
 						$turn_expire = $timing_settings['max_step_time'];
@@ -722,7 +720,6 @@ class GwentSocket extends BaseSocket
 			break;
 
 			case 'userPassed':
-				var_dump($msg);
 				$battle_field = unserialize($battle->battle_field);
 				$magic_usage = unserialize($battle->magic_usage);
 				$addition_data = [];
@@ -739,8 +736,6 @@ class GwentSocket extends BaseSocket
 				$user_turn = $users_data[$enemy]['login'];
 				$user_turn_id = $users_data[$enemy]['id'];
 				$oppon_turn_expire = $users_data[$enemy]['turn_expire'];
-				var_dump($users_battle_data['turn_expire']);
-				var_dump($oppon_turn_expire);
 
 				$battle->user_id_turn = $user_turn_id;
 				$battle->pass_count++;
@@ -2607,6 +2602,8 @@ class GwentSocket extends BaseSocket
 			}
 		}
 
+
+
 		$result = [
 			'message'		=> 'userMadeAction',
 			'timing'		=> $timing+time(),
@@ -2632,8 +2629,11 @@ class GwentSocket extends BaseSocket
 			'users'			=> [
 				$users_data['user']['login']	=> $users_data['user']['energy'],
 				$users_data['opponent']['login']=> $users_data['opponent']['energy']
-			],
+			]
 		];
+		if(($users_data['opponent']['round_passed'] + $users_data['user']['round_passed']) == 1){
+			$result['passed_user'] = ($users_data['opponent']['round_passed'] > 0)? $users_data['opponent']['login']: $users_data['user']['login'];
+		}
 		if($data_to_user == $users_data['opponent']['player']){
 			$result['addition_data'] = $addition_data;
 
