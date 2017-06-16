@@ -2587,7 +2587,7 @@ class GwentSocket extends BaseSocket
 			]
 		];
 		if(($users_data['opponent']['round_passed'] + $users_data['user']['round_passed']) == 1){
-			$result['passed_user'] = ($users_data['opponent']['round_passed'] > 0)? $users_data['opponent']['login']: $users_data['user']['login'];
+			$result['passed_user'] = ($users_data['opponent']['round_passed'] > 0)? $users_data['user']['login']: $users_data['opponent']['login'];
 		}
 		if(($data_to_user == '') || ($data_to_user == $users_data['user']['player'])){
 			$result['addition_data'] = $addition_data;
@@ -2632,7 +2632,7 @@ class GwentSocket extends BaseSocket
 			]
 		];
 		if(($users_data['opponent']['round_passed'] + $users_data['user']['round_passed']) == 1){
-			$result['passed_user'] = ($users_data['opponent']['round_passed'] > 0)? $users_data['opponent']['login']: $users_data['user']['login'];
+			$result['passed_user'] = ($users_data['opponent']['round_passed'] > 0)? $users_data['user']['login']: $users_data['opponent']['login'];
 		}
 		if($data_to_user == $users_data['opponent']['player']){
 			$result['addition_data'] = $addition_data;
