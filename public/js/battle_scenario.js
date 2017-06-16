@@ -1811,7 +1811,7 @@ function startBattle() {
 
 					if (typeof result.passed_user != "undefined" ) {
 						console.log('result.passed_user',result.passed_user);
-						resultLogin = result.login;
+						resultLogin = result.passed_user;
 					}
 
 					var thisUser = $('.user-describer .name').text();
