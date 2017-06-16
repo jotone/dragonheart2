@@ -899,7 +899,7 @@
 #sortableUserCards li.tramsitioned{ transition-property: all; transition-timing-function: ease; z-index:1; }
 #sortableUserCards li.active,
 #sortableUserCards li:hover{
-	z-index:125;
+	z-index:125 !important;
 }
 #sortableUserCards li.active .content-card-item-main,
 #sortableUserCards li:hover .content-card-item-main{

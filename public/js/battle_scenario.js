@@ -457,6 +457,7 @@ function userMakeAction(conn, turnDescript, allowToAction) {
 						action: 'userPassed',
 						ident: ident,
 						timing: time,
+						user: $('.convert-battle-front>.user').attr('id')
 					})
 				);
 				allowToAction = false;
@@ -1042,6 +1043,8 @@ function fieldBuilding(step_status, addingAnim, recalcCallback) {
 									currentCardDelate.addClass('ready-to-die');
 									console.log('currentCardDelate',currentCardDelate);
 
+									checkIfNeedRemoveBuffOnRow(player,row, step_status.field_status, 'support');
+
 								}
 						}
 					}
@@ -1268,7 +1271,32 @@ function animationBurningCardEndDeleting(action) {
 
 	})
 }
-//animationBurningCard($('.convert-cards .content-card-item[data-cardid="131"]'))
+//
+
+//При удалении карты - чекать надо ли удалять баф(от удаляемых карт) на поле
+function checkIfNeedRemoveBuffOnRow (player,row,field_status,buffName) {
+	console.log('player',player);
+	console.log('row',row);
+	console.log('field_status',field_status);
+
+	console.log('field_status[player]',field_status[player]);
+	console.log("field_status[player][row]['buffs']",field_status[player][row]['buffs']);
+
+	var buffMass = field_status[player][row]['buffs'];
+	if ($.inArray(buffName, buffMass) == -1) {
+		var currentRow = $('.convert-battle-front #'+player+'.convert-cards '+intRowToField(row)).closest('.convert-stuff');
+		if (currentRow.hasClass(buffName+'-buff-wrap')){
+			currentRow.removeClass(buffName+'-buff-wrap');
+			currentRow.find(buffName+'-buff').remove();
+
+			//Если поля емиеет "Воодушевление" - то не удалять подсветку бафа для значения поля(большая цыфра)
+			if (!currentRow.hasClass('inspiration-buff-wrap')) {
+				currentRow.removeClass('buff');
+			}
+		}
+	}
+
+}
 
 function animationDeleteSpecialCard(player,rowId) {
 
@@ -1541,6 +1569,7 @@ function startTimer(login) {
 							action: 'userPassed',
 							ident: ident,
 							timing: 0,
+							user: $('.convert-battle-front>.user').attr('id')
 						})
 					);
 				}
