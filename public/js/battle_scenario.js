@@ -1809,9 +1809,10 @@ function startBattle() {
 
 					var resultLogin  = result.login;
 
-					// if (typeof result.pas) {
-
-					// }
+					if (typeof result.passed_user != "undefined" ) {
+						console.log('result.passed_user',result.passed_user);
+						resultLogin = result.login;
+					}
 
 					var thisUser = $('.user-describer .name').text();
 
