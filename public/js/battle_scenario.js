@@ -1283,11 +1283,16 @@ function checkIfNeedRemoveBuffOnRow (player,row,field_status,buffName) {
 	console.log("field_status[player][row]['buffs']",field_status[player][row]['buffs']);
 
 	var buffMass = field_status[player][row]['buffs'];
+	console.log('$.inArray(buffName, buffMass)',$.inArray(buffName, buffMass))
 	if ($.inArray(buffName, buffMass) == -1) {
 		var currentRow = $('.convert-battle-front #'+player+'.convert-cards '+intRowToField(row)).closest('.convert-stuff');
+		console.log('currentRow',currentRow);
+
+		console.info("buffName+'-buff-wrap'", buffName+'-buff-wrap')
+		console.info("currentRow.hasClass(buffName+'-buff-wrap')", currentRow.hasClass(buffName+'-buff-wrap'))
 		if (currentRow.hasClass(buffName+'-buff-wrap')){
 			currentRow.removeClass(buffName+'-buff-wrap');
-			currentRow.find(buffName+'-buff').remove();
+			currentRow.find('.'+buffName+'-buff').remove();
 
 			//Если поля емиеет "Воодушевление" - то не удалять подсветку бафа для значения поля(большая цыфра)
 			if (!currentRow.hasClass('inspiration-buff-wrap')) {
@@ -1295,6 +1300,7 @@ function checkIfNeedRemoveBuffOnRow (player,row,field_status,buffName) {
 			}
 		}
 	}
+	console.log('------------------------')
 
 }
 
