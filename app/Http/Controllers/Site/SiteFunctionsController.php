@@ -29,12 +29,28 @@ class SiteFunctionsController extends BaseController
 		$leagues = \DB::table('tbl_league')->select('title', 'min_lvl')->orderBy('min_lvl', 'asc')->get();
 		$exchanges = EtcData::where('label_data', '=', 'exchange_options')->get();
 
+		$users = User::select('id','user_rating','login')->get();
+		foreach($users as $user_iter => $user_to_rate_data){
+			$users_rates[] = SiteFunctionsController::calcUserRating('all', $user_to_rate_data);
+		}
+
+		usort($users_rates, function($a, $b){return ($b['rating'] - $a['rating']);});
+		foreach($users_rates as $pos => $user_data){
+			if($user['login'] == $user_data['login']){
+				$user_rating = [
+					'position' => $pos+1,
+					'rating' => $user_data['rating']
+				];
+			}
+		}
+
 		if($user){
 			$result = [
-				'avatar'    => $user->img_url,
-				'gold'      => $user->user_gold,
-				'silver'    => $user->user_silver,
-				'energy'    => $user->user_energy,
+				'avatar'	=> $user->img_url,
+				'gold'		=> $user->user_gold,
+				'silver'	=> $user->user_silver,
+				'energy'	=> $user->user_energy,
+				'rating'	=> $user_rating
 			];
 		}
 
