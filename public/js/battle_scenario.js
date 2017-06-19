@@ -801,32 +801,30 @@ function intRowToField(row) {
 
 }
 
-//Пересчет Силы рядов
-function recalculateBattleField() {
-	var players = {
-		oponent: {
-			meele:0,
-			range:0,
-			superRange:0
-		},
-		user:{
-			meele:0,
-			range:0,
-			superRange:0
-		}
-	};
-	var total = {
-		oponent:0,
-		user:0
-	};
-	//подсчет силы на столе
-	$('.convert-battle-front .convert-stuff .field-for-cards').each(function() {
+//Пересчет Силы рядов (  )
+function recalculateBattleField(cards_strength) {
 
-		if( $(this).parents('.convert-cards').hasClass('user') ) {
-			calc($(this), 'user');
-		}else{
-			calc($(this), 'oponent');
-		}
+	if (cards_strength === undefined || cards_strength === null) {
+
+		//Подсчет силы рядов по картам на поле
+
+		var players = {
+			oponent: {
+				meele:0,
+				range:0,
+				superRange:0
+			},
+			user:{
+				meele:0,
+				range:0,
+				superRange:0
+			}
+		};
+		var total = {
+			oponent:0,
+			user:0
+		};
+		//подсчет силы на столе
 
 		function calc(row, parent) {
 			var dist = row.attr('id');
@@ -839,7 +837,49 @@ function recalculateBattleField() {
 			$('.convert-cards.'+parent+' #'+dist).parent().next().text(str);
 			$('.power-text-'+parent).text(total[parent]);
 		}
-	});
+
+		$('.convert-battle-front .convert-stuff .field-for-cards').each(function() {
+
+			if( $(this).parents('.convert-cards').hasClass('user') ) {
+				calc($(this), 'user');
+			}else{
+				calc($(this), 'oponent');
+			}
+
+
+		});
+	} else {
+		//Подсчет силы рядов от сервера
+
+		for (var key in cards_strength){
+
+			var row = cards_strength[key],
+				holder = $('.convert-battle-front #'+key+'.convert-cards'),
+				user = holder.attr('data-user'),
+				sumOfPlayers = 0;
+
+			for (var item in row){
+				var sumOfCard = row[item].reduce(function (a,b){ return a + b; },0);
+				sumOfPlayers += sumOfCard;
+				try{
+					if (holder.hasClass('oponent')) {
+						//если это опонент - инвертируем поля(2 - item)
+						holder.find('.convert-stuff').eq( (2 - parseInt(item)) ).find('.field-for-sum').text(sumOfCard);
+					}else{
+						holder.find('.convert-stuff').eq(item).find('.field-for-sum').text(sumOfCard);
+					}
+				}catch(e){
+					console.error(e);
+				}
+
+			}
+
+			$('.convert-right-info #'+user+' .power-text').text(sumOfPlayers);
+
+		}
+
+
+	}
 }
 
 //Отображение колод пользователей
@@ -1118,7 +1158,7 @@ function fieldBuilding(step_status, addingAnim, recalcCallback) {
 
 	}
 
-	recalculateBattleField();
+	recalculateBattleField(step_status.cards_strength);
 
 }
 
@@ -1275,21 +1315,10 @@ function animationBurningCardEndDeleting(action) {
 
 //При удалении карты - чекать надо ли удалять баф(от удаляемых карт) на поле
 function checkIfNeedRemoveBuffOnRow (player,row,field_status,buffName) {
-	console.log('player',player);
-	console.log('row',row);
-	console.log('field_status',field_status);
-
-	console.log('field_status[player]',field_status[player]);
-	console.log("field_status[player][row]['buffs']",field_status[player][row]['buffs']);
 
 	var buffMass = field_status[player][row]['buffs'];
-	console.log('$.inArray(buffName, buffMass)',$.inArray(buffName, buffMass))
 	if ($.inArray(buffName, buffMass) == -1) {
 		var currentRow = $('.convert-battle-front #'+player+'.convert-cards '+intRowToField(row)).closest('.convert-stuff');
-		console.log('currentRow',currentRow);
-
-		console.info("buffName+'-buff-wrap'", buffName+'-buff-wrap')
-		console.info("currentRow.hasClass(buffName+'-buff-wrap')", currentRow.hasClass(buffName+'-buff-wrap'))
 		if (currentRow.hasClass(buffName+'-buff-wrap')){
 			currentRow.removeClass(buffName+'-buff-wrap');
 			currentRow.find('.'+buffName+'-buff').remove();
@@ -1300,7 +1329,6 @@ function checkIfNeedRemoveBuffOnRow (player,row,field_status,buffName) {
 			}
 		}
 	}
-	console.log('------------------------')
 
 }
 
@@ -1869,7 +1897,8 @@ function startBattle() {
 												rows: debuffRows,
 												value: debuffValue,
 												type: 'debuff',
-												effectName: 'terrify'
+												effectName: 'terrify',
+												cards_strength:result.step_status.cards_strength
 											});
 											if ( debuffTeamates == 1 ) {
 												buffingDebuffingAnimOnRows({
@@ -1877,7 +1906,8 @@ function startBattle() {
 													rows: debuffRows,
 													value: debuffValue,
 													type: 'debuff',
-													effectName: 'terrify'
+													effectName: 'terrify',
+													cards_strength:result.step_status.cards_strength
 												});
 											}
 											console.log('Event 18. Enemy turn', result);
@@ -1889,7 +1919,8 @@ function startBattle() {
 												rows: debuffRows,
 												value: debuffValue,
 												type: 'debuff',
-												effectName: 'terrify'
+												effectName: 'terrify',
+												cards_strength:result.step_status.cards_strength
 											});
 											if ( debuffTeamates == 1 ) {
 												buffingDebuffingAnimOnRows({
@@ -1897,7 +1928,8 @@ function startBattle() {
 													rows: debuffRows,
 													value: debuffValue,
 													type: 'debuff',
-													effectName: 'terrify'
+													effectName: 'terrify',
+													cards_strength:result.step_status.cards_strength
 												});
 											}
 											console.log('Event 18. Your turn', result);
@@ -2037,7 +2069,8 @@ function startBattle() {
 										rows: [],
 										value: 'x2',
 										type: 'buff',
-										effectName: 'inspiration'
+										effectName: 'inspiration',
+										cards_strength:result.step_status.cards_strength
 									};
 
 									// old func
@@ -2083,7 +2116,7 @@ function startBattle() {
 									});
 									buffingDebuffingAnimOnRows( addInspirationParams );
 
-									recalculateBattleField();
+									//recalculateBattleField(result.step_status.cards_strength);
 								}
 								//Печаль
 								else if ( item == '11' ) {
@@ -2206,7 +2239,8 @@ function startBattle() {
 										rows: [],
 										value: '',
 										type: 'buff',
-										effectName: 'support'
+										effectName: 'support',
+										cards_strength:result.step_status.cards_strength
 									};
 
 									var played_card = result.step_status.played_card;
@@ -2260,7 +2294,7 @@ function startBattle() {
 									});
 									buffingDebuffingAnimOnRows( addSupportParams );
 
-									recalculateBattleField();
+									//recalculateBattleField(result.step_status.cards_strength);
 
 								}
 								// удаление карты противника с руки в отбой
@@ -2295,7 +2329,7 @@ function startBattle() {
 							  }
 							});
 							if (!recalculateDecksCheck) {
-								recalculateBattleField();
+								recalculateBattleField(result.step_status.cards_strength);
 							}
 
 						}
@@ -2695,12 +2729,10 @@ function buffingDebuffingAnimOnRows( params ) {
 	params.rows.forEach(function( item ) {
 		var rowId = intRowToField(item);
 		var row = $('.' + params.side + ' .field-for-cards' + rowId);
-		console.log('row',row);
 		var parent = row.parents('.convert-stuff');
 		var pointsSum = parent.find('.field-for-sum');
 		parent.addClass(params.effectName + '-' + params.type + '-wrap');
 		var effectMarkup = '<div class="debuff-or-buff-anim ' + params.effectName + '-' + params.type + '" data-count=1></div>';
-		console.log('effectMarkup',effectMarkup);
 		if ( row.find('.' + params.effectName + '-' + params.type).length ) {
 			var field = row.find('.' + params.effectName + '-' + params.type);
 			var countPlus = parseInt( field.attr('data-count') ) + 1;
@@ -2732,11 +2764,11 @@ function buffingDebuffingAnimOnRows( params ) {
 					) {
 
 						if ( !params.hasOwnProperty('selfUse') ) {
-							cardStrengthPulsing( card, params.effectName, params.type, params.value );
+							cardStrengthPulsing( card, params.effectName, params.type, params.value, params.cards_strength );
 						}
 						else {
 							if ( params.selfUse != card.attr('data-cardid') ) {
-								cardStrengthPulsing( card, params.effectName, params.type, params.value );
+								cardStrengthPulsing( card, params.effectName, params.type, params.value, params.cards_strength );
 							}
 						}
 
@@ -2753,7 +2785,7 @@ function buffingDebuffingAnimOnRows( params ) {
 }
 
 // card pusling
-function cardStrengthPulsing( card, name, type, value, cardBuffed ) {
+function cardStrengthPulsing( card, name, type, value, cardBuffed, cards_strength ) {
 
 	setTimeout(function() {
 
@@ -2813,7 +2845,7 @@ function cardStrengthPulsing( card, name, type, value, cardBuffed ) {
 			card.removeClass('pulsed');
 		}, 2000);
 
-		recalculateBattleField();
+		recalculateBattleField(cards_strength);
 
 	}, 500);
 
@@ -2830,25 +2862,26 @@ function buffDebuffGroupOfCards( params ) {
 				if ( params.name == 'brotherhood' ) {
 					if (cardsItems.length > 1) {
 						if ( index !== (cardsItems.length - 1) ) {
-							cardStrengthPulsing( item, params.name, params.type, params.value, true );
+							cardStrengthPulsing( item, params.name, params.type, params.value, true , params.cards_strength);
 						}
 						else {
 							params.value = params.value * index;
-							cardStrengthPulsing( item, params.name, params.type, params.value, true );
+							cardStrengthPulsing( item, params.name, params.type, params.value, true , params.cards_strength);
 						}
 					}
 				}
 				else {
 					if (params.type == 'debuff' && item.attr('data-full-immune') != 'true' && item.attr('data-immune') != 'true' ) {
-						cardStrengthPulsing( item, params.name, params.type, params.value, true );
+						cardStrengthPulsing( item, params.name, params.type, params.value, true , params.cards_strength);
 					}
 					else if ( params.type == 'buff' && item.attr('data-full-immune') != 'true' ) {
-						cardStrengthPulsing( item, params.name, params.type, params.value, true );
+						cardStrengthPulsing( item, params.name, params.type, params.value, true , params.cards_strength);
 					}
 				}
 
 				if ( index == (cardsItems.length - 1) ) {
-					recalculateBattleField();
+					console.log('params.step_status.cards_strength',params.step_status.cards_strength)
+					recalculateBattleField(params.step_status.cards_strength);// say what ???
 					recalculateCardsStrengthTimeout({
 						step_status: params.step_status,
 						time: 300
