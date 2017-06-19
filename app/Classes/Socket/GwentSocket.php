@@ -105,7 +105,8 @@ class GwentSocket extends BaseSocket
 	//Обработчик каждого сообщения
 	public function onMessage(ConnectionInterface $from, $msg){
 		$msg = json_decode($msg); // сообщение от пользователя arr[action, ident[battleId, UserId, Hash]]
-		//var_dump(date('Y-m-d H:i:s'));
+		var_dump(date('Y-m-d H:i:s'));
+		var_dump($msg);
 		if(!isset($this->battles[$msg->ident->battleId])){
 			$this->battles[$msg->ident->battleId] = new \SplObjectStorage;
 		}
