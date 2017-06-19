@@ -128,12 +128,13 @@ function getUserData(user_login){
 				$('.rating .resurses .lighting').text(res['energy']);
 				$('.preload .preloader, .convert-resurses .preload-resurses').hide();
 				$('.preload .user-name, .rating .convert-resurses .resurses').css('opacity', '1');
+				$('.convert-header .rating>p').text('РЕЙТИНГ '+res['rating']['position']+'-е место : '+res['rating']['rating'])
 				window.maxCardQuantity		= res['maxCardQuantity'];
 				window.minWarriorQuantity	= res['minWarriorQuantity'];
 				window.specailQuantity		= res['specialQuantity'];
 				window.leaderQuantity		= res['leaderQuantity'];
 				window.leagues				= res['leagues'];
-				window.exchange_gold			= res['exchanges']['usd_to_gold'];
+				window.exchange_gold		= res['exchanges']['usd_to_gold'];
 				window.exchange_rub			= res['exchanges']['rub_to_usd'];
 				window.gold_to_silver		= res['exchanges']['gold_to_silver'];
 				window.gold_to_100_energy	= res['exchanges']['gold_to_100_energy'];
