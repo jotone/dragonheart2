@@ -1,6 +1,3 @@
-/**
- * Created by nickolaygotsliyk on 17.10.16.
- */
 function radioPseudo() {
 	$(document).on('click', '.popup-content-wrap .switch-user-turn-wrap label', function () {
 		if($(this).find('input').prop('checked')){
@@ -803,7 +800,7 @@ function intRowToField(row) {
 
 //Пересчет Силы рядов (  )
 function recalculateBattleField(cards_strength) {
-
+	console.info('cards_strength !!!',cards_strength)
 	if (cards_strength === undefined || cards_strength === null) {
 
 		//Подсчет силы рядов по картам на поле
@@ -880,6 +877,7 @@ function recalculateBattleField(cards_strength) {
 
 
 	}
+	//debugger;
 }
 
 //Отображение колод пользователей
@@ -1157,7 +1155,7 @@ function fieldBuilding(step_status, addingAnim, recalcCallback) {
 		}
 
 	}
-
+	console.log('fieldBuilding recalculateBattleField()');
 	recalculateBattleField(step_status.cards_strength);
 
 }
@@ -1280,6 +1278,7 @@ function animationBurningCardEndDeleting(action) {
 				card.removeClass('show');
 				setTimeout(function() {
 					card.remove();
+					console.log('animationBurningCardEndDeleting(action) recalculateBattleField()');
 					recalculateBattleField();//перещет силы на столе
 				}, 500);
 			break;
@@ -1300,6 +1299,7 @@ function animationBurningCardEndDeleting(action) {
 									}
 
 									card.remove();
+									console.log('animationBurningCardEndDeleting(action) recalculateBattleField()');
 									recalculateBattleField();//перещет силы на столе
 
 								},1000)
@@ -1424,7 +1424,7 @@ function buildBattleField(fieldData) {
 			}
 		}
 	}
-
+	console.log('buildBattleField(fieldData) recalculateBattleField()');
 	recalculateBattleField();//Пересчет значений силы
 }
 
@@ -1433,7 +1433,7 @@ $('.market-buy-popup .close-popup').click(function() {
 	$(this).parents('.market-buy-popup').hide();
 });
 
-recalculateBattleField();
+//recalculateBattleField();
 
 //Показ попапа с картой которой ходит игрок( открываеться при начале хода )
 function detailCardPopupOnStartStep(card, strength, callback) {
@@ -1751,6 +1751,7 @@ function startBattle() {
 			//Все пользователи готовы к игре
 			case 'allUsersAreReady':
 				changeTurnIndicator(result.login);//смена индикатора хода
+				console.log('allUsersAreReady recalculateBattleField');
 				recalculateBattleField();
 				currentRound = result['round'];
 				setTimeout(function () {
@@ -2334,6 +2335,7 @@ function startBattle() {
 
 						}
 						else {
+
 							recalculateCardsStrength(result.step_status);
 
 							detailCardPopupOnStartStep( result.step_status.played_card['card'],  result.step_status.played_card['strength'] );
@@ -2764,11 +2766,11 @@ function buffingDebuffingAnimOnRows( params ) {
 					) {
 
 						if ( !params.hasOwnProperty('selfUse') ) {
-							cardStrengthPulsing( card, params.effectName, params.type, params.value, params.cards_strength );
+							cardStrengthPulsing( card, params.effectName, params.type, params.value, false,params.cards_strength );
 						}
 						else {
 							if ( params.selfUse != card.attr('data-cardid') ) {
-								cardStrengthPulsing( card, params.effectName, params.type, params.value, params.cards_strength );
+								cardStrengthPulsing( card, params.effectName, params.type, params.value, false,params.cards_strength );
 							}
 						}
 
@@ -2791,7 +2793,7 @@ function cardStrengthPulsing( card, name, type, value, cardBuffed, cards_strengt
 
 		card.addClass('pulsed');
 
-		if ( typeof cardBuffed !== 'undefined' ) {
+		if ( typeof cardBuffed !== 'undefined' && cardBuffed !== false ) {
 			card.addClass('buffed-or-debuffed');
 		}
 
@@ -2844,7 +2846,7 @@ function cardStrengthPulsing( card, name, type, value, cardBuffed, cards_strengt
 		setTimeout(function() {
 			card.removeClass('pulsed');
 		}, 2000);
-
+		console.log('cardStrengthPulsing recalculateBattleField()')
 		recalculateBattleField(cards_strength);
 
 	}, 500);
@@ -2881,6 +2883,7 @@ function buffDebuffGroupOfCards( params ) {
 
 				if ( index == (cardsItems.length - 1) ) {
 					console.log('params.step_status.cards_strength',params.step_status.cards_strength)
+					console.log('buffDebuffGroupOfCards recalculateBattleField');
 					recalculateBattleField(params.step_status.cards_strength);// say what ???
 					recalculateCardsStrengthTimeout({
 						step_status: params.step_status,
@@ -3028,7 +3031,7 @@ function removeBuffsOrDebuffFromRow( params ) {
 						if ( params.type == 'buff' ) {
 							pulsingType = 'debuff';
 							if ( card.attr('data-full-immune') == 'false' ) {
-								cardStrengthPulsing( card, params.effectName, pulsingType, params.value );
+								cardStrengthPulsing( card, params.effectName, pulsingType, params.value, false, params.step_status.cards_strength);
 							}
 						}
 						else {
@@ -3036,7 +3039,7 @@ function removeBuffsOrDebuffFromRow( params ) {
 							if (
 								( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'true' ) || ( card.attr('data-full-immune') == 'false' && card.attr('data-immune') == 'false' )
 							) {
-								cardStrengthPulsing( card, params.effectName, pulsingType, params.value );
+								cardStrengthPulsing( card, params.effectName, pulsingType, params.value, false, params.step_status.cards_strength);
 							}
 						}
 
@@ -3059,7 +3062,8 @@ function removeBuffsOrDebuffFromRow( params ) {
 
 			if ( index == (theRow.length - 1) ) {
 				setTimeout(function() {
-					recalculateBattleField();
+					console.log('removeBuffsOrDebuffFromRow recalculateBattleField');
+					recalculateBattleField(params.step_status.cards_strength);
 					recalculateCardsStrength(params.step_status);
 				}, 3000);
 			}

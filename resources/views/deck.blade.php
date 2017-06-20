@@ -39,6 +39,13 @@ $errors = $errors->all();
 						<div class="content-card-center market-page">
 							<div class="selection-rase">
 								<div class="selection-rase-wrap">
+									<div class="selection-rase-img">
+										<div class="selection-rase-img-wrap">
+											<div class="select-rase-img active">
+												<img src="{{ URL::asset('img/fractions_images/'.$user_fraction->img_url) }}" alt="">
+											</div>
+										</div>
+									</div>
 									<select>
 									@foreach($fractions as $fraction){
 										<?php $selected = ($user['last_user_deck'] == $fraction['slug'])? 'selected="selected"': ''; ?>
