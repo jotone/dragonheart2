@@ -296,7 +296,7 @@ function infoCardStart() { // dubl from battle_scenario.js
 		var content =  $(this).closest('.content-card-item-main').parent().html();
 		popup.find('.content-card-info').html(content);
 
-		infoCardChangeInfoImg();
+		infoCardChangeInfoProps();
 
 		openTrollPopup(popup);
 		setTimeout(function () {
@@ -306,7 +306,7 @@ function infoCardStart() { // dubl from battle_scenario.js
 		}, 100);
 	});
 
-	function infoCardChangeInfoImg(){
+	function infoCardChangeInfoProps(){
 		var contentCard = $('#card-info .content-card-item-main');
 		var contentCardImg = contentCard.css('background-image').replace('url(','').replace(')','').replace(/\"/gi, "");
 
@@ -314,10 +314,16 @@ function infoCardStart() { // dubl from battle_scenario.js
 		contentCard.find('.card-load-info').prepend('<div class="card-info-image"><img src="'+contentCardImg+'" alt=""></div>');
 
 		var maxImgWidth = contentCard.find('.card-load-info .card-info-image img').width();
+
 		if (maxImgWidth <= 0){
-			maxImgWidth = '100%'
+			maxImgWidth = '50vw'
+		}else {
+			maxImgWidth = maxImgWidth*2
 		}
-		contentCard.find('.hovered-items').css('max-width',maxImgWidth);
+
+		contentCard.css('min-width',maxImgWidth).addClass('new-card-form');
+		var description = contentCard.find('.card-description-hidden').detach();
+		contentCard.append(description);
 
 	}
 }

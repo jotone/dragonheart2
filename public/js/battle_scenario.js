@@ -377,7 +377,7 @@ function infoCardStart() {
 		}else{
 			var content =  $(this).closest('.content-card-item-main').parent().html();
 			popup.find('.content-card-info').html(content);
-			infoCardChangeInfoImg();
+			infoCardChangeInfoProps();
 			openTrollPopup(popup);
 			setTimeout(function () {
 				var jsp = popup.find('.jsp-cont-descr').jScrollPane();
@@ -385,7 +385,7 @@ function infoCardStart() {
 		}
 	});
 
-	function infoCardChangeInfoImg(){
+	function infoCardChangeInfoProps(){
 		var contentCard = $('#card-info .content-card-item-main');
 		var contentCardImg = contentCard.css('background-image').replace('url(','').replace(')','').replace(/\"/gi, "");
 
@@ -393,11 +393,21 @@ function infoCardStart() {
 		contentCard.find('.card-load-info').prepend('<div class="card-info-image"><img src="'+contentCardImg+'" alt=""></div>');
 
 		var maxImgWidth = contentCard.find('.card-load-info .card-info-image img').width();
-		if (maxImgWidth <= 0){
-			maxImgWidth = '100%'
-		}
-		contentCard.find('.hovered-items').css('max-width',maxImgWidth);
+		var maxImgHeight = contentCard.find('.card-load-info .card-info-image img').height();
 
+		if (maxImgWidth <= 0){
+			maxImgWidth = '50vw'
+		}else {
+			maxImgWidth = maxImgWidth*2
+		}
+
+		contentCard.css({
+			'min-width':maxImgWidth,
+			'max-height':maxImgHeight
+		}).addClass('new-card-form');
+
+		var description = contentCard.find('.card-description-hidden').detach();
+		contentCard.append(description);
 	}
 
 }
