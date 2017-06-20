@@ -249,6 +249,7 @@ class SitePagesController extends BaseController
 	//Мои карты
 	public function deckPage(){
 		SiteFunctionsController::updateConnention();
+		$user = Auth::user();
 		$exchange_options = \DB::table('tbl_etc_data')
 			->select('label_data','meta_key','meta_value', 'meta_key_title')
 			->where('label_data', '=', 'premium_buing')
@@ -262,10 +263,13 @@ class SitePagesController extends BaseController
 		foreach ($deck_options as $key => $value){
 			$deck[$value['meta_key']] = $value['meta_value'];
 		}
+
+		$current_fraction = \DB::table('tbl_fraction')->select('slug','img_url')->where('slug', '=', $user->last_user_deck)->first();
 		return view('deck', [
 			'fractions' => $fractions,
 			'exchange_options' => $exchange_options,
-			'deck' => $deck
+			'deck' => $deck,
+			'user_fraction' => $current_fraction
 		]);
 	}
 
