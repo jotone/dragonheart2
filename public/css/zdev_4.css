@@ -689,6 +689,13 @@
       z-index: 0;pointer-events: none;}
     .market-page .selection-rase .selection-rase-wrap {
       display: inline-block;
+      display: -webkit-flex;
+      display: -moz-flex;
+      display: -ms-flex;
+      display: -o-flex;
+      display: flex;
+      justify-content: center;
+      margin:0 auto;
       position: relative;
       z-index: 1;
       -webkit-transition: opacity 300ms ease;

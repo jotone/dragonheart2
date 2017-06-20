@@ -330,7 +330,7 @@ function getUserDeck(deck, user_login){
 		data:   {deck:deck, login: user_login},
 		success:function(data){
 			var res = JSON.parse(data);
-		   curentRaceURL = res.race_img;
+		   	curentRaceURL = res.race_img;
 			$('.content-card-field ul#sortableTwo, .content-card-field ul#sortableOne').empty();
 			//Формирование доступных карт
 			for(var i in res['available']){
@@ -341,6 +341,7 @@ function getUserDeck(deck, user_login){
 				$('.content-card-field ul#sortableOne').append(buildCardDeckView(res['in_deck'][i], 'ul'));
 			}
 			$('.content-card-center-img-wrap img').attr('src',$('.content-card-center-img-wrap img').data('src')+'/'+res['race_img']);
+			$('.select-rase-img img').attr('src',window.location.origin+'/img/fractions_images/'+curentRaceURL)
 			//Пересчет данных колоды
 			recalculateDeck();
 		},
