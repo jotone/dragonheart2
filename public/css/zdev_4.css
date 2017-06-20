@@ -880,6 +880,11 @@
       height: 79px;
       width: 79px;
       margin: 0 auto; }
+    .settings-page .form-wrap .form-description-settings-img-wrap>img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
     .settings-page .form-wrap .form-description-settings-inp-wrap .jq-file {
       width: 120px;
       margin: 0 auto;

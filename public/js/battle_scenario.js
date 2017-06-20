@@ -373,7 +373,6 @@ function infoCardStart() {
 		if($(this).closest('ul').hasClass('magic-effects-wrap')){
 			popup.addClass('mdesc');
 			$(this).closest('li').clone().appendTo('#card-info .content-card-info');
-			infoCardChangeInfoImg();
 			openTrollPopup(popup);
 		}else{
 			var content =  $(this).closest('.content-card-item-main').parent().html();
@@ -800,11 +799,9 @@ function intRowToField(row) {
 
 //Пересчет Силы рядов (  )
 function recalculateBattleField(cards_strength) {
-	console.info('cards_strength !!!',cards_strength)
+
 	if (cards_strength === undefined || cards_strength === null) {
-
 		//Подсчет силы рядов по картам на поле
-
 		var players = {
 			oponent: {
 				meele:0,
@@ -1155,7 +1152,6 @@ function fieldBuilding(step_status, addingAnim, recalcCallback) {
 		}
 
 	}
-	console.log('fieldBuilding recalculateBattleField()');
 	recalculateBattleField(step_status.cards_strength);
 
 }
@@ -1278,7 +1274,6 @@ function animationBurningCardEndDeleting(action) {
 				card.removeClass('show');
 				setTimeout(function() {
 					card.remove();
-					console.log('animationBurningCardEndDeleting(action) recalculateBattleField()');
 					recalculateBattleField();//перещет силы на столе
 				}, 500);
 			break;
@@ -1299,7 +1294,6 @@ function animationBurningCardEndDeleting(action) {
 									}
 
 									card.remove();
-									console.log('animationBurningCardEndDeleting(action) recalculateBattleField()');
 									recalculateBattleField();//перещет силы на столе
 
 								},1000)
@@ -1424,7 +1418,6 @@ function buildBattleField(fieldData) {
 			}
 		}
 	}
-	console.log('buildBattleField(fieldData) recalculateBattleField()');
 	recalculateBattleField();//Пересчет значений силы
 }
 
@@ -1751,7 +1744,6 @@ function startBattle() {
 			//Все пользователи готовы к игре
 			case 'allUsersAreReady':
 				changeTurnIndicator(result.login);//смена индикатора хода
-				console.log('allUsersAreReady recalculateBattleField');
 				recalculateBattleField();
 				currentRound = result['round'];
 				setTimeout(function () {
@@ -2846,7 +2838,6 @@ function cardStrengthPulsing( card, name, type, value, cardBuffed, cards_strengt
 		setTimeout(function() {
 			card.removeClass('pulsed');
 		}, 2000);
-		console.log('cardStrengthPulsing recalculateBattleField()')
 		recalculateBattleField(cards_strength);
 
 	}, 500);
@@ -2882,8 +2873,6 @@ function buffDebuffGroupOfCards( params ) {
 				}
 
 				if ( index == (cardsItems.length - 1) ) {
-					console.log('params.step_status.cards_strength',params.step_status.cards_strength)
-					console.log('buffDebuffGroupOfCards recalculateBattleField');
 					recalculateBattleField(params.step_status.cards_strength);// say what ???
 					recalculateCardsStrengthTimeout({
 						step_status: params.step_status,
@@ -3062,7 +3051,6 @@ function removeBuffsOrDebuffFromRow( params ) {
 
 			if ( index == (theRow.length - 1) ) {
 				setTimeout(function() {
-					console.log('removeBuffsOrDebuffFromRow recalculateBattleField');
 					recalculateBattleField(params.step_status.cards_strength);
 					recalculateCardsStrength(params.step_status);
 				}, 3000);

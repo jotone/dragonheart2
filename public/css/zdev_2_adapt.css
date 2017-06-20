@@ -25,6 +25,8 @@
 
   /*popup info*/
   #card-info .card-info-image{max-height: 120vh;}
+  #card-info .card-info-image img{max-height: 510px;}
+
 }
 
 @media screen and (max-width: 1280px) {
