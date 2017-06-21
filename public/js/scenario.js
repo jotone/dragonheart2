@@ -173,24 +173,32 @@ function applySettings(){
 		formData.append( 'birth_date', $('.form-wrap-item input[name=settings_birth_date]').val().trim() );
 		formData.append( 'gender', $('.form-wrap-item select[name=settings_gender]').val().trim() );
 		formData.append( 'action', 'user_settings' );
-		$.ajax({
-			url:		'/settings',
-			headers:	{'X-CSRF-TOKEN': token},
-			type:		'POST',
-			processData:false,
-			contentType:false,
-			data:		formData,
-			success:	function(data){
-				if(data == 'success') {
-					location = '/settings';
-				}else{
-					$('.form-wrap-for-rows .error-text').text(JSON.parse(data)).show();
+		var img_KB = (typeof $('.form-description-settings-inp input[name=image_user]').prop('files')[0] != 'undefined')
+			? $('.form-description-settings-inp input[name=image_user]').prop('files')[0].size / 1024
+			: 0;
+
+		if(img_KB > 4096){
+			alert('Размер изображения не должен превышать 4 МБ')
+		}else{
+			$.ajax({
+				url:		'/settings',
+				headers:	{'X-CSRF-TOKEN': token},
+				type:		'POST',
+				processData:false,
+				contentType:false,
+				data:		formData,
+				error: function (jqXHR){
+					$('.forms-footer-blocks.right').html('<div style="width: 100%; height: 400px; z-index: 1000; background-color: #fff;">'+jqXHR.responseText+'</div>');
+				},
+				success:	function(data){
+					if(data == 'success') {
+						location = '/settings';
+					}else{
+						$('.form-wrap-for-rows .error-text').text(JSON.parse(data)).show();
+					}
 				}
-			},
-			error: function (jqXHR, exception) {
-				ajaxErrorMsg(jqXHR, exception);
-			}
-		});
+			});
+		}
 	});
 }
 //обновление изображения пользователя
@@ -336,7 +344,7 @@ function getUserDeck(deck, user_login){
 		data:   {deck:deck, login: user_login},
 		success:function(data){
 			var res = JSON.parse(data);
-		   	curentRaceURL = res.race_img;
+			curentRaceURL = res.race_img;
 			$('.content-card-field ul#sortableTwo, .content-card-field ul#sortableOne').empty();
 			//Формирование доступных карт
 			for(var i in res['available']){
@@ -1620,7 +1628,7 @@ function showPopRaseInfo() {
 		e.preventDefault();
 
 		if ( ajaxVariable !== null ) {
-		    ajaxVariable.abort();
+			ajaxVariable.abort();
 		}
 
 		ajaxVariable = $.ajax({

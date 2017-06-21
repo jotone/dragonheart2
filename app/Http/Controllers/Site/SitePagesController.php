@@ -321,6 +321,7 @@ class SitePagesController extends BaseController
 			->where('label_data', '=', 'premium_buing')
 			->orderBy('meta_value','asc')
 			->get();
+		$user = Auth::user();
 
 		$fractions = Fraction::where('type', '=', 'race')->orderBy('position','asc')->get();
 		return view('settings', ['fractions' => $fractions, 'exchange_options' => $exchange_options]);

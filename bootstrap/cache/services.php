@@ -27,6 +27,7 @@
     23 => 'App\\Providers\\AuthServiceProvider',
     24 => 'App\\Providers\\EventServiceProvider',
     25 => 'App\\Providers\\RouteServiceProvider',
+    26 => 'Intervention\\Image\\ImageServiceProvider',
   ),
   'eager' => 
   array (
@@ -43,6 +44,7 @@
     10 => 'App\\Providers\\AuthServiceProvider',
     11 => 'App\\Providers\\EventServiceProvider',
     12 => 'App\\Providers\\RouteServiceProvider',
+    13 => 'Intervention\\Image\\ImageServiceProvider',
   ),
   'deferred' => 
   array (

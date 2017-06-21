@@ -7,6 +7,7 @@ use App\Fraction;
 use App\Rubric;
 use App\User;
 use Auth;
+use Intervention\Image\ImageManagerStatic as Image;
 use Validator;
 use App\Http\Controllers\Admin\AdminFunctions;
 use Illuminate\Routing\Controller as BaseController;
@@ -198,8 +199,8 @@ class UserAuthController extends BaseController
 			]);
 
 			if($result !== false){
-			    $code = '<a href="'.route('user-confirm-token',$activation_code).'">'.$activation_code.'</a>';
-			    $mail_result = mail($result->email, 'Подтвердите регистрацию', $activation_code, 'From: dragonheart@xmail.com');
+				$code = '<a href="'.route('user-confirm-token',$activation_code).'">'.$activation_code.'</a>';
+				$mail_result = mail($result->email, 'Подтвердите регистрацию', $activation_code, 'From: dragonheart@xmail.com');
 
 				return redirect(route('user-home'))->withErrors(['Регистрация почти завершена.<br>Вам необходимо подтвердить e-mail, указанный при регистрации, перейдя по ссылке в письме.']);
 			}
@@ -254,12 +255,12 @@ class UserAuthController extends BaseController
 				//Узнаем реальное имя файла
 				$img_file = $data['image_user']->getClientOriginalName();
 
+
 				$path_info = pathinfo($img_file);
 
 				switch($path_info['extension']){
 					case 'jpeg':$error = 0; break;
 					case 'jpg': $error = 0; break;
-					case 'bmp': $error = 0; break;
 					case 'gif': $error = 0; break;
 					case 'png': $error = 0; break;
 					default: $error = 1;
@@ -267,11 +268,36 @@ class UserAuthController extends BaseController
 				if(0 == $error){
 					//Указываем папку хранения картинок
 					$destinationPath = base_path().'/public/img/user_images/';
-
 					$img_file = uniqid().'_'.htmlspecialchars(strip_tags(trim(AdminFunctions::str2url($img_file))));
 					$result = $data['image_user']->move($destinationPath, $img_file);
+
 					if($result != false){
 						User::where('login','=',$user->login)->update(['img_url' => $img_file]);
+
+						$img_to_crop = Image::make($destinationPath.$img_file);
+						$natural_width = $img_to_crop->width();
+						$natural_height =  $img_to_crop->height();
+
+						if( (($natural_width / 2) > $natural_height) || (($natural_height / 2) > $natural_width) ){
+							$x = ceil($natural_width /2);
+							$y = ceil($natural_height /2);
+
+							$crop_dimension = (($natural_width / 2) > $natural_height)? $natural_height: $natural_width;
+
+							$img_to_crop->crop($crop_dimension, $crop_dimension, $x, $y);
+
+							$natural_width = $img_to_crop->width();
+							$natural_height =  $img_to_crop->height();
+						}
+
+						$divider = ($natural_width > $natural_height)? ceil($natural_width / 250): ceil($natural_height / 250);
+
+						$width = $natural_width / $divider;
+						$height = $natural_height / $divider;
+						$img_to_crop->resize($width, $height, function ($constraint) {
+							$constraint->upsize();
+						});
+						$img_to_crop->save();
 					}
 				}
 			}
@@ -325,27 +351,27 @@ class UserAuthController extends BaseController
 	}
 
 	public function userSendsLetter(Request $request){
-	    $data = $request->all();
-	    if(!empty($data['g-recaptcha-response'])){
-            $rubric = Rubric::select('title','slug')->where('slug','=',$data['rubric_select'])->get();
-            $message = $rubric[0]->title."\n".strip_tags(htmlspecialchars(trim($data['qestionText'])));
+		$data = $request->all();
+		if(!empty($data['g-recaptcha-response'])){
+			$rubric = Rubric::select('title','slug')->where('slug','=',$data['rubric_select'])->get();
+			$message = $rubric[0]->title."\n".strip_tags(htmlspecialchars(trim($data['qestionText'])));
 
-            $email_from = strip_tags(htmlspecialchars(trim($data['email'])));
+			$email_from = strip_tags(htmlspecialchars(trim($data['email'])));
 
-            $emails_to = EtcData::select('label_data', 'meta_key', 'meta_key_title')
-                ->where('label_data','=','support')
-                ->where('meta_key','=','emails')
-                ->get();
+			$emails_to = EtcData::select('label_data', 'meta_key', 'meta_key_title')
+				->where('label_data','=','support')
+				->where('meta_key','=','emails')
+				->get();
 
-            $emails_to = unserialize($emails_to[0]->meta_key_title);
-            $emails_to = implode(', ', $emails_to);
+			$emails_to = unserialize($emails_to[0]->meta_key_title);
+			$emails_to = implode(', ', $emails_to);
 
-            $result = mail($emails_to, $rubric[0]->title, $message, 'From: '.$email_from);
-            if($result){
-                return redirect(route('user-home'));
-            }
-        }else{
-	        return redirect(route('user-support'))->withErrors('Подтвердите, что вы не робот.');
-        }
-    }
+			$result = mail($emails_to, $rubric[0]->title, $message, 'From: '.$email_from);
+			if($result){
+				return redirect(route('user-home'));
+			}
+		}else{
+			return redirect(route('user-support'))->withErrors('Подтвердите, что вы не робот.');
+		}
+	}
 }
