@@ -863,7 +863,12 @@ function recalculateBattleField(cards_strength) {
 				sumOfPlayers = 0;
 
 			for (var item in row){
-				var sumOfCard = parseInt(row[item].reduce(function (a,b){ return a + b; },0));
+				var sumOfCard = row[item].reduce(function (a,b){
+					var aNumb = +a;
+					var bNumb = +b;
+					var sum = aNumb + bNumb;
+					return sum;
+				},0);
 				sumOfPlayers += sumOfCard;
 				try{
 					if (holder.hasClass('oponent')) {
