@@ -863,7 +863,7 @@ function recalculateBattleField(cards_strength) {
 				sumOfPlayers = 0;
 
 			for (var item in row){
-				var sumOfCard = row[item].reduce(function (a,b){ return a + b; },0);
+				var sumOfCard = parseInt(row[item].reduce(function (a,b){ return a + b; },0));
 				sumOfPlayers += sumOfCard;
 				try{
 					if (holder.hasClass('oponent')) {
@@ -3136,7 +3136,7 @@ function circleRoundIndicator() {
 function calculateRightMarginCardHands() {
 	calculate($('#sortableUserCards'));
 	calculate($('#sortable-cards-field-more'));
-	calculate($('.cards-row-wrap'));
+	//calculate($('.cards-row-wrap'));
 	function calculate(obj){
 		var count = obj.find('li').length + 1;
 		var itemW = obj.find('li').width();

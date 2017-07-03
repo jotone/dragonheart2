@@ -1789,11 +1789,11 @@ ul.cards-select-wrap li img.disactive{
 
 
 ul.cards-row-wrap{
-    height: 100%;
-    position: relative;
-    text-align: center;
-    z-index: 3;
-    width: 100%;
+  height: 100%;
+  position: relative;
+  text-align: center;
+  z-index: 3;
+  width: 100%;
   display: -webkit-box;
   display: -webkit-flex;
   display: -moz-box;
@@ -1802,6 +1802,7 @@ ul.cards-row-wrap{
   -webkit-justify-content: space-around;
   -ms-flex-pack: distribute;
   justify-content: space-around;
+  padding: 0 5px;
 }
 
 ul.cards-row-wrap li{
